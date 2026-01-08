@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
@@ -31,10 +31,21 @@
         .nav-tabs .nav-link { color: #1a5f7a; font-weight: 600; padding: 0.75rem 2rem; border: none; border-bottom: 3px solid transparent; margin-bottom: -2px; }
         .nav-tabs .nav-link:hover { border-color: transparent; background: #e8f4f8; }
         .nav-tabs .nav-link.active { color: white; background: #1a5f7a; border-bottom: 3px solid #ffc107; border-radius: 8px 8px 0 0; }
+        .toast-container { position: fixed; top: 20px; right: 20px; z-index: 9999; }
     </style>
 </head>
 <body>
 <div class="container-main">
+
+<!-- 토스트 메시지 -->
+<div class="toast-container">
+    <div id="saveToast" class="toast align-items-center text-bg-success border-0" role="alert">
+        <div class="d-flex">
+            <div class="toast-body"><i class="bi bi-check-circle me-2"></i>저장되었습니다</div>
+            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+        </div>
+    </div>
+</div>
 
 <!-- 헤더 -->
 <div class="header">
@@ -57,6 +68,7 @@
     <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#weekly-section" type="button">주별</button></li>
     <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#monthly-section" type="button">월별</button></li>
     <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#quarterly-section" type="button">분기별</button></li>
+    <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#halfyear-section" type="button">반기별</button></li>
 </ul>
 
 <div class="tab-content">
@@ -94,53 +106,67 @@
         <div class="card-body p-0">
             <table class="table table-hover mb-0">
                 <thead class="table-light">
-                    <tr><th style="width:38%">제목</th><th style="width:6%">면</th><th style="width:10%">글자수</th><th style="width:14%">단독/배치</th><th style="width:10%">기획</th><th style="width:12%">가점</th><th style="width:10%">저장</th></tr>
+                    <tr>
+                        <th style="width:30%">제목</th>
+                        <th style="width:6%">면</th>
+                        <th style="width:10%">위치</th>
+                        <th style="width:8%">글자수</th>
+                        <th style="width:12%">취재유형</th>
+                        <th style="width:12%">기사성격</th>
+                        <th style="width:14%">임팩트</th>
+                        <th style="width:8%">저장</th>
+                    </tr>
                 </thead>
                 <tbody>
                     <tr style="background:#fffbeb;">
                         <td><a href="#" class="text-decoration-none fw-bold">구글·삼성 '스마트글라스' 첫 공개…눈앞서 길 알려주고 실시간 번역도</a></td>
-                        <td><span class="page-badge page-1">1</span> <button class="btn btn-link btn-sm p-0 text-muted" title="수정"><i class="bi bi-pencil" style="font-size:0.7rem;"></i></button></td>
-                        <td>2,847 <button class="btn btn-link btn-sm p-0 text-muted" title="수정"><i class="bi bi-pencil" style="font-size:0.7rem;"></i></button></td>
-                        <td><select class="form-select form-select-sm"><option value="">선택</option><option selected>단독</option><option>톱</option><option>사이드(좌)</option><option>사이드(우)</option><option>하단</option></select></td>
-                        <td><select class="form-select form-select-sm"><option value="">-</option><option>기획</option></select></td>
-                        <td><select class="form-select form-select-sm"><option value="0">-</option><option>2점</option><option selected>4점</option><option>6점</option><option>8점</option><option>10점</option></select></td>
-                        <td><button class="btn btn-sm btn-success"><i class="bi bi-check2"></i></button></td>
+                        <td><span class="page-badge page-1">1</span> <button class="btn btn-link btn-sm p-0 text-muted edit-page" title="수정"><i class="bi bi-pencil" style="font-size:0.7rem;"></i></button></td>
+                        <td><select class="form-select form-select-sm"><option value="">선택</option><option value="톱" selected>톱</option><option value="사이드(좌)">사이드(좌)</option><option value="사이드(우)">사이드(우)</option><option value="하단">하단</option><option value="기타">기타</option></select></td>
+                        <td>2,847 <button class="btn btn-link btn-sm p-0 text-muted edit-chars" title="수정"><i class="bi bi-pencil" style="font-size:0.7rem;"></i></button></td>
+                        <td><select class="form-select form-select-sm type-select"><option value="">선택</option><option value="특종">특종</option><option value="단독" selected>단독</option><option value="기획발굴">기획발굴</option><option value="현장취재">현장취재</option><option value="단순발생">단순발생</option><option value="보도자료">보도자료</option><option value="인용외신">인용외신</option><option value="기타">기타</option></select></td>
+                        <td><select class="form-select form-select-sm nature-select"><option value="">선택</option><option value="탐사심층">탐사심층</option><option value="해설분석" selected>해설분석</option><option value="인터뷰">인터뷰</option><option value="르포스케치">르포스케치</option><option value="스트레이트">스트레이트</option><option value="가십미담">가십미담</option><option value="기타">기타</option></select></td>
+                        <td><select class="form-select form-select-sm impact-select"><option value="">선택</option><option value="S" selected>S등급</option><option value="A">A등급</option><option value="B">B등급</option><option value="C">C등급</option><option value="D">D등급</option><option value="기타">기타</option></select></td>
+                        <td><button class="btn btn-sm btn-success save-btn"><i class="bi bi-check2"></i></button></td>
                     </tr>
                     <tr style="background:#fffbeb;">
                         <td><a href="#" class="text-decoration-none fw-bold">애플, WWDC서 AI 아이폰 공개 임박…시리 대폭 업그레이드</a></td>
-                        <td><span class="page-badge page-1">1</span> <button class="btn btn-link btn-sm p-0 text-muted" title="수정"><i class="bi bi-pencil" style="font-size:0.7rem;"></i></button></td>
-                        <td>2,534 <button class="btn btn-link btn-sm p-0 text-muted" title="수정"><i class="bi bi-pencil" style="font-size:0.7rem;"></i></button></td>
-                        <td><select class="form-select form-select-sm"><option value="">선택</option><option selected>단독</option><option>톱</option><option>사이드(좌)</option><option>사이드(우)</option><option>하단</option></select></td>
-                        <td><select class="form-select form-select-sm"><option value="">-</option><option selected>기획</option></select></td>
-                        <td><select class="form-select form-select-sm"><option value="0">-</option><option>2점</option><option>4점</option><option>6점</option><option>8점</option><option>10점</option></select></td>
-                        <td><button class="btn btn-sm btn-success"><i class="bi bi-check2"></i></button></td>
+                        <td><span class="page-badge page-1">1</span> <button class="btn btn-link btn-sm p-0 text-muted edit-page" title="수정"><i class="bi bi-pencil" style="font-size:0.7rem;"></i></button></td>
+                        <td><select class="form-select form-select-sm"><option value="">선택</option><option value="톱">톱</option><option value="사이드(좌)" selected>사이드(좌)</option><option value="사이드(우)">사이드(우)</option><option value="하단">하단</option><option value="기타">기타</option></select></td>
+                        <td>2,534 <button class="btn btn-link btn-sm p-0 text-muted edit-chars" title="수정"><i class="bi bi-pencil" style="font-size:0.7rem;"></i></button></td>
+                        <td><select class="form-select form-select-sm type-select"><option value="">선택</option><option value="특종">특종</option><option value="단독" selected>단독</option><option value="기획발굴">기획발굴</option><option value="현장취재">현장취재</option><option value="단순발생">단순발생</option><option value="보도자료">보도자료</option><option value="인용외신">인용외신</option><option value="기타">기타</option></select></td>
+                        <td><select class="form-select form-select-sm nature-select"><option value="">선택</option><option value="탐사심층">탐사심층</option><option value="해설분석">해설분석</option><option value="인터뷰">인터뷰</option><option value="르포스케치">르포스케치</option><option value="스트레이트" selected>스트레이트</option><option value="가십미담">가십미담</option><option value="기타">기타</option></select></td>
+                        <td><select class="form-select form-select-sm impact-select"><option value="">선택</option><option value="S">S등급</option><option value="A" selected>A등급</option><option value="B">B등급</option><option value="C">C등급</option><option value="D">D등급</option><option value="기타">기타</option></select></td>
+                        <td><button class="btn btn-sm btn-success save-btn"><i class="bi bi-check2"></i></button></td>
                     </tr>
                     <tr>
                         <td><a href="#" class="text-decoration-none fw-bold">오픈AI, GPT-5 개발 막바지…연내 출시 전망</a></td>
-                        <td><span class="page-badge page-2-3">3</span> <button class="btn btn-link btn-sm p-0 text-muted" title="수정"><i class="bi bi-pencil" style="font-size:0.7rem;"></i></button></td>
-                        <td>2,156 <button class="btn btn-link btn-sm p-0 text-muted" title="수정"><i class="bi bi-pencil" style="font-size:0.7rem;"></i></button></td>
-                        <td><select class="form-select form-select-sm"><option value="">선택</option><option>단독</option><option>톱</option><option selected>사이드(좌)</option><option>사이드(우)</option><option>하단</option></select></td>
-                        <td><select class="form-select form-select-sm"><option value="">-</option><option>기획</option></select></td>
-                        <td><select class="form-select form-select-sm"><option value="0">-</option><option>2점</option><option>4점</option><option>6점</option><option>8점</option><option>10점</option></select></td>
-                        <td><button class="btn btn-sm btn-outline-primary"><i class="bi bi-save"></i></button></td>
+                        <td><span class="page-badge page-2-3">3</span> <button class="btn btn-link btn-sm p-0 text-muted edit-page" title="수정"><i class="bi bi-pencil" style="font-size:0.7rem;"></i></button></td>
+                        <td><select class="form-select form-select-sm"><option value="">선택</option><option value="톱">톱</option><option value="사이드(좌)">사이드(좌)</option><option value="사이드(우)">사이드(우)</option><option value="하단">하단</option><option value="기타">기타</option></select></td>
+                        <td>2,156 <button class="btn btn-link btn-sm p-0 text-muted edit-chars" title="수정"><i class="bi bi-pencil" style="font-size:0.7rem;"></i></button></td>
+                        <td><select class="form-select form-select-sm type-select"><option value="">선택</option><option value="특종">특종</option><option value="단독">단독</option><option value="기획발굴">기획발굴</option><option value="현장취재">현장취재</option><option value="단순발생">단순발생</option><option value="보도자료">보도자료</option><option value="인용외신">인용외신</option><option value="기타">기타</option></select></td>
+                        <td><select class="form-select form-select-sm nature-select"><option value="">선택</option><option value="탐사심층">탐사심층</option><option value="해설분석">해설분석</option><option value="인터뷰">인터뷰</option><option value="르포스케치">르포스케치</option><option value="스트레이트">스트레이트</option><option value="가십미담">가십미담</option><option value="기타">기타</option></select></td>
+                        <td><select class="form-select form-select-sm impact-select"><option value="">선택</option><option value="S">S등급</option><option value="A">A등급</option><option value="B">B등급</option><option value="C">C등급</option><option value="D">D등급</option><option value="기타">기타</option></select></td>
+                        <td><button class="btn btn-sm btn-outline-primary save-btn"><i class="bi bi-save"></i></button></td>
                     </tr>
                     <tr>
                         <td><a href="#" class="text-decoration-none fw-bold">실리콘밸리 빅테크, 감원 칼바람 지속…메타·아마존 추가 구조조정</a></td>
-                        <td><span class="page-badge page-other">5</span> <button class="btn btn-link btn-sm p-0 text-muted" title="수정"><i class="bi bi-pencil" style="font-size:0.7rem;"></i></button></td>
-                        <td>2,187 <button class="btn btn-link btn-sm p-0 text-muted" title="수정"><i class="bi bi-pencil" style="font-size:0.7rem;"></i></button></td>
-                        <td><select class="form-select form-select-sm"><option value="">선택</option><option>단독</option><option>톱</option><option>사이드(좌)</option><option>사이드(우)</option><option>하단</option></select></td>
-                        <td><select class="form-select form-select-sm"><option value="">-</option><option>기획</option></select></td>
-                        <td><select class="form-select form-select-sm"><option value="0">-</option><option>2점</option><option>4점</option><option>6점</option><option>8점</option><option>10점</option></select></td>
-                        <td><button class="btn btn-sm btn-outline-primary"><i class="bi bi-save"></i></button></td>
+                        <td><span class="page-badge page-other">5</span> <button class="btn btn-link btn-sm p-0 text-muted edit-page" title="수정"><i class="bi bi-pencil" style="font-size:0.7rem;"></i></button></td>
+                        <td><select class="form-select form-select-sm"><option value="">선택</option><option value="톱">톱</option><option value="사이드(좌)">사이드(좌)</option><option value="사이드(우)">사이드(우)</option><option value="하단">하단</option><option value="기타">기타</option></select></td>
+                        <td>2,187 <button class="btn btn-link btn-sm p-0 text-muted edit-chars" title="수정"><i class="bi bi-pencil" style="font-size:0.7rem;"></i></button></td>
+                        <td><select class="form-select form-select-sm type-select"><option value="">선택</option><option value="특종">특종</option><option value="단독">단독</option><option value="기획발굴">기획발굴</option><option value="현장취재">현장취재</option><option value="단순발생">단순발생</option><option value="보도자료">보도자료</option><option value="인용외신">인용외신</option><option value="기타">기타</option></select></td>
+                        <td><select class="form-select form-select-sm nature-select"><option value="">선택</option><option value="탐사심층">탐사심층</option><option value="해설분석">해설분석</option><option value="인터뷰">인터뷰</option><option value="르포스케치">르포스케치</option><option value="스트레이트">스트레이트</option><option value="가십미담">가십미담</option><option value="기타">기타</option></select></td>
+                        <td><select class="form-select form-select-sm impact-select"><option value="">선택</option><option value="S">S등급</option><option value="A">A등급</option><option value="B">B등급</option><option value="C">C등급</option><option value="D">D등급</option><option value="기타">기타</option></select></td>
+                        <td><button class="btn btn-sm btn-outline-primary save-btn"><i class="bi bi-save"></i></button></td>
                     </tr>
                     <tr>
                         <td><a href="#" class="text-decoration-none fw-bold">테슬라 로보택시, 6월 텍사스서 시범 운행 시작</a></td>
-                        <td><span class="page-badge page-other">8</span> <button class="btn btn-link btn-sm p-0 text-muted" title="수정"><i class="bi bi-pencil" style="font-size:0.7rem;"></i></button></td>
-                        <td>2,123 <button class="btn btn-link btn-sm p-0 text-muted" title="수정"><i class="bi bi-pencil" style="font-size:0.7rem;"></i></button></td>
-                        <td><select class="form-select form-select-sm"><option value="">선택</option><option>단독</option><option>톱</option><option>사이드(좌)</option><option>사이드(우)</option><option>하단</option></select></td>
-                        <td><select class="form-select form-select-sm"><option value="">-</option><option>기획</option></select></td>
-                        <td><select class="form-select form-select-sm"><option value="0">-</option><option>2점</option><option>4점</option><option>6점</option><option>8점</option><option>10점</option></select></td>
-                        <td><button class="btn btn-sm btn-outline-primary"><i class="bi bi-save"></i></button></td>
+                        <td><span class="page-badge page-other">8</span> <button class="btn btn-link btn-sm p-0 text-muted edit-page" title="수정"><i class="bi bi-pencil" style="font-size:0.7rem;"></i></button></td>
+                        <td><select class="form-select form-select-sm"><option value="">선택</option><option value="톱">톱</option><option value="사이드(좌)">사이드(좌)</option><option value="사이드(우)">사이드(우)</option><option value="하단">하단</option><option value="기타">기타</option></select></td>
+                        <td>2,123 <button class="btn btn-link btn-sm p-0 text-muted edit-chars" title="수정"><i class="bi bi-pencil" style="font-size:0.7rem;"></i></button></td>
+                        <td><select class="form-select form-select-sm type-select"><option value="">선택</option><option value="특종">특종</option><option value="단독">단독</option><option value="기획발굴">기획발굴</option><option value="현장취재">현장취재</option><option value="단순발생">단순발생</option><option value="보도자료">보도자료</option><option value="인용외신">인용외신</option><option value="기타">기타</option></select></td>
+                        <td><select class="form-select form-select-sm nature-select"><option value="">선택</option><option value="탐사심층">탐사심층</option><option value="해설분석">해설분석</option><option value="인터뷰">인터뷰</option><option value="르포스케치">르포스케치</option><option value="스트레이트">스트레이트</option><option value="가십미담">가십미담</option><option value="기타">기타</option></select></td>
+                        <td><select class="form-select form-select-sm impact-select"><option value="">선택</option><option value="S">S등급</option><option value="A">A등급</option><option value="B">B등급</option><option value="C">C등급</option><option value="D">D등급</option><option value="기타">기타</option></select></td>
+                        <td><button class="btn btn-sm btn-outline-primary save-btn"><i class="bi bi-save"></i></button></td>
                     </tr>
                 </tbody>
             </table>
@@ -193,13 +219,13 @@
     <!-- 주별 기사 목록 -->
     <div class="card">
         <div class="card-header d-flex justify-content-between"><span><i class="bi bi-list-ul me-2"></i>5월 4주차 기사 목록</span><span class="badge bg-light text-dark">16건</span></div>
-        <table class="table table-hover mb-0" style="font-size:0.85rem;"><thead class="table-light"><tr><th>날짜</th><th>제목</th><th>면</th><th>글자수</th><th>단독/배치</th><th>기획</th><th>가점</th><th>저장</th></tr></thead>
+        <table class="table table-hover mb-0" style="font-size:0.85rem;"><thead class="table-light"><tr><th>날짜</th><th>제목</th><th>면</th><th>위치</th><th>글자수</th><th>취재유형</th><th>기사성격</th><th>임팩트</th><th>저장</th></tr></thead>
         <tbody>
-            <tr style="background:#fffbeb;"><td>05/21</td><td><a href="#" class="fw-bold">구글·삼성 '스마트글라스' 첫 공개</a></td><td><span class="page-badge page-1">1</span> <button class="btn btn-link btn-sm p-0 text-muted"><i class="bi bi-pencil" style="font-size:0.7rem;"></i></button></td><td>2,847 <button class="btn btn-link btn-sm p-0 text-muted"><i class="bi bi-pencil" style="font-size:0.7rem;"></i></button></td><td><select class="form-select form-select-sm" style="width:90px;"><option selected>단독</option><option>톱</option><option>사이드</option></select></td><td><select class="form-select form-select-sm" style="width:70px;"><option>-</option><option>기획</option></select></td><td><select class="form-select form-select-sm" style="width:70px;"><option>-</option><option>2점</option><option selected>4점</option></select></td><td><button class="btn btn-sm btn-success"><i class="bi bi-check2"></i></button></td></tr>
-            <tr style="background:#fffbeb;"><td>05/21</td><td><a href="#" class="fw-bold">애플, WWDC서 AI 아이폰 공개 임박</a></td><td><span class="page-badge page-1">1</span> <button class="btn btn-link btn-sm p-0 text-muted"><i class="bi bi-pencil" style="font-size:0.7rem;"></i></button></td><td>2,534 <button class="btn btn-link btn-sm p-0 text-muted"><i class="bi bi-pencil" style="font-size:0.7rem;"></i></button></td><td><select class="form-select form-select-sm" style="width:90px;"><option selected>단독</option></select></td><td><select class="form-select form-select-sm" style="width:70px;"><option>-</option><option selected>기획</option></select></td><td><select class="form-select form-select-sm" style="width:70px;"><option>-</option></select></td><td><button class="btn btn-sm btn-success"><i class="bi bi-check2"></i></button></td></tr>
-            <tr><td>05/21</td><td><a href="#" class="fw-bold">오픈AI, GPT-5 개발 막바지</a></td><td><span class="page-badge page-2-3">3</span> <button class="btn btn-link btn-sm p-0 text-muted"><i class="bi bi-pencil" style="font-size:0.7rem;"></i></button></td><td>2,156 <button class="btn btn-link btn-sm p-0 text-muted"><i class="bi bi-pencil" style="font-size:0.7rem;"></i></button></td><td><select class="form-select form-select-sm" style="width:90px;"><option>선택</option></select></td><td><select class="form-select form-select-sm" style="width:70px;"><option>-</option></select></td><td><select class="form-select form-select-sm" style="width:70px;"><option>-</option></select></td><td><button class="btn btn-sm btn-outline-primary"><i class="bi bi-save"></i></button></td></tr>
-            <tr><td>05/20</td><td><a href="#" class="fw-bold">실리콘밸리 빅테크, 감원 칼바람</a></td><td><span class="page-badge page-2-3">2</span> <button class="btn btn-link btn-sm p-0 text-muted"><i class="bi bi-pencil" style="font-size:0.7rem;"></i></button></td><td>2,534 <button class="btn btn-link btn-sm p-0 text-muted"><i class="bi bi-pencil" style="font-size:0.7rem;"></i></button></td><td><select class="form-select form-select-sm" style="width:90px;"><option>선택</option></select></td><td><select class="form-select form-select-sm" style="width:70px;"><option>-</option></select></td><td><select class="form-select form-select-sm" style="width:70px;"><option>-</option></select></td><td><button class="btn btn-sm btn-outline-primary"><i class="bi bi-save"></i></button></td></tr>
-            <tr><td>05/19</td><td><a href="#" class="fw-bold">테슬라 로보택시, 텍사스 시범 운행</a></td><td><span class="page-badge page-other">5</span> <button class="btn btn-link btn-sm p-0 text-muted"><i class="bi bi-pencil" style="font-size:0.7rem;"></i></button></td><td>2,187 <button class="btn btn-link btn-sm p-0 text-muted"><i class="bi bi-pencil" style="font-size:0.7rem;"></i></button></td><td><select class="form-select form-select-sm" style="width:90px;"><option selected>단독</option></select></td><td><select class="form-select form-select-sm" style="width:70px;"><option>-</option></select></td><td><select class="form-select form-select-sm" style="width:70px;"><option>-</option></select></td><td><button class="btn btn-sm btn-outline-primary"><i class="bi bi-save"></i></button></td></tr>
+            <tr style="background:#fffbeb;"><td>05/21</td><td><a href="#" class="fw-bold">구글·삼성 '스마트글라스' 첫 공개</a></td><td><span class="page-badge page-1">1</span> <button class="btn btn-link btn-sm p-0 text-muted edit-page"><i class="bi bi-pencil" style="font-size:0.7rem;"></i></button></td><td><select class="form-select form-select-sm" style="width:85px;"><option selected>톱</option><option>사이드(좌)</option><option>사이드(우)</option><option>하단</option><option>기타</option></select></td><td>2,847 <button class="btn btn-link btn-sm p-0 text-muted edit-chars"><i class="bi bi-pencil" style="font-size:0.7rem;"></i></button></td><td><select class="form-select form-select-sm" style="width:80px;"><option selected>단독</option><option>특종</option><option>기획발굴</option><option>현장취재</option><option>단순발생</option><option>보도자료</option><option>인용외신</option><option>기타</option></select></td><td><select class="form-select form-select-sm" style="width:80px;"><option selected>해설분석</option><option>탐사심층</option><option>인터뷰</option><option>르포스케치</option><option>스트레이트</option><option>가십미담</option><option>기타</option></select></td><td><select class="form-select form-select-sm" style="width:100px;"><option selected>S등급</option><option>A등급</option><option>B등급</option><option>C등급</option><option>D등급</option><option>기타</option></select></td><td><button class="btn btn-sm btn-success save-btn"><i class="bi bi-check2"></i></button></td></tr>
+            <tr style="background:#fffbeb;"><td>05/21</td><td><a href="#" class="fw-bold">애플, WWDC서 AI 아이폰 공개 임박</a></td><td><span class="page-badge page-1">1</span> <button class="btn btn-link btn-sm p-0 text-muted edit-page"><i class="bi bi-pencil" style="font-size:0.7rem;"></i></button></td><td><select class="form-select form-select-sm" style="width:85px;"><option>톱</option><option selected>사이드(좌)</option><option>사이드(우)</option><option>하단</option><option>기타</option></select></td><td>2,534 <button class="btn btn-link btn-sm p-0 text-muted edit-chars"><i class="bi bi-pencil" style="font-size:0.7rem;"></i></button></td><td><select class="form-select form-select-sm" style="width:80px;"><option selected>단독</option><option>특종</option><option>기획발굴</option><option>현장취재</option><option>단순발생</option><option>보도자료</option><option>인용외신</option><option>기타</option></select></td><td><select class="form-select form-select-sm" style="width:80px;"><option>해설분석</option><option>탐사심층</option><option>인터뷰</option><option>르포스케치</option><option selected>스트레이트</option><option>가십미담</option><option>기타</option></select></td><td><select class="form-select form-select-sm" style="width:100px;"><option>S등급</option><option selected>A등급</option><option>B등급</option><option>C등급</option><option>D등급</option><option>기타</option></select></td><td><button class="btn btn-sm btn-success save-btn"><i class="bi bi-check2"></i></button></td></tr>
+            <tr><td>05/21</td><td><a href="#" class="fw-bold">오픈AI, GPT-5 개발 막바지</a></td><td><span class="page-badge page-2-3">3</span> <button class="btn btn-link btn-sm p-0 text-muted edit-page"><i class="bi bi-pencil" style="font-size:0.7rem;"></i></button></td><td><select class="form-select form-select-sm" style="width:85px;"><option value="">선택</option><option>톱</option><option>사이드(좌)</option><option>사이드(우)</option><option>하단</option><option>기타</option></select></td><td>2,156 <button class="btn btn-link btn-sm p-0 text-muted edit-chars"><i class="bi bi-pencil" style="font-size:0.7rem;"></i></button></td><td><select class="form-select form-select-sm" style="width:80px;"><option value="">선택</option><option>특종</option><option>단독</option><option>기획발굴</option><option>현장취재</option><option>단순발생</option><option>보도자료</option><option>인용외신</option><option>기타</option></select></td><td><select class="form-select form-select-sm" style="width:80px;"><option value="">선택</option><option>탐사심층</option><option>해설분석</option><option>인터뷰</option><option>르포스케치</option><option>스트레이트</option><option>가십미담</option><option>기타</option></select></td><td><select class="form-select form-select-sm" style="width:100px;"><option value="">선택</option><option>S등급</option><option>A등급</option><option>B등급</option><option>C등급</option><option>D등급</option><option>기타</option></select></td><td><button class="btn btn-sm btn-outline-primary save-btn"><i class="bi bi-save"></i></button></td></tr>
+            <tr><td>05/20</td><td><a href="#" class="fw-bold">실리콘밸리 빅테크, 감원 칼바람</a></td><td><span class="page-badge page-2-3">2</span> <button class="btn btn-link btn-sm p-0 text-muted edit-page"><i class="bi bi-pencil" style="font-size:0.7rem;"></i></button></td><td><select class="form-select form-select-sm" style="width:85px;"><option value="">선택</option><option>톱</option><option>사이드(좌)</option><option>사이드(우)</option><option>하단</option><option>기타</option></select></td><td>2,534 <button class="btn btn-link btn-sm p-0 text-muted edit-chars"><i class="bi bi-pencil" style="font-size:0.7rem;"></i></button></td><td><select class="form-select form-select-sm" style="width:80px;"><option value="">선택</option><option>특종</option><option>단독</option><option>기획발굴</option><option>현장취재</option><option>단순발생</option><option>보도자료</option><option>인용외신</option><option>기타</option></select></td><td><select class="form-select form-select-sm" style="width:80px;"><option value="">선택</option><option>탐사심층</option><option>해설분석</option><option>인터뷰</option><option>르포스케치</option><option>스트레이트</option><option>가십미담</option><option>기타</option></select></td><td><select class="form-select form-select-sm" style="width:100px;"><option value="">선택</option><option>S등급</option><option>A등급</option><option>B등급</option><option>C등급</option><option>D등급</option><option>기타</option></select></td><td><button class="btn btn-sm btn-outline-primary save-btn"><i class="bi bi-save"></i></button></td></tr>
+            <tr><td>05/19</td><td><a href="#" class="fw-bold">테슬라 로보택시, 텍사스 시범 운행</a></td><td><span class="page-badge page-other">5</span> <button class="btn btn-link btn-sm p-0 text-muted edit-page"><i class="bi bi-pencil" style="font-size:0.7rem;"></i></button></td><td><select class="form-select form-select-sm" style="width:85px;"><option value="">선택</option><option>톱</option><option>사이드(좌)</option><option>사이드(우)</option><option>하단</option><option>기타</option></select></td><td>2,187 <button class="btn btn-link btn-sm p-0 text-muted edit-chars"><i class="bi bi-pencil" style="font-size:0.7rem;"></i></button></td><td><select class="form-select form-select-sm" style="width:80px;"><option value="">선택</option><option>특종</option><option selected>단독</option><option>기획발굴</option><option>현장취재</option><option>단순발생</option><option>보도자료</option><option>인용외신</option><option>기타</option></select></td><td><select class="form-select form-select-sm" style="width:80px;"><option value="">선택</option><option>탐사심층</option><option>해설분석</option><option>인터뷰</option><option>르포스케치</option><option>스트레이트</option><option>가십미담</option><option>기타</option></select></td><td><select class="form-select form-select-sm" style="width:100px;"><option value="">선택</option><option>S등급</option><option>A등급</option><option>B등급</option><option>C등급</option><option>D등급</option><option>기타</option></select></td><td><button class="btn btn-sm btn-outline-primary save-btn"><i class="bi bi-save"></i></button></td></tr>
         </tbody></table>
         <div class="card-footer text-center bg-light">
             <button class="btn btn-outline-primary btn-sm"><i class="bi bi-chevron-down me-1"></i>더보기 (11건 더)</button>
@@ -243,14 +269,14 @@
         </tbody></table>
     </div>
 
-    <div class="card"><div class="card-header"><i class="bi bi-list-ul me-2"></i>2025년 5월 기사 목록 (18건)</div>
-        <table class="table table-hover mb-0" style="font-size:0.85rem;"><thead class="table-light"><tr><th>제목</th><th>면</th><th>글자수</th><th>단독/배치</th><th>기획</th><th>가점</th><th>저장</th></tr></thead>
+    <div class="card"><div class="card-header d-flex justify-content-between"><span><i class="bi bi-list-ul me-2"></i>2025년 5월 기사 목록</span><span class="badge bg-light text-dark">18건</span></div>
+        <table class="table table-hover mb-0" style="font-size:0.85rem;"><thead class="table-light"><tr><th>제목</th><th>면</th><th>위치</th><th>글자수</th><th>취재유형</th><th>기사성격</th><th>임팩트</th><th>저장</th></tr></thead>
         <tbody>
-            <tr style="background:#fffbeb;"><td><a href="#" class="fw-bold">구글·삼성 '스마트글라스' 첫 공개</a></td><td><span class="page-badge page-1">1</span> <button class="btn btn-link btn-sm p-0 text-muted"><i class="bi bi-pencil" style="font-size:0.7rem;"></i></button></td><td>2,847 <button class="btn btn-link btn-sm p-0 text-muted"><i class="bi bi-pencil" style="font-size:0.7rem;"></i></button></td><td><select class="form-select form-select-sm"><option selected>단독</option><option>톱</option><option>사이드(좌)</option><option>사이드(우)</option><option>하단</option></select></td><td><select class="form-select form-select-sm"><option>-</option><option>기획</option></select></td><td><select class="form-select form-select-sm"><option>-</option><option>2점</option><option>4점</option><option>6점</option><option>8점</option><option>10점</option></select></td><td><button class="btn btn-sm btn-success"><i class="bi bi-check2"></i></button></td></tr>
-            <tr style="background:#fffbeb;"><td><a href="#" class="fw-bold">애플, AI 아이폰 공개 임박</a></td><td><span class="page-badge page-1">1</span> <button class="btn btn-link btn-sm p-0 text-muted"><i class="bi bi-pencil" style="font-size:0.7rem;"></i></button></td><td>2,156 <button class="btn btn-link btn-sm p-0 text-muted"><i class="bi bi-pencil" style="font-size:0.7rem;"></i></button></td><td><select class="form-select form-select-sm"><option selected>톱</option><option>단독</option><option>사이드(좌)</option><option>사이드(우)</option><option>하단</option></select></td><td><select class="form-select form-select-sm"><option>-</option><option selected>기획</option></select></td><td><select class="form-select form-select-sm"><option>-</option><option>2점</option><option>4점</option><option>6점</option><option>8점</option><option>10점</option></select></td><td><button class="btn btn-sm btn-success"><i class="bi bi-check2"></i></button></td></tr>
-            <tr><td><a href="#" class="fw-bold">오픈AI, GPT-5 개발 막바지</a></td><td><span class="page-badge page-2-3">2</span> <button class="btn btn-link btn-sm p-0 text-muted"><i class="bi bi-pencil" style="font-size:0.7rem;"></i></button></td><td>2,534 <button class="btn btn-link btn-sm p-0 text-muted"><i class="bi bi-pencil" style="font-size:0.7rem;"></i></button></td><td><select class="form-select form-select-sm"><option>선택</option><option>단독</option><option>톱</option><option>사이드(좌)</option><option>사이드(우)</option><option>하단</option></select></td><td><select class="form-select form-select-sm"><option>-</option><option>기획</option></select></td><td><select class="form-select form-select-sm"><option>-</option><option>2점</option><option>4점</option><option>6점</option><option>8점</option><option>10점</option></select></td><td><button class="btn btn-sm btn-outline-primary"><i class="bi bi-save"></i></button></td></tr>
-            <tr><td><a href="#" class="fw-bold">실리콘밸리 빅테크, 감원 칼바람</a></td><td><span class="page-badge page-other">5</span> <button class="btn btn-link btn-sm p-0 text-muted"><i class="bi bi-pencil" style="font-size:0.7rem;"></i></button></td><td>2,123 <button class="btn btn-link btn-sm p-0 text-muted"><i class="bi bi-pencil" style="font-size:0.7rem;"></i></button></td><td><select class="form-select form-select-sm"><option>선택</option><option>단독</option><option>톱</option><option>사이드(좌)</option><option>사이드(우)</option><option>하단</option></select></td><td><select class="form-select form-select-sm"><option>-</option><option>기획</option></select></td><td><select class="form-select form-select-sm"><option>-</option><option>2점</option><option>4점</option><option>6점</option><option>8점</option><option>10점</option></select></td><td><button class="btn btn-sm btn-outline-primary"><i class="bi bi-save"></i></button></td></tr>
-            <tr><td><a href="#" class="fw-bold">MS, 코파일럿 대규모 업데이트</a></td><td><span class="page-badge page-2-3">3</span> <button class="btn btn-link btn-sm p-0 text-muted"><i class="bi bi-pencil" style="font-size:0.7rem;"></i></button></td><td>1,987 <button class="btn btn-link btn-sm p-0 text-muted"><i class="bi bi-pencil" style="font-size:0.7rem;"></i></button></td><td><select class="form-select form-select-sm"><option>선택</option></select></td><td><select class="form-select form-select-sm"><option>-</option></select></td><td><select class="form-select form-select-sm"><option>-</option></select></td><td><button class="btn btn-sm btn-outline-primary"><i class="bi bi-save"></i></button></td></tr>
+            <tr style="background:#fffbeb;"><td><a href="#" class="fw-bold">구글·삼성 '스마트글라스' 첫 공개</a></td><td><span class="page-badge page-1">1</span> <button class="btn btn-link btn-sm p-0 text-muted edit-page"><i class="bi bi-pencil" style="font-size:0.7rem;"></i></button></td><td><select class="form-select form-select-sm" style="width:85px;"><option selected>톱</option><option>사이드(좌)</option><option>사이드(우)</option><option>하단</option><option>기타</option></select></td><td>2,847 <button class="btn btn-link btn-sm p-0 text-muted edit-chars"><i class="bi bi-pencil" style="font-size:0.7rem;"></i></button></td><td><select class="form-select form-select-sm" style="width:80px;"><option selected>단독</option><option>특종</option><option>기획발굴</option><option>현장취재</option><option>단순발생</option><option>보도자료</option><option>인용외신</option><option>기타</option></select></td><td><select class="form-select form-select-sm" style="width:80px;"><option selected>해설분석</option><option>탐사심층</option><option>인터뷰</option><option>르포스케치</option><option>스트레이트</option><option>가십미담</option><option>기타</option></select></td><td><select class="form-select form-select-sm" style="width:100px;"><option selected>S등급</option><option>A등급</option><option>B등급</option><option>C등급</option><option>D등급</option><option>기타</option></select></td><td><button class="btn btn-sm btn-success save-btn"><i class="bi bi-check2"></i></button></td></tr>
+            <tr style="background:#fffbeb;"><td><a href="#" class="fw-bold">애플, AI 아이폰 공개 임박</a></td><td><span class="page-badge page-1">1</span> <button class="btn btn-link btn-sm p-0 text-muted edit-page"><i class="bi bi-pencil" style="font-size:0.7rem;"></i></button></td><td><select class="form-select form-select-sm" style="width:85px;"><option>톱</option><option selected>사이드(좌)</option><option>사이드(우)</option><option>하단</option><option>기타</option></select></td><td>2,156 <button class="btn btn-link btn-sm p-0 text-muted edit-chars"><i class="bi bi-pencil" style="font-size:0.7rem;"></i></button></td><td><select class="form-select form-select-sm" style="width:80px;"><option selected>단독</option><option>특종</option><option>기획발굴</option><option>현장취재</option><option>단순발생</option><option>보도자료</option><option>인용외신</option><option>기타</option></select></td><td><select class="form-select form-select-sm" style="width:80px;"><option>해설분석</option><option>탐사심층</option><option>인터뷰</option><option>르포스케치</option><option selected>스트레이트</option><option>가십미담</option><option>기타</option></select></td><td><select class="form-select form-select-sm" style="width:100px;"><option>S등급</option><option selected>A등급</option><option>B등급</option><option>C등급</option><option>D등급</option><option>기타</option></select></td><td><button class="btn btn-sm btn-success save-btn"><i class="bi bi-check2"></i></button></td></tr>
+            <tr><td><a href="#" class="fw-bold">오픈AI, GPT-5 개발 막바지</a></td><td><span class="page-badge page-2-3">2</span> <button class="btn btn-link btn-sm p-0 text-muted edit-page"><i class="bi bi-pencil" style="font-size:0.7rem;"></i></button></td><td><select class="form-select form-select-sm" style="width:85px;"><option value="">선택</option><option>톱</option><option>사이드(좌)</option><option>사이드(우)</option><option>하단</option><option>기타</option></select></td><td>2,534 <button class="btn btn-link btn-sm p-0 text-muted edit-chars"><i class="bi bi-pencil" style="font-size:0.7rem;"></i></button></td><td><select class="form-select form-select-sm" style="width:80px;"><option value="">선택</option><option>특종</option><option>단독</option><option>기획발굴</option><option>현장취재</option><option>단순발생</option><option>보도자료</option><option>인용외신</option><option>기타</option></select></td><td><select class="form-select form-select-sm" style="width:80px;"><option value="">선택</option><option>탐사심층</option><option>해설분석</option><option>인터뷰</option><option>르포스케치</option><option>스트레이트</option><option>가십미담</option><option>기타</option></select></td><td><select class="form-select form-select-sm" style="width:100px;"><option value="">선택</option><option>S등급</option><option>A등급</option><option>B등급</option><option>C등급</option><option>D등급</option><option>기타</option></select></td><td><button class="btn btn-sm btn-outline-primary save-btn"><i class="bi bi-save"></i></button></td></tr>
+            <tr><td><a href="#" class="fw-bold">실리콘밸리 빅테크, 감원 칼바람</a></td><td><span class="page-badge page-other">5</span> <button class="btn btn-link btn-sm p-0 text-muted edit-page"><i class="bi bi-pencil" style="font-size:0.7rem;"></i></button></td><td><select class="form-select form-select-sm" style="width:85px;"><option value="">선택</option><option>톱</option><option>사이드(좌)</option><option>사이드(우)</option><option>하단</option><option>기타</option></select></td><td>2,123 <button class="btn btn-link btn-sm p-0 text-muted edit-chars"><i class="bi bi-pencil" style="font-size:0.7rem;"></i></button></td><td><select class="form-select form-select-sm" style="width:80px;"><option value="">선택</option><option>특종</option><option>단독</option><option>기획발굴</option><option>현장취재</option><option>단순발생</option><option>보도자료</option><option>인용외신</option><option>기타</option></select></td><td><select class="form-select form-select-sm" style="width:80px;"><option value="">선택</option><option>탐사심층</option><option>해설분석</option><option>인터뷰</option><option>르포스케치</option><option>스트레이트</option><option>가십미담</option><option>기타</option></select></td><td><select class="form-select form-select-sm" style="width:100px;"><option value="">선택</option><option>S등급</option><option>A등급</option><option>B등급</option><option>C등급</option><option>D등급</option><option>기타</option></select></td><td><button class="btn btn-sm btn-outline-primary save-btn"><i class="bi bi-save"></i></button></td></tr>
+            <tr><td><a href="#" class="fw-bold">MS, 코파일럿 대규모 업데이트</a></td><td><span class="page-badge page-2-3">3</span> <button class="btn btn-link btn-sm p-0 text-muted edit-page"><i class="bi bi-pencil" style="font-size:0.7rem;"></i></button></td><td><select class="form-select form-select-sm" style="width:85px;"><option value="">선택</option><option>톱</option><option>사이드(좌)</option><option>사이드(우)</option><option>하단</option><option>기타</option></select></td><td>1,987 <button class="btn btn-link btn-sm p-0 text-muted edit-chars"><i class="bi bi-pencil" style="font-size:0.7rem;"></i></button></td><td><select class="form-select form-select-sm" style="width:80px;"><option value="">선택</option><option>특종</option><option>단독</option><option>기획발굴</option><option>현장취재</option><option>단순발생</option><option>보도자료</option><option>인용외신</option><option>기타</option></select></td><td><select class="form-select form-select-sm" style="width:80px;"><option value="">선택</option><option>탐사심층</option><option>해설분석</option><option>인터뷰</option><option>르포스케치</option><option>스트레이트</option><option>가십미담</option><option>기타</option></select></td><td><select class="form-select form-select-sm" style="width:100px;"><option value="">선택</option><option>S등급</option><option>A등급</option><option>B등급</option><option>C등급</option><option>D등급</option><option>기타</option></select></td><td><button class="btn btn-sm btn-outline-primary save-btn"><i class="bi bi-save"></i></button></td></tr>
         </tbody></table>
         <div class="card-footer text-center bg-light">
             <button class="btn btn-outline-primary btn-sm"><i class="bi bi-chevron-down me-1"></i>더보기 (13건 더)</button>
@@ -297,13 +323,13 @@
     <!-- 분기별 기사 목록 -->
     <div class="card">
         <div class="card-header d-flex justify-content-between"><span><i class="bi bi-list-ul me-2"></i>2025년 2분기 기사 목록</span><span class="badge bg-light text-dark">78건</span></div>
-        <table class="table table-hover mb-0" style="font-size:0.85rem;"><thead class="table-light"><tr><th>날짜</th><th>제목</th><th>면</th><th>글자수</th><th>단독/배치</th><th>기획</th><th>가점</th><th>저장</th></tr></thead>
+        <table class="table table-hover mb-0" style="font-size:0.85rem;"><thead class="table-light"><tr><th>날짜</th><th>제목</th><th>면</th><th>위치</th><th>글자수</th><th>취재유형</th><th>기사성격</th><th>임팩트</th><th>저장</th></tr></thead>
         <tbody>
-            <tr style="background:#fffbeb;"><td>05/21</td><td><a href="#" class="fw-bold">구글·삼성 '스마트글라스' 첫 공개</a></td><td><span class="page-badge page-1">1</span> <button class="btn btn-link btn-sm p-0 text-muted"><i class="bi bi-pencil" style="font-size:0.7rem;"></i></button></td><td>2,847 <button class="btn btn-link btn-sm p-0 text-muted"><i class="bi bi-pencil" style="font-size:0.7rem;"></i></button></td><td><select class="form-select form-select-sm" style="width:90px;"><option selected>단독</option></select></td><td><select class="form-select form-select-sm" style="width:70px;"><option>-</option></select></td><td><select class="form-select form-select-sm" style="width:70px;"><option>-</option><option selected>4점</option></select></td><td><button class="btn btn-sm btn-success"><i class="bi bi-check2"></i></button></td></tr>
-            <tr style="background:#fffbeb;"><td>05/21</td><td><a href="#" class="fw-bold">애플, WWDC서 AI 아이폰 공개 임박</a></td><td><span class="page-badge page-1">1</span> <button class="btn btn-link btn-sm p-0 text-muted"><i class="bi bi-pencil" style="font-size:0.7rem;"></i></button></td><td>2,534 <button class="btn btn-link btn-sm p-0 text-muted"><i class="bi bi-pencil" style="font-size:0.7rem;"></i></button></td><td><select class="form-select form-select-sm" style="width:90px;"><option selected>단독</option></select></td><td><select class="form-select form-select-sm" style="width:70px;"><option>-</option><option selected>기획</option></select></td><td><select class="form-select form-select-sm" style="width:70px;"><option>-</option></select></td><td><button class="btn btn-sm btn-success"><i class="bi bi-check2"></i></button></td></tr>
-            <tr><td>05/15</td><td><a href="#" class="fw-bold">엔비디아, 차세대 GPU 블랙웰 공개</a></td><td><span class="page-badge page-1">1</span> <button class="btn btn-link btn-sm p-0 text-muted"><i class="bi bi-pencil" style="font-size:0.7rem;"></i></button></td><td>2,876 <button class="btn btn-link btn-sm p-0 text-muted"><i class="bi bi-pencil" style="font-size:0.7rem;"></i></button></td><td><select class="form-select form-select-sm" style="width:90px;"><option selected>톱</option></select></td><td><select class="form-select form-select-sm" style="width:70px;"><option>-</option></select></td><td><select class="form-select form-select-sm" style="width:70px;"><option>-</option></select></td><td><button class="btn btn-sm btn-success"><i class="bi bi-check2"></i></button></td></tr>
-            <tr><td>05/10</td><td><a href="#" class="fw-bold">오픈AI, GPT-5 개발 막바지</a></td><td><span class="page-badge page-2-3">2</span> <button class="btn btn-link btn-sm p-0 text-muted"><i class="bi bi-pencil" style="font-size:0.7rem;"></i></button></td><td>2,534 <button class="btn btn-link btn-sm p-0 text-muted"><i class="bi bi-pencil" style="font-size:0.7rem;"></i></button></td><td><select class="form-select form-select-sm" style="width:90px;"><option>선택</option></select></td><td><select class="form-select form-select-sm" style="width:70px;"><option>-</option></select></td><td><select class="form-select form-select-sm" style="width:70px;"><option>-</option></select></td><td><button class="btn btn-sm btn-outline-primary"><i class="bi bi-save"></i></button></td></tr>
-            <tr><td>04/28</td><td><a href="#" class="fw-bold">메타, AI 오픈소스 전략 강화</a></td><td><span class="page-badge page-2-3">3</span> <button class="btn btn-link btn-sm p-0 text-muted"><i class="bi bi-pencil" style="font-size:0.7rem;"></i></button></td><td>2,187 <button class="btn btn-link btn-sm p-0 text-muted"><i class="bi bi-pencil" style="font-size:0.7rem;"></i></button></td><td><select class="form-select form-select-sm" style="width:90px;"><option>선택</option></select></td><td><select class="form-select form-select-sm" style="width:70px;"><option>-</option><option selected>기획</option></select></td><td><select class="form-select form-select-sm" style="width:70px;"><option>-</option></select></td><td><button class="btn btn-sm btn-outline-primary"><i class="bi bi-save"></i></button></td></tr>
+            <tr style="background:#fffbeb;"><td>05/21</td><td><a href="#" class="fw-bold">구글·삼성 '스마트글라스' 첫 공개</a></td><td><span class="page-badge page-1">1</span> <button class="btn btn-link btn-sm p-0 text-muted edit-page"><i class="bi bi-pencil" style="font-size:0.7rem;"></i></button></td><td><select class="form-select form-select-sm" style="width:85px;"><option selected>톱</option><option>사이드(좌)</option><option>사이드(우)</option><option>하단</option><option>기타</option></select></td><td>2,847 <button class="btn btn-link btn-sm p-0 text-muted edit-chars"><i class="bi bi-pencil" style="font-size:0.7rem;"></i></button></td><td><select class="form-select form-select-sm" style="width:80px;"><option selected>단독</option><option>특종</option><option>기획발굴</option><option>현장취재</option><option>단순발생</option><option>보도자료</option><option>인용외신</option><option>기타</option></select></td><td><select class="form-select form-select-sm" style="width:80px;"><option selected>해설분석</option><option>탐사심층</option><option>인터뷰</option><option>르포스케치</option><option>스트레이트</option><option>가십미담</option><option>기타</option></select></td><td><select class="form-select form-select-sm" style="width:100px;"><option selected>S등급</option><option>A등급</option><option>B등급</option><option>C등급</option><option>D등급</option><option>기타</option></select></td><td><button class="btn btn-sm btn-success save-btn"><i class="bi bi-check2"></i></button></td></tr>
+            <tr style="background:#fffbeb;"><td>05/21</td><td><a href="#" class="fw-bold">애플, WWDC서 AI 아이폰 공개 임박</a></td><td><span class="page-badge page-1">1</span> <button class="btn btn-link btn-sm p-0 text-muted edit-page"><i class="bi bi-pencil" style="font-size:0.7rem;"></i></button></td><td><select class="form-select form-select-sm" style="width:85px;"><option>톱</option><option selected>사이드(좌)</option><option>사이드(우)</option><option>하단</option><option>기타</option></select></td><td>2,534 <button class="btn btn-link btn-sm p-0 text-muted edit-chars"><i class="bi bi-pencil" style="font-size:0.7rem;"></i></button></td><td><select class="form-select form-select-sm" style="width:80px;"><option selected>단독</option><option>특종</option><option>기획발굴</option><option>현장취재</option><option>단순발생</option><option>보도자료</option><option>인용외신</option><option>기타</option></select></td><td><select class="form-select form-select-sm" style="width:80px;"><option>해설분석</option><option>탐사심층</option><option>인터뷰</option><option>르포스케치</option><option selected>스트레이트</option><option>가십미담</option><option>기타</option></select></td><td><select class="form-select form-select-sm" style="width:100px;"><option>S등급</option><option selected>A등급</option><option>B등급</option><option>C등급</option><option>D등급</option><option>기타</option></select></td><td><button class="btn btn-sm btn-success save-btn"><i class="bi bi-check2"></i></button></td></tr>
+            <tr><td>05/15</td><td><a href="#" class="fw-bold">엔비디아, 차세대 GPU 블랙웰 공개</a></td><td><span class="page-badge page-1">1</span> <button class="btn btn-link btn-sm p-0 text-muted edit-page"><i class="bi bi-pencil" style="font-size:0.7rem;"></i></button></td><td><select class="form-select form-select-sm" style="width:85px;"><option selected>톱</option><option>사이드(좌)</option><option>사이드(우)</option><option>하단</option><option>기타</option></select></td><td>2,876 <button class="btn btn-link btn-sm p-0 text-muted edit-chars"><i class="bi bi-pencil" style="font-size:0.7rem;"></i></button></td><td><select class="form-select form-select-sm" style="width:80px;"><option value="">선택</option><option>특종</option><option>단독</option><option>기획발굴</option><option>현장취재</option><option>단순발생</option><option>보도자료</option><option>인용외신</option><option>기타</option></select></td><td><select class="form-select form-select-sm" style="width:80px;"><option value="">선택</option><option>탐사심층</option><option>해설분석</option><option>인터뷰</option><option>르포스케치</option><option>스트레이트</option><option>가십미담</option><option>기타</option></select></td><td><select class="form-select form-select-sm" style="width:100px;"><option value="">선택</option><option>S등급</option><option>A등급</option><option>B등급</option><option>C등급</option><option>D등급</option><option>기타</option></select></td><td><button class="btn btn-sm btn-success save-btn"><i class="bi bi-check2"></i></button></td></tr>
+            <tr><td>05/10</td><td><a href="#" class="fw-bold">오픈AI, GPT-5 개발 막바지</a></td><td><span class="page-badge page-2-3">2</span> <button class="btn btn-link btn-sm p-0 text-muted edit-page"><i class="bi bi-pencil" style="font-size:0.7rem;"></i></button></td><td><select class="form-select form-select-sm" style="width:85px;"><option value="">선택</option><option>톱</option><option>사이드(좌)</option><option>사이드(우)</option><option>하단</option><option>기타</option></select></td><td>2,534 <button class="btn btn-link btn-sm p-0 text-muted edit-chars"><i class="bi bi-pencil" style="font-size:0.7rem;"></i></button></td><td><select class="form-select form-select-sm" style="width:80px;"><option value="">선택</option><option>특종</option><option>단독</option><option>기획발굴</option><option>현장취재</option><option>단순발생</option><option>보도자료</option><option>인용외신</option><option>기타</option></select></td><td><select class="form-select form-select-sm" style="width:80px;"><option value="">선택</option><option>탐사심층</option><option>해설분석</option><option>인터뷰</option><option>르포스케치</option><option>스트레이트</option><option>가십미담</option><option>기타</option></select></td><td><select class="form-select form-select-sm" style="width:100px;"><option value="">선택</option><option>S등급</option><option>A등급</option><option>B등급</option><option>C등급</option><option>D등급</option><option>기타</option></select></td><td><button class="btn btn-sm btn-outline-primary save-btn"><i class="bi bi-save"></i></button></td></tr>
+            <tr><td>04/28</td><td><a href="#" class="fw-bold">메타, AI 오픈소스 전략 강화</a></td><td><span class="page-badge page-2-3">3</span> <button class="btn btn-link btn-sm p-0 text-muted edit-page"><i class="bi bi-pencil" style="font-size:0.7rem;"></i></button></td><td><select class="form-select form-select-sm" style="width:85px;"><option value="">선택</option><option>톱</option><option>사이드(좌)</option><option>사이드(우)</option><option>하단</option><option>기타</option></select></td><td>2,187 <button class="btn btn-link btn-sm p-0 text-muted edit-chars"><i class="bi bi-pencil" style="font-size:0.7rem;"></i></button></td><td><select class="form-select form-select-sm" style="width:80px;"><option value="">선택</option><option>특종</option><option>단독</option><option selected>기획발굴</option><option>현장취재</option><option>단순발생</option><option>보도자료</option><option>인용외신</option><option>기타</option></select></td><td><select class="form-select form-select-sm" style="width:80px;"><option value="">선택</option><option>탐사심층</option><option>해설분석</option><option>인터뷰</option><option>르포스케치</option><option>스트레이트</option><option>가십미담</option><option>기타</option></select></td><td><select class="form-select form-select-sm" style="width:100px;"><option value="">선택</option><option>S등급</option><option>A등급</option><option>B등급</option><option>C등급</option><option>D등급</option><option>기타</option></select></td><td><button class="btn btn-sm btn-outline-primary save-btn"><i class="bi bi-save"></i></button></td></tr>
         </tbody></table>
         <div class="card-footer text-center bg-light">
             <button class="btn btn-outline-primary btn-sm"><i class="bi bi-chevron-down me-1"></i>더보기 (73건 더)</button>
@@ -311,37 +337,152 @@
     </div>
 </div>
 
+<!-- ========== 반기별 섹션 ========== -->
+<div class="tab-pane fade" id="halfyear-section">
+    <div class="row g-3 mb-4">
+        <div class="col-2"><div class="stat-box"><div class="value">143</div><div class="label">기사수</div></div></div>
+        <div class="col-2"><div class="stat-box"><div class="value" style="color:#ffc107;">15</div><div class="label">1면</div></div></div>
+        <div class="col-2"><div class="stat-box"><div class="value">401,396</div><div class="label">총글자수</div></div></div>
+        <div class="col-2"><div class="stat-box"><div class="value">2,807</div><div class="label">평균</div></div></div>
+        <div class="col-2"><div class="stat-box"><div class="value" style="color:#28a745;">13</div><div class="label">단독</div></div></div>
+        <div class="col-2"><div class="stat-box"><div class="value" style="color:#17a2b8;">8</div><div class="label">기획</div></div></div>
+    </div>
+
+    <div class="card"><div class="card-header"><i class="bi bi-grid-3x3 me-2"></i>면별 기사 분포 (1~32면)</div>
+        <div class="card-body">
+            <div class="page-grid mb-2">
+                <div class="page-cell highlight">1면<br><b>15</b></div><div class="page-cell active">2면<br><b>9</b></div><div class="page-cell active">3면<br><b>11</b></div><div class="page-cell active">4면<br><b>8</b></div>
+                <div class="page-cell active">5면<br><b>10</b></div><div class="page-cell active">6면<br><b>6</b></div><div class="page-cell active">7면<br><b>5</b></div><div class="page-cell active">8면<br><b>8</b></div>
+                <div class="page-cell active">9면<br><b>6</b></div><div class="page-cell active">10면<br><b>7</b></div><div class="page-cell active">11면<br><b>5</b></div><div class="page-cell active">12면<br><b>6</b></div>
+                <div class="page-cell active">13면<br><b>4</b></div><div class="page-cell active">14면<br><b>5</b></div><div class="page-cell active">15면<br><b>4</b></div><div class="page-cell active">16면<br><b>7</b></div>
+            </div>
+            <div class="page-grid">
+                <div class="page-cell active">17면<br><b>4</b></div><div class="page-cell active">18면<br><b>5</b></div><div class="page-cell active">19면<br><b>3</b></div><div class="page-cell active">20면<br><b>3</b></div>
+                <div class="page-cell active">21면<br><b>2</b></div><div class="page-cell active">22면<br><b>3</b></div><div class="page-cell">23면<br>0</div><div class="page-cell active">24면<br><b>2</b></div>
+                <div class="page-cell active">25면<br><b>2</b></div><div class="page-cell">26면<br>0</div><div class="page-cell active">27면<br><b>2</b></div><div class="page-cell">28면<br>0</div>
+                <div class="page-cell active">29면<br><b>1</b></div><div class="page-cell">30면<br>0</div><div class="page-cell active">31면<br><b>1</b></div><div class="page-cell">32면<br>0</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card"><div class="card-header"><i class="bi bi-calendar-range me-2"></i>반기별 집계</div>
+        <table class="table table-bordered mb-0"><thead class="table-dark"><tr><th>반기</th><th>기사수</th><th>1면</th><th>2~3면</th><th>4면~</th><th>총글자수</th><th>평균</th><th>단독</th><th>기획</th></tr></thead>
+        <tbody>
+            <tr class="table-warning"><td><strong>2025년 상반기</strong></td><td><strong>143</strong></td><td><span class="badge bg-warning text-dark">15</span></td><td>32</td><td>96</td><td>401,396</td><td>2,807</td><td><span class="badge bg-success">13</span></td><td><span class="badge bg-info">8</span></td></tr>
+            <tr><td>2024년 하반기</td><td>128</td><td><span class="badge bg-warning text-dark">11</span></td><td>28</td><td>89</td><td>358,400</td><td>2,800</td><td><span class="badge bg-success">10</span></td><td><span class="badge bg-info">6</span></td></tr>
+        </tbody></table>
+    </div>
+
+    <!-- 반기별 기사 목록 -->
+    <div class="card">
+        <div class="card-header d-flex justify-content-between"><span><i class="bi bi-list-ul me-2"></i>2025년 상반기 기사 목록</span><span class="badge bg-light text-dark">143건</span></div>
+        <table class="table table-hover mb-0" style="font-size:0.85rem;"><thead class="table-light"><tr><th>날짜</th><th>제목</th><th>면</th><th>위치</th><th>글자수</th><th>취재유형</th><th>기사성격</th><th>임팩트</th><th>저장</th></tr></thead>
+        <tbody>
+            <tr style="background:#fffbeb;"><td>05/21</td><td><a href="#" class="fw-bold">구글·삼성 '스마트글라스' 첫 공개</a></td><td><span class="page-badge page-1">1</span> <button class="btn btn-link btn-sm p-0 text-muted edit-page"><i class="bi bi-pencil" style="font-size:0.7rem;"></i></button></td><td><select class="form-select form-select-sm" style="width:85px;"><option selected>톱</option><option>사이드(좌)</option><option>사이드(우)</option><option>하단</option><option>기타</option></select></td><td>2,847 <button class="btn btn-link btn-sm p-0 text-muted edit-chars"><i class="bi bi-pencil" style="font-size:0.7rem;"></i></button></td><td><select class="form-select form-select-sm" style="width:80px;"><option selected>단독</option><option>특종</option><option>기획발굴</option><option>현장취재</option><option>단순발생</option><option>보도자료</option><option>인용외신</option><option>기타</option></select></td><td><select class="form-select form-select-sm" style="width:80px;"><option selected>해설분석</option><option>탐사심층</option><option>인터뷰</option><option>르포스케치</option><option>스트레이트</option><option>가십미담</option><option>기타</option></select></td><td><select class="form-select form-select-sm" style="width:100px;"><option selected>S등급</option><option>A등급</option><option>B등급</option><option>C등급</option><option>D등급</option><option>기타</option></select></td><td><button class="btn btn-sm btn-success save-btn"><i class="bi bi-check2"></i></button></td></tr>
+            <tr style="background:#fffbeb;"><td>05/21</td><td><a href="#" class="fw-bold">애플, WWDC서 AI 아이폰 공개 임박</a></td><td><span class="page-badge page-1">1</span> <button class="btn btn-link btn-sm p-0 text-muted edit-page"><i class="bi bi-pencil" style="font-size:0.7rem;"></i></button></td><td><select class="form-select form-select-sm" style="width:85px;"><option>톱</option><option selected>사이드(좌)</option><option>사이드(우)</option><option>하단</option><option>기타</option></select></td><td>2,534 <button class="btn btn-link btn-sm p-0 text-muted edit-chars"><i class="bi bi-pencil" style="font-size:0.7rem;"></i></button></td><td><select class="form-select form-select-sm" style="width:80px;"><option selected>단독</option><option>특종</option><option>기획발굴</option><option>현장취재</option><option>단순발생</option><option>보도자료</option><option>인용외신</option><option>기타</option></select></td><td><select class="form-select form-select-sm" style="width:80px;"><option>해설분석</option><option>탐사심층</option><option>인터뷰</option><option>르포스케치</option><option selected>스트레이트</option><option>가십미담</option><option>기타</option></select></td><td><select class="form-select form-select-sm" style="width:100px;"><option>S등급</option><option selected>A등급</option><option>B등급</option><option>C등급</option><option>D등급</option><option>기타</option></select></td><td><button class="btn btn-sm btn-success save-btn"><i class="bi bi-check2"></i></button></td></tr>
+            <tr><td>05/15</td><td><a href="#" class="fw-bold">엔비디아, 차세대 GPU 블랙웰 공개</a></td><td><span class="page-badge page-1">1</span> <button class="btn btn-link btn-sm p-0 text-muted edit-page"><i class="bi bi-pencil" style="font-size:0.7rem;"></i></button></td><td><select class="form-select form-select-sm" style="width:85px;"><option selected>톱</option><option>사이드(좌)</option><option>사이드(우)</option><option>하단</option><option>기타</option></select></td><td>2,876 <button class="btn btn-link btn-sm p-0 text-muted edit-chars"><i class="bi bi-pencil" style="font-size:0.7rem;"></i></button></td><td><select class="form-select form-select-sm" style="width:80px;"><option value="">선택</option><option>특종</option><option>단독</option><option>기획발굴</option><option>현장취재</option><option>단순발생</option><option>보도자료</option><option>인용외신</option><option>기타</option></select></td><td><select class="form-select form-select-sm" style="width:80px;"><option value="">선택</option><option>탐사심층</option><option>해설분석</option><option>인터뷰</option><option>르포스케치</option><option>스트레이트</option><option>가십미담</option><option>기타</option></select></td><td><select class="form-select form-select-sm" style="width:100px;"><option value="">선택</option><option>S등급</option><option>A등급</option><option>B등급</option><option>C등급</option><option>D등급</option><option>기타</option></select></td><td><button class="btn btn-sm btn-success save-btn"><i class="bi bi-check2"></i></button></td></tr>
+            <tr><td>04/28</td><td><a href="#" class="fw-bold">메타, AI 오픈소스 전략 강화</a></td><td><span class="page-badge page-2-3">3</span> <button class="btn btn-link btn-sm p-0 text-muted edit-page"><i class="bi bi-pencil" style="font-size:0.7rem;"></i></button></td><td><select class="form-select form-select-sm" style="width:85px;"><option value="">선택</option><option>톱</option><option>사이드(좌)</option><option>사이드(우)</option><option>하단</option><option>기타</option></select></td><td>2,187 <button class="btn btn-link btn-sm p-0 text-muted edit-chars"><i class="bi bi-pencil" style="font-size:0.7rem;"></i></button></td><td><select class="form-select form-select-sm" style="width:80px;"><option value="">선택</option><option>특종</option><option>단독</option><option selected>기획발굴</option><option>현장취재</option><option>단순발생</option><option>보도자료</option><option>인용외신</option><option>기타</option></select></td><td><select class="form-select form-select-sm" style="width:80px;"><option value="">선택</option><option>탐사심층</option><option>해설분석</option><option>인터뷰</option><option>르포스케치</option><option>스트레이트</option><option>가십미담</option><option>기타</option></select></td><td><select class="form-select form-select-sm" style="width:100px;"><option value="">선택</option><option>S등급</option><option>A등급</option><option>B등급</option><option>C등급</option><option>D등급</option><option>기타</option></select></td><td><button class="btn btn-sm btn-outline-primary save-btn"><i class="bi bi-save"></i></button></td></tr>
+            <tr><td>03/15</td><td><a href="#" class="fw-bold">구글, 제미나이 2.0 출시 예고</a></td><td><span class="page-badge page-2-3">2</span> <button class="btn btn-link btn-sm p-0 text-muted edit-page"><i class="bi bi-pencil" style="font-size:0.7rem;"></i></button></td><td><select class="form-select form-select-sm" style="width:85px;"><option value="">선택</option><option>톱</option><option>사이드(좌)</option><option>사이드(우)</option><option>하단</option><option>기타</option></select></td><td>2,345 <button class="btn btn-link btn-sm p-0 text-muted edit-chars"><i class="bi bi-pencil" style="font-size:0.7rem;"></i></button></td><td><select class="form-select form-select-sm" style="width:80px;"><option value="">선택</option><option>특종</option><option>단독</option><option>기획발굴</option><option>현장취재</option><option>단순발생</option><option>보도자료</option><option>인용외신</option><option>기타</option></select></td><td><select class="form-select form-select-sm" style="width:80px;"><option value="">선택</option><option>탐사심층</option><option>해설분석</option><option>인터뷰</option><option>르포스케치</option><option>스트레이트</option><option>가십미담</option><option>기타</option></select></td><td><select class="form-select form-select-sm" style="width:100px;"><option value="">선택</option><option>S등급</option><option>A등급</option><option>B등급</option><option>C등급</option><option>D등급</option><option>기타</option></select></td><td><button class="btn btn-sm btn-outline-primary save-btn"><i class="bi bi-save"></i></button></td></tr>
+        </tbody></table>
+        <div class="card-footer text-center bg-light">
+            <button class="btn btn-outline-primary btn-sm"><i class="bi bi-chevron-down me-1"></i>더보기 (138건 더)</button>
+        </div>
+    </div>
+</div>
+
 </div><!-- tab-content -->
 
+<!-- 하단 버튼 -->
 <div class="d-flex justify-content-between mt-4">
     <a href="정량평가 MVP_HTML_기능구현.html" class="btn btn-outline-secondary"><i class="bi bi-arrow-left me-1"></i>기자 목록</a>
     <div><button class="btn btn-success me-2"><i class="bi bi-file-earmark-excel me-1"></i>엑셀</button><button class="btn btn-primary" onclick="window.print()"><i class="bi bi-printer me-1"></i>인쇄</button></div>
 </div>
 </div>
+
+<!-- 기타 직접입력 모달 -->
+<div class="modal fade" id="customInputModal" tabindex="-1">
+    <div class="modal-dialog modal-sm">
+        <div class="modal-content">
+            <div class="modal-header py-2">
+                <h6 class="modal-title" id="customInputModalLabel">직접 입력</h6>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <input type="text" class="form-control" id="customInputField" placeholder="내용을 입력하세요">
+            </div>
+            <div class="modal-footer py-2">
+                <button type="button" class="btn btn-sm btn-secondary" data-bs-dismiss="modal">취소</button>
+                <button type="button" class="btn btn-sm btn-primary" id="customInputConfirm">확인</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script>
-// 면/글자수 수정 기능
-document.querySelectorAll('.btn-link').forEach(btn => {
+// 토스트 표시 함수
+function showToast(message) {
+    const toastEl = document.getElementById('saveToast');
+    toastEl.querySelector('.toast-body').innerHTML = '<i class="bi bi-check-circle me-2"></i>' + message;
+    const toast = new bootstrap.Toast(toastEl, { delay: 2000 });
+    toast.show();
+}
+
+// 저장 버튼 클릭 이벤트
+document.querySelectorAll('.save-btn').forEach(btn => {
+    btn.addEventListener('click', function() {
+        showToast('저장되었습니다');
+        this.classList.remove('btn-outline-primary');
+        this.classList.add('btn-success');
+        this.innerHTML = '<i class="bi bi-check2"></i>';
+    });
+});
+
+// 기타 선택 시 직접입력 처리
+let currentSelect = null;
+const customModal = new bootstrap.Modal(document.getElementById('customInputModal'));
+
+document.querySelectorAll('.type-select, .nature-select, .impact-select').forEach(select => {
+    select.addEventListener('change', function() {
+        if (this.value === '기타') {
+            currentSelect = this;
+            document.getElementById('customInputField').value = '';
+            customModal.show();
+        }
+    });
+});
+
+document.getElementById('customInputConfirm').addEventListener('click', function() {
+    const customValue = document.getElementById('customInputField').value.trim();
+    if (customValue && currentSelect) {
+        const option = currentSelect.querySelector('option[value="기타"]');
+        option.textContent = customValue;
+        option.value = customValue;
+        currentSelect.value = customValue;
+    }
+    customModal.hide();
+});
+
+// 면 수정 기능 (연필 버튼 클릭 시)
+document.querySelectorAll('.edit-page').forEach(btn => {
     btn.addEventListener('click', function(e) {
         e.preventDefault();
         const td = this.closest('td');
-        const currentText = td.childNodes[0].textContent.trim().replace(/,/g, '');
-        const isPage = td.querySelector('.page-badge') !== null;
+        const badge = td.querySelector('.page-badge');
+        const currentVal = badge.textContent.trim();
         
-        // input 생성
         const input = document.createElement('input');
         input.type = 'number';
         input.className = 'form-control form-control-sm d-inline-block';
-        input.value = currentText;
-        input.style.width = isPage ? '50px' : '80px';
-        if(isPage) { input.min = 1; input.max = 32; }
+        input.value = currentVal;
+        input.style.width = '50px';
+        input.min = 1;
+        input.max = 32;
         
-        // 저장 버튼
         const saveBtn = document.createElement('button');
         saveBtn.className = 'btn btn-sm btn-success ms-1';
         saveBtn.innerHTML = '<i class="bi bi-check"></i>';
         
-        // 취소 버튼
         const cancelBtn = document.createElement('button');
         cancelBtn.className = 'btn btn-sm btn-outline-secondary ms-1';
         cancelBtn.innerHTML = '<i class="bi bi-x"></i>';
@@ -354,25 +495,19 @@ document.querySelectorAll('.btn-link').forEach(btn => {
         input.focus();
         input.select();
         
-        // 저장
         saveBtn.addEventListener('click', function() {
             const newVal = input.value;
-            if(isPage) {
-                const pageClass = newVal == 1 ? 'page-1' : (newVal <= 3 ? 'page-2-3' : 'page-other');
-                td.innerHTML = `<span class="page-badge ${pageClass}">${newVal}</span> <button class="btn btn-link btn-sm p-0 text-muted" title="수정"><i class="bi bi-pencil" style="font-size:0.7rem;"></i></button>`;
-            } else {
-                td.innerHTML = `${Number(newVal).toLocaleString()} <button class="btn btn-link btn-sm p-0 text-muted" title="수정"><i class="bi bi-pencil" style="font-size:0.7rem;"></i></button>`;
-            }
-            attachEditListeners(td);
+            const pageClass = newVal == 1 ? 'page-1' : (newVal <= 3 ? 'page-2-3' : 'page-other');
+            td.innerHTML = '<span class="page-badge ' + pageClass + '">' + newVal + '</span> <button class="btn btn-link btn-sm p-0 text-muted edit-page" title="수정"><i class="bi bi-pencil" style="font-size:0.7rem;"></i></button>';
+            attachPageEditListener(td.querySelector('.edit-page'));
+            showToast('면이 수정되었습니다');
         });
         
-        // 취소
         cancelBtn.addEventListener('click', function() {
             td.innerHTML = originalHTML;
-            attachEditListeners(td);
+            attachPageEditListener(td.querySelector('.edit-page'));
         });
         
-        // Enter로 저장, Esc로 취소
         input.addEventListener('keydown', function(e) {
             if(e.key === 'Enter') saveBtn.click();
             if(e.key === 'Escape') cancelBtn.click();
@@ -380,23 +515,20 @@ document.querySelectorAll('.btn-link').forEach(btn => {
     });
 });
 
-function attachEditListeners(td) {
-    td.querySelectorAll('.btn-link').forEach(btn => {
-        btn.addEventListener('click', arguments.callee.caller.arguments[0].target.closest('td').parentElement.parentElement.parentElement.parentElement.querySelector('script').textContent);
-    });
-    // 새로 추가된 버튼에 이벤트 재연결
-    td.querySelector('.btn-link')?.addEventListener('click', function(e) {
+function attachPageEditListener(btn) {
+    if (!btn) return;
+    btn.addEventListener('click', function(e) {
         e.preventDefault();
         const td = this.closest('td');
-        const currentText = td.childNodes[0].textContent.trim().replace(/,/g, '');
-        const isPage = td.querySelector('.page-badge') !== null;
+        const badge = td.querySelector('.page-badge');
+        const currentVal = badge.textContent.trim();
         
         const input = document.createElement('input');
         input.type = 'number';
         input.className = 'form-control form-control-sm d-inline-block';
-        input.value = currentText;
-        input.style.width = isPage ? '50px' : '80px';
-        if(isPage) { input.min = 1; input.max = 32; }
+        input.value = currentVal;
+        input.style.width = '50px';
+        input.min = 1; input.max = 32;
         
         const saveBtn = document.createElement('button');
         saveBtn.className = 'btn btn-sm btn-success ms-1';
@@ -411,23 +543,19 @@ function attachEditListeners(td) {
         td.appendChild(input);
         td.appendChild(saveBtn);
         td.appendChild(cancelBtn);
-        input.focus();
-        input.select();
+        input.focus(); input.select();
         
         saveBtn.addEventListener('click', function() {
             const newVal = input.value;
-            if(isPage) {
-                const pageClass = newVal == 1 ? 'page-1' : (newVal <= 3 ? 'page-2-3' : 'page-other');
-                td.innerHTML = `<span class="page-badge ${pageClass}">${newVal}</span> <button class="btn btn-link btn-sm p-0 text-muted" title="수정"><i class="bi bi-pencil" style="font-size:0.7rem;"></i></button>`;
-            } else {
-                td.innerHTML = `${Number(newVal).toLocaleString()} <button class="btn btn-link btn-sm p-0 text-muted" title="수정"><i class="bi bi-pencil" style="font-size:0.7rem;"></i></button>`;
-            }
-            attachEditListeners(td);
+            const pageClass = newVal == 1 ? 'page-1' : (newVal <= 3 ? 'page-2-3' : 'page-other');
+            td.innerHTML = '<span class="page-badge ' + pageClass + '">' + newVal + '</span> <button class="btn btn-link btn-sm p-0 text-muted edit-page" title="수정"><i class="bi bi-pencil" style="font-size:0.7rem;"></i></button>';
+            attachPageEditListener(td.querySelector('.edit-page'));
+            showToast('면이 수정되었습니다');
         });
         
         cancelBtn.addEventListener('click', function() {
             td.innerHTML = originalHTML;
-            attachEditListeners(td);
+            attachPageEditListener(td.querySelector('.edit-page'));
         });
         
         input.addEventListener('keydown', function(e) {
@@ -436,6 +564,3 @@ function attachEditListeners(td) {
         });
     });
 }
-</script>
-</body>
-</html>
