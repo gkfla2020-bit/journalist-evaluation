@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>서울경제 기자 성과 측정 시스템</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+    <style>
+        :root { --primary: #1a5f7a; --secondary: #159895; --accent: #57c5b6; }
+        body { background: #f8f9fa; font-family: 'Pretendard', -apple-system, sans-serif; }
+        .navbar { background: linear-gradient(135deg, var(--primary), var(--secondary)); }
+        .stat-card { border: none; border-radius: 12px; box-shadow: 0 2px 12px rgba(0,0,0,0.08); transition: transform 0.2s; }
+        .stat-card:hover { transform: translateY(-4px); }
+        .stat-icon { width: 48px; height: 48px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; }
+        .stat-value { font-size: 2rem; font-weight: 700; color: #333; }
+        .stat-label { color: #6c757d; font-size: 0.9rem; }
+        .section-title { font-weight: 600; color: var(--primary); margin-bottom: 1rem; padding-bottom: 0.5rem; border-bottom: 2px solid var(--accent); }
+        .table-container { background: white; border-radius: 12px; box-shadow: 0 2px 12px rgba(0,0,0,0.08); padding: 1.5rem; }
+        .table thead th { background: var(--primary); color: white; font-weight: 500; border: none; }
+        .filter-section { background: white; border-radius: 12px; padding: 1.5rem; margin-bottom: 1.5rem; box-shadow: 0 2px 12px rgba(0,0,0,0.08); }
+        .btn-primary { background: var(--primary); border-color: var(--primary); }
+        .btn-primary:hover { background: var(--secondary); border-color: var(--secondary); }
+        .page-badge { display: inline-block; padding: 0.25rem 0.5rem; border-radius: 6px; font-weight: 600; font-size: 0.85rem; }
+        .page-1 { background: #ffd700; color: #333; }
+        .page-main { background: #17a2b8; color: white; }
+        .page-other { background: #6c757d; color: white; }
+        .toast-container { position: fixed; top: 20px; right: 20px; z-index: 9999; }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-dark mb-4">
+        <div class="container">
+            <a class="navbar-brand fw-bold" href="#"><i class="bi bi-newspaper me-2"></i>서울경제 기자 성과 측정</a>
+            <span class="text-light"><i class="bi bi-calendar3 me-1"></i><span id="currentDate">2024-10-27</span></span>
+        </div>
+    </nav>
+
+    <div class="container">
+        <!-- 요약 통계 -->
+        <div class="row mb-4" id="statsCards">
+            <div class="col-md-3">
+                <div class="card stat-card"><div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="stat-icon me-3" style="background: rgba(26,95,122,0.1); color: var(--primary);"><i class="bi bi-file-text"></i></div>
+                        <div><div class="stat-value" id="totalArticles">-</div><div class="stat-label">총 기사 수</div></div>
+                    </div>
+                </div></div>
+            </div>
+            <div class="col-md-3">
+                <div class="card stat-card"><div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="stat-icon me-3" style="background: rgba(21,152,149,0.1); color: var(--secondary);"><i class="bi bi-people"></i></div>
+                        <div><div class="stat-value" id="totalReporters">-</div><div class="stat-label">참여 기자</div></div>
+                    </div>
+                </div></div>
+            </div>
+            <div class="col-md-3">
+                <div class="card stat-card"><div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="stat-icon me-3" style="background: rgba(87,197,182,0.1); color: var(--accent);"><i class="bi bi-fonts"></i></div>
+                        <div><div class="stat-value" id="avgChars">-</div><div class="stat-label">평균 글자수</div></div>
+                    </div>
+                </div></div>
+            </div>
+            <div class="col-md-3">
+                <div class="card stat-card"><div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="stat-icon me-3" style="background: rgba(255,152,0,0.1); color: #ff9800;"><i class="bi bi-star"></i></div>
+                        <div><div class="stat-value" id="evaluatedCount">-</div><div class="stat-label">평가 완료</div></div>
+                    </div>
+                </div></div>
+            </div>
+        </div>
+
+        <!-- 필터 -->
+        <div class="filter-section">
+            <div class="row align-items-end">
+                <div class="col-md-4">
+                    <label class="form-label">기자명</label>
+                    <select class="form-select" id="writerFilter">
+                        <option value="">전체</option>
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <button class="btn btn-primary" onclick="loadArticles()"><i class="bi bi-search me-1"></i>조회</button>
+                    <button class="btn btn-outline-secondary ms-2" onclick="reloadXML()"><i class="bi bi-arrow-clockwise me-1"></i>XML 새로고침</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 기자별 통계 -->
+        <h5 class="section-title"><i class="bi bi-bar-chart me-2"></i>기자별 성과 요약 (디폴트: 자동 집계)</h5>
+        <div class="table-container mb-4">
+            <table class="table table-hover mb-0">
+                <thead>
+                    <tr>
+                        <th>순위</th>
+                        <th>기자명</th>
+                        <th>기사수</th>
+                        <th>총글자수</th>
+                        <th>1면</th>
+                        <th>2~3면</th>
+                        <th>경제</th>
+                        <th>기타</th>
+                        <th>정량</th>
+                        <th>가점</th>
+                        <th>총점</th>
+                    </tr>
+                </thead>
+                <tbody id="reporterTable"></tbody>
+            </table>
+            <div class="small text-muted mt-2">
+                <i class="bi bi-info-circle me-1"></i>부장이 아무것도 입력하지 않아도 면별 기사수, 글자수는 자동 집계됩니다.
+            </div>
+        </div>
+
+        <!-- 기사 목록 -->
+        <h5 class="section-title"><i class="bi bi-list-ul me-2"></i>기사 목록 및 가점 입력 (선택사항)</h5>
+        <div class="table-container">
+            <table class="table table-hover mb-0">
+                <thead>
+                    <tr>
+                        <th style="width:5%">면</th>
+                        <th style="width:32%">제목</th>
+                        <th style="width:10%">기자</th>
+                        <th style="width:8%">글자수</th>
+                        <th style="width:14%">단독/배치 (가점)</th>
+                        <th style="width:12%">기획 (가점)</th>
+                        <th style="width:8%">저장</th>
+                    </tr>
+                </thead>
+                <tbody id="articleTable"></tbody>
+            </table>
+            <div class="small text-muted mt-2">
+                <i class="bi bi-lightbulb me-1"></i>가점은 선택사항입니다. 입력하지 않아도 기본 정량점수로 평가됩니다.
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast -->
+    <div class="toast-container">
+        <div id="toast" class="toast" role="alert">
+            <div class="toast-header">
+                <i class="bi bi-check-circle-fill text-success me-2"></i>
+                <strong class="me-auto">알림</strong>
+                <button type="button" class="btn-close" data-bs-dismiss="toast"></button>
+            </div>
+            <div class="toast-body" id="toastMessage"></div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+        const API_BASE = 'http://localhost:5000/api';
+        
+        // 페이지 로드 시
+        document.addEventListener('DOMContentLoaded', () => {
+            loadStats();
+            loadReporters();
+            loadArticles();
+        });
+
+        // XML 새로고침
+        async function reloadXML() {
+            try {
+                const res = await fetch(`${API_BASE}/reload`, { method: 'POST' });
+                const data = await res.json();
+                showToast(data.message);
+                loadStats();
+                loadReporters();
+                loadArticles();
+            } catch (e) {
+                console.error('Reload error:', e);
+                showToast('XML 로드 중 오류 발생', 'error');
+            }
+        }
+
+        // 통계 로드
+        async function loadStats() {
+            try {
+                const res = await fetch(`${API_BASE}/stats`);
+                const data = await res.json();
+                document.getElementById('totalArticles').textContent = data.total_articles;
+                document.getElementById('totalReporters').textContent = data.total_reporters;
+                document.getElementById('avgChars').textContent = data.avg_chars.toLocaleString();
+                document.getElementById('evaluatedCount').textContent = data.evaluated_count;
+            } catch (e) {
+                console.error('Stats load error:', e);
+            }
+        }
+
+        // 기자별 통계 로드
+        async function loadReporters() {
+            try {
+                const res = await fetch(`${API_BASE}/reporters`);
+                const data = await res.json();
+                
+                const tbody = document.getElementById('reporterTable');
+                const select = document.getElementById('writerFilter');
+                tbody.innerHTML = '';
+                
+                data.forEach((r, i) => {
+                    tbody.innerHTML += `
+                        <tr>
+                            <td>${r.rank}</td>
+                            <td><strong>${r.name}</strong></td>
+                            <td>${r.article_count}</td>
+                            <td>${r.total_chars.toLocaleString()}</td>
+                            <td><span class="badge ${r.front_page > 0 ? 'bg-success' : 'bg-secondary'}">${r.front_page}</span></td>
+                            <td>${r.quant_score}</td>
+                            <td>${r.qual_score}</td>
+                            <td><strong>${r.total_score}</strong></td>
+                            <td><strong>${r.relative_score}</strong></td>
+                        </tr>
+                    `;
+                    // 필터 옵션 추가
+                    if (i === 0 || !Array.from(select.options).some(o => o.value === r.name)) {
+                        select.innerHTML += `<option value="${r.name}">${r.name}</option>`;
+                    }
+                });
+            } catch (e) {
+                console.error('Reporters load error:', e);
+            }
+        }
+
+        // 기사 목록 로드
+        async function loadArticles() {
+            try {
+                const writer = document.getElementById('writerFilter').value;
+                const res = await fetch(`${API_BASE}/articles?writer=${encodeURIComponent(writer)}`);
+                const data = await res.json();
+                
+                const tbody = document.getElementById('articleTable');
+                tbody.innerHTML = '';
+                
+                data.forEach(article => {
+                    const pageClass = article.page_number == '1' ? 'page-1' : 
+                                     ['2','3','경제','증권'].includes(String(article.page_number)) ? 'page-main' : 'page-other';
+                    tbody.innerHTML += `
+                        <tr>
+                            <td><span class="page-badge ${pageClass}">${article.page_number}</span></td>
+                            <td><a href="${article.link}" target="_blank" class="text-decoration-none">${article.title}</a></td>
+                            <td>${article.writer}</td>
+                            <td>${article.char_count.toLocaleString()}</td>
+                            <td>
+                                <select class="form-select form-select-sm" id="placement_${article.id}">
+                                    <option value="">선택</option>
+                                    <option value="단독" ${article.placement === '단독' ? 'selected' : ''}>단독</option>
+                                    <option value="톱" ${article.placement === '톱' ? 'selected' : ''}>톱</option>
+                                    <option value="사이드(좌)" ${article.placement === '사이드(좌)' ? 'selected' : ''}>사이드(좌)</option>
+                                    <option value="사이드(우)" ${article.placement === '사이드(우)' ? 'selected' : ''}>사이드(우)</option>
+                                    <option value="하단" ${article.placement === '하단' ? 'selected' : ''}>하단</option>
+                                    <option value="기타" ${article.placement === '기타' ? 'selected' : ''}>기타</option>
+                                </select>
+                            </td>
+                            <td>
+                                <select class="form-select form-select-sm" id="planning_${article.id}">
+                                    <option value="">선택</option>
+                                    <option value="기획" ${article.planning === '기획' ? 'selected' : ''}>기획</option>
+                                </select>
+                            </td>
+                            <td>
+                                <select class="form-select form-select-sm" id="info_${article.id}">
+                                    <option value="0">점수</option>
+                                    ${[2,4,6,8,10].map(n => `<option value="${n}" ${article.info_report == n ? 'selected' : ''}>${n}점</option>`).join('')}
+                                </select>
+                            </td>
+                            <td>
+                                <button class="btn btn-sm ${article.evaluated ? 'btn-success' : 'btn-outline-primary'}" onclick="saveEvaluation(${article.id})">
+                                    <i class="bi bi-${article.evaluated ? 'check2' : 'save'}"></i>
+                                </button>
+                            </td>
+                        </tr>
+                    `;
+                });
+            } catch (e) {
+                console.error('Articles load error:', e);
+            }
+        }
+
+        // 평가 저장
+        async function saveEvaluation(articleId) {
+            const placement = document.getElementById(`placement_${articleId}`).value;
+            const planning = document.getElementById(`planning_${articleId}`).value;
+            const info_report = parseInt(document.getElementById(`info_${articleId}`).value) || 0;
+            
+            try {
+                const res = await fetch(`${API_BASE}/articles/${articleId}/evaluate`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ placement, planning, info_report })
+                });
+                const data = await res.json();
+                
+                if (data.success) {
+                    showToast('평가가 저장되었습니다.');
+                    loadStats();
+                    loadReporters();
+                    loadArticles();
+                }
+            } catch (e) {
+                console.error('Save error:', e);
+                showToast('저장 중 오류가 발생했습니다.', 'error');
+            }
+        }
+
+        // 토스트 메시지
+        function showToast(message, type = 'success') {
+            document.getElementById('toastMessage').textContent = message;
+            const toast = new bootstrap.Toast(document.getElementById('toast'));
+            toast.show();
+        }
+    </script>
+</body>
+</html>

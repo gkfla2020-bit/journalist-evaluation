@@ -1,0 +1,494 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>서울경제 기자 성과 측정 시스템</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #1a5f7a;
+            --secondary-color: #159895;
+            --accent-color: #57c5b6;
+            --light-bg: #f8f9fa;
+        }
+        body {
+            background-color: var(--light-bg);
+            font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, sans-serif;
+        }
+        .navbar {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+        }
+        .navbar-brand {
+            font-weight: 700;
+            font-size: 1.4rem;
+        }
+        .stat-card {
+            border: none;
+            border-radius: 12px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+            transition: transform 0.2s;
+        }
+        .stat-card:hover {
+            transform: translateY(-4px);
+        }
+        .stat-card .card-body {
+            padding: 1.5rem;
+        }
+        .stat-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+        }
+        .stat-icon.blue { background: rgba(26, 95, 122, 0.1); color: var(--primary-color); }
+        .stat-icon.green { background: rgba(21, 152, 149, 0.1); color: var(--secondary-color); }
+        .stat-icon.teal { background: rgba(87, 197, 182, 0.1); color: var(--accent-color); }
+        .stat-icon.orange { background: rgba(255, 152, 0, 0.1); color: #ff9800; }
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #333;
+        }
+        .stat-label {
+            color: #6c757d;
+            font-size: 0.9rem;
+        }
+        .section-title {
+            font-weight: 600;
+            color: var(--primary-color);
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid var(--accent-color);
+        }
+        .table-container {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+            padding: 1.5rem;
+        }
+        .table thead th {
+            background: var(--primary-color);
+            color: white;
+            font-weight: 500;
+            border: none;
+        }
+        .table tbody tr:hover {
+            background-color: rgba(87, 197, 182, 0.1);
+        }
+        .badge-top { background: #dc3545; }
+        .badge-exclusive { background: #fd7e14; }
+        .badge-special { background: #6f42c1; }
+        .page-badge {
+            display: inline-block;
+            padding: 0.25rem 0.5rem;
+            border-radius: 6px;
+            font-weight: 600;
+            font-size: 0.85rem;
+        }
+        .page-1 { background: #ffd700; color: #333; }
+        .page-economy { background: #28a745; color: white; }
+        .page-other { background: #6c757d; color: white; }
+        .filter-section {
+            background: white;
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+        }
+        .btn-primary {
+            background: var(--primary-color);
+            border-color: var(--primary-color);
+        }
+        .btn-primary:hover {
+            background: var(--secondary-color);
+            border-color: var(--secondary-color);
+        }
+        .evaluation-btn {
+            padding: 0.25rem 0.5rem;
+            font-size: 0.8rem;
+        }
+        .char-count {
+            font-family: 'Roboto Mono', monospace;
+        }
+    </style>
+</head>
+<body>
+    <!-- 네비게이션 -->
+    <nav class="navbar navbar-expand-lg navbar-dark mb-4">
+        <div class="container">
+            <a class="navbar-brand" href="#">
+                <i class="bi bi-newspaper me-2"></i>서울경제 기자 성과 측정
+            </a>
+            <div class="navbar-nav ms-auto">
+                <span class="nav-item nav-link text-light">
+                    <i class="bi bi-calendar3 me-1"></i>2024-10-27
+                </span>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container">
+        <!-- 요약 통계 카드 -->
+        <div class="row mb-4">
+            <div class="col-md-3">
+                <div class="card stat-card">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center">
+                            <div class="stat-icon blue me-3">
+                                <i class="bi bi-file-text"></i>
+                            </div>
+                            <div>
+                                <div class="stat-value" id="totalArticles">87</div>
+                                <div class="stat-label">총 기사 수</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card stat-card">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center">
+                            <div class="stat-icon green me-3">
+                                <i class="bi bi-people"></i>
+                            </div>
+                            <div>
+                                <div class="stat-value" id="totalReporters">42</div>
+                                <div class="stat-label">참여 기자 수</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card stat-card">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center">
+                            <div class="stat-icon teal me-3">
+                                <i class="bi bi-fonts"></i>
+                            </div>
+                            <div>
+                                <div class="stat-value" id="avgCharCount">1,842</div>
+                                <div class="stat-label">평균 글자수</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card stat-card">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center">
+                            <div class="stat-icon orange me-3">
+                                <i class="bi bi-star"></i>
+                            </div>
+                            <div>
+                                <div class="stat-value" id="evaluatedCount">12</div>
+                                <div class="stat-label">평가 완료</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 필터 섹션 -->
+        <div class="filter-section">
+            <div class="row align-items-end">
+                <div class="col-md-3">
+                    <label class="form-label">기간</label>
+                    <input type="date" class="form-control" id="dateFrom" value="2024-10-27">
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">&nbsp;</label>
+                    <input type="date" class="form-control" id="dateTo" value="2024-10-27">
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">기자명</label>
+                    <select class="form-select" id="reporterFilter">
+                        <option value="">전체</option>
+                        <option>윤지영 기자</option>
+                        <option>황동건 기자</option>
+                        <option>송이라 기자</option>
+                        <option>양준호 기자</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <button class="btn btn-primary w-100" onclick="applyFilter()">
+                        <i class="bi bi-search me-1"></i>조회
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 기자별 통계 -->
+        <h5 class="section-title"><i class="bi bi-bar-chart me-2"></i>기자별 성과 요약</h5>
+        <div class="table-container mb-4">
+            <table class="table table-hover mb-0">
+                <thead>
+                    <tr>
+                        <th>순위</th>
+                        <th>기자명</th>
+                        <th>기사 수</th>
+                        <th>총 글자수</th>
+                        <th>평균 글자수</th>
+                        <th>1면</th>
+                        <th>정량점수</th>
+                        <th>정성점수</th>
+                        <th>총점</th>
+                    </tr>
+                </thead>
+                <tbody id="reporterStatsTable">
+                    <tr>
+                        <td>1</td>
+                        <td><strong>양준호 기자</strong></td>
+                        <td>5</td>
+                        <td class="char-count">12,450</td>
+                        <td class="char-count">2,490</td>
+                        <td><span class="badge bg-success">1</span></td>
+                        <td>85</td>
+                        <td>72</td>
+                        <td><strong>157</strong></td>
+                    </tr>
+                    <tr>
+                        <td>2</td>
+                        <td><strong>송이라 기자</strong></td>
+                        <td>4</td>
+                        <td class="char-count">9,820</td>
+                        <td class="char-count">2,455</td>
+                        <td><span class="badge bg-secondary">0</span></td>
+                        <td>78</td>
+                        <td>65</td>
+                        <td><strong>143</strong></td>
+                    </tr>
+                    <tr>
+                        <td>3</td>
+                        <td><strong>윤지영 기자</strong></td>
+                        <td>2</td>
+                        <td class="char-count">4,230</td>
+                        <td class="char-count">2,115</td>
+                        <td><span class="badge bg-secondary">0</span></td>
+                        <td>52</td>
+                        <td>45</td>
+                        <td><strong>97</strong></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- 기사 목록 -->
+        <h5 class="section-title"><i class="bi bi-list-ul me-2"></i>기사 목록 및 평가</h5>
+        <div class="table-container">
+            <table class="table table-hover mb-0">
+                <thead>
+                    <tr>
+                        <th style="width:5%">면</th>
+                        <th style="width:35%">제목</th>
+                        <th style="width:10%">기자</th>
+                        <th style="width:8%">글자수</th>
+                        <th style="width:12%">옵션1</th>
+                        <th style="width:10%">옵션2</th>
+                        <th style="width:10%">옵션3</th>
+                        <th style="width:10%">평가</th>
+                    </tr>
+                </thead>
+                <tbody id="articleTable">
+                    <tr>
+                        <td><span class="page-badge page-1">1</span></td>
+                        <td>
+                            <a href="https://www.sedaily.com/NewsView/2DFQD5R571" target="_blank" class="text-decoration-none">
+                                日, 70세 근무 비결 '계속고용'에 있다
+                            </a>
+                        </td>
+                        <td>양종곤 기자</td>
+                        <td class="char-count">1,842</td>
+                        <td>
+                            <select class="form-select form-select-sm">
+                                <option value="">선택</option>
+                                <option value="TOP">톱</option>
+                                <option value="EXCLUSIVE">단독</option>
+                                <option value="SPECIAL">특집</option>
+                            </select>
+                        </td>
+                        <td>
+                            <select class="form-select form-select-sm">
+                                <option value="">점수</option>
+                                <option>1</option>
+                                <option>2</option>
+                                <option>3</option>
+                                <option>4</option>
+                                <option>5</option>
+                                <option>6</option>
+                                <option>7</option>
+                                <option>8</option>
+                                <option>9</option>
+                                <option>10</option>
+                            </select>
+                        </td>
+                        <td>
+                            <input type="text" class="form-control form-control-sm" placeholder="기타">
+                        </td>
+                        <td>
+                            <button class="btn btn-outline-primary btn-sm evaluation-btn">
+                                <i class="bi bi-check2"></i> 저장
+                            </button>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td><span class="page-badge page-1">1</span></td>
+                        <td>
+                            <a href="https://www.sedaily.com/NewsView/2DFQEDH5M6" target="_blank" class="text-decoration-none">
+                                마지막 여론조사도 동률…美대선 불복리스크 고조
+                            </a>
+                        </td>
+                        <td>윤홍우 특파원</td>
+                        <td class="char-count">1,523</td>
+                        <td>
+                            <select class="form-select form-select-sm">
+                                <option value="">선택</option>
+                                <option value="TOP" selected>톱</option>
+                                <option value="EXCLUSIVE">단독</option>
+                                <option value="SPECIAL">특집</option>
+                            </select>
+                        </td>
+                        <td>
+                            <select class="form-select form-select-sm">
+                                <option value="">점수</option>
+                                <option>1</option>
+                                <option>2</option>
+                                <option>3</option>
+                                <option>4</option>
+                                <option>5</option>
+                                <option>6</option>
+                                <option>7</option>
+                                <option selected>8</option>
+                                <option>9</option>
+                                <option>10</option>
+                            </select>
+                        </td>
+                        <td>
+                            <input type="text" class="form-control form-control-sm" placeholder="기타">
+                        </td>
+                        <td>
+                            <button class="btn btn-success btn-sm evaluation-btn">
+                                <i class="bi bi-check2-all"></i> 완료
+                            </button>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td><span class="page-badge page-economy">2</span></td>
+                        <td>
+                            <a href="https://www.sedaily.com/NewsView/2DFQD58888" target="_blank" class="text-decoration-none">
+                                '취임 2주년' 이재용, 정의선·日도요타 회동 택했다
+                            </a>
+                        </td>
+                        <td>노우리 기자</td>
+                        <td class="char-count">2,156</td>
+                        <td>
+                            <select class="form-select form-select-sm">
+                                <option value="">선택</option>
+                                <option value="TOP">톱</option>
+                                <option value="EXCLUSIVE">단독</option>
+                                <option value="SPECIAL">특집</option>
+                            </select>
+                        </td>
+                        <td>
+                            <select class="form-select form-select-sm">
+                                <option value="">점수</option>
+                                <option>1</option>
+                                <option>2</option>
+                                <option>3</option>
+                                <option>4</option>
+                                <option>5</option>
+                                <option>6</option>
+                                <option>7</option>
+                                <option>8</option>
+                                <option>9</option>
+                                <option>10</option>
+                            </select>
+                        </td>
+                        <td>
+                            <input type="text" class="form-control form-control-sm" placeholder="기타">
+                        </td>
+                        <td>
+                            <button class="btn btn-outline-primary btn-sm evaluation-btn">
+                                <i class="bi bi-check2"></i> 저장
+                            </button>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td><span class="page-badge page-other">14</span></td>
+                        <td>
+                            <a href="https://www.sedaily.com/NewsView/2DFQBV9P2W" target="_blank" class="text-decoration-none">
+                                폰없이 식사에만 집중…LGU+ '노 폰 다이닝' 개최
+                            </a>
+                        </td>
+                        <td>윤지영 기자</td>
+                        <td class="char-count">892</td>
+                        <td>
+                            <select class="form-select form-select-sm">
+                                <option value="">선택</option>
+                                <option value="TOP">톱</option>
+                                <option value="EXCLUSIVE">단독</option>
+                                <option value="SPECIAL">특집</option>
+                            </select>
+                        </td>
+                        <td>
+                            <select class="form-select form-select-sm">
+                                <option value="">점수</option>
+                                <option>1</option>
+                                <option>2</option>
+                                <option>3</option>
+                                <option>4</option>
+                                <option>5</option>
+                                <option>6</option>
+                                <option>7</option>
+                                <option>8</option>
+                                <option>9</option>
+                                <option>10</option>
+                            </select>
+                        </td>
+                        <td>
+                            <input type="text" class="form-control form-control-sm" placeholder="기타">
+                        </td>
+                        <td>
+                            <button class="btn btn-outline-primary btn-sm evaluation-btn">
+                                <i class="bi bi-check2"></i> 저장
+                            </button>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- 하단 액션 버튼 -->
+        <div class="d-flex justify-content-between mt-4 mb-5">
+            <div>
+                <button class="btn btn-outline-secondary me-2">
+                    <i class="bi bi-download me-1"></i>엑셀 다운로드
+                </button>
+                <button class="btn btn-outline-secondary">
+                    <i class="bi bi-printer me-1"></i>인쇄
+                </button>
+            </div>
+            <div>
+                <button class="btn btn-primary">
+                    <i class="bi bi-save me-1"></i>전체 저장
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        function applyFilter() {
+            alert('필터 적용 - 백엔드 연동 후 동작합니다.');
+        }
+    </script>
+</body>
+</html>

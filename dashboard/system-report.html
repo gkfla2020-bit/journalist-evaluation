@@ -1,0 +1,742 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>기자 성과 측정 시스템 MVP</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        @media print {
+            .no-print { display: none !important; }
+            body { font-size: 10pt; }
+            .container { max-width: 100%; }
+        }
+        body { 
+            font-family: 'Pretendard', -apple-system, sans-serif; 
+            line-height: 1.9;
+            background: #fff;
+            color: #333;
+        }
+        .container { max-width: 900px; padding: 3rem 2rem; }
+        h1 { 
+            font-size: 1.6rem; 
+            font-weight: 700; 
+            text-align: center;
+            margin-bottom: 0.5rem;
+        }
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 2rem;
+            padding-bottom: 1rem;
+            border-bottom: 2px solid #333;
+        }
+        h2 {
+            font-size: 1.1rem;
+            font-weight: 700;
+            margin-top: 2.5rem;
+            margin-bottom: 1rem;
+            padding-bottom: 0.3rem;
+            border-bottom: 1px solid #ddd;
+        }
+        h3 {
+            font-size: 1rem;
+            font-weight: 600;
+            margin-top: 1.5rem;
+            margin-bottom: 0.5rem;
+        }
+        .code-block {
+            background: #f5f5f5;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            padding: 1rem;
+            font-family: 'Consolas', monospace;
+            font-size: 0.9rem;
+            margin: 1rem 0;
+            white-space: pre-wrap;
+        }
+        .highlight-box {
+            background: #fffde7;
+            border-left: 4px solid #ffc107;
+            padding: 1rem;
+            margin: 1rem 0;
+        }
+        .info-box {
+            background: #e3f2fd;
+            border-left: 4px solid #2196f3;
+            padding: 1rem;
+            margin: 1rem 0;
+        }
+        .success-box {
+            background: #e8f5e9;
+            border-left: 4px solid #4caf50;
+            padding: 1rem;
+            margin: 1rem 0;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 1rem 0;
+            font-size: 0.9rem;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 0.5rem 0.75rem;
+            text-align: left;
+        }
+        th { background: #f5f5f5; font-weight: 600; }
+        .badge-auto { 
+            background: #4caf50; 
+            color: white; 
+            padding: 2px 8px; 
+            border-radius: 3px; 
+            font-size: 0.8rem;
+        }
+        .badge-manual { 
+            background: #ff9800; 
+            color: white; 
+            padding: 2px 8px; 
+            border-radius: 3px; 
+            font-size: 0.8rem;
+        }
+        .flow-diagram {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            margin: 1.5rem 0;
+            flex-wrap: wrap;
+        }
+        .flow-box {
+            background: #f5f5f5;
+            border: 2px solid #ddd;
+            padding: 0.75rem 1rem;
+            border-radius: 8px;
+            text-align: center;
+            min-width: 120px;
+        }
+        .flow-box.source { border-color: #ff9800; background: #fff3e0; }
+        .flow-box.process { border-color: #2196f3; background: #e3f2fd; }
+        .flow-box.storage { border-color: #4caf50; background: #e8f5e9; }
+        .flow-box.output { border-color: #9c27b0; background: #f3e5f5; }
+        .flow-arrow { font-size: 1.5rem; color: #999; }
+        .screen-mock {
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            margin: 1rem 0;
+            overflow: hidden;
+        }
+        .screen-header {
+            background: #1a5f7a;
+            color: white;
+            padding: 0.5rem 1rem;
+            font-size: 0.85rem;
+        }
+        .screen-body {
+            padding: 1rem;
+            background: #fafafa;
+            font-size: 0.85rem;
+        }
+        ul, ol { margin: 0.5rem 0; padding-left: 1.5rem; }
+        li { margin-bottom: 0.3rem; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>기자 성과 측정 시스템 MVP</h1>
+        <div class="subtitle">
+            서울경제 편집국<br>
+            <small>* 데이터는 Firebase Storage의 기존 XML을 활용합니다.</small>
+        </div>
+
+        <!-- MVP 목표 -->
+        <h2>MVP 목표</h2>
+        <div class="highlight-box">
+            <strong>MVP 구축:</strong> XML 자동 파싱 → 기자별 기사 집계 → (선택) 가점 입력 → (확장) 점수화
+        </div>
+        
+        <div class="info-box">
+            <strong>📌 단계별 접근</strong>
+            <table style="margin-top: 0.5rem;">
+                <tr>
+                    <td style="width: 80px;"><span class="badge-auto">1단계</span></td>
+                    <td><strong>기사 집계</strong> - 기자별 면별 기사수, 글자수 자동 집계 (일별/주별/월별)</td>
+                </tr>
+                <tr>
+                    <td><span class="badge-manual">2단계</span></td>
+                    <td><strong>선택적 가점</strong> - 특정 기사에만 단독/기획 등 체크 (전부 안 해도 됨)</td>
+                </tr>
+                <tr>
+                    <td><span style="background:#9c27b0;color:white;padding:2px 8px;border-radius:3px;font-size:0.8rem;">3단계</span></td>
+                    <td><strong>점수화</strong> - 정량점수 계산, 상대평가 변환 (확장 시)</td>
+                </tr>
+            </table>
+        </div>
+        
+        <div class="success-box">
+            <strong>💡 핵심 원칙:</strong> 1단계(기사 집계)만으로도 대략적인 평가가 가능합니다.<br>
+            "기사 35개를 썼는데 면별로 몇 개씩 나가고, 분량은 얼마씩 되는지" → 이것만으로 충분!
+        </div>
+
+        <!-- 1. 데이터 소스 -->
+        <h2>1. 데이터 소스</h2>
+        
+        <h3>Firebase Storage 구조</h3>
+        <div class="code-block"># Firebase Storage (기존 시스템)
+- storage/daily/2024-10-27.xml
+- storage/daily/2024-10-28.xml
+- ...
+# 매일 자동 업로드됨</div>
+
+        <h3>XML 데이터 구조</h3>
+        <div class="code-block">&lt;article&gt;
+  &lt;title&gt;기사 제목&lt;/title&gt;
+  &lt;writer&gt;홍길동 기자&lt;/writer&gt;
+  &lt;pageNumber&gt;1&lt;/pageNumber&gt;
+  &lt;pubDate&gt;2024-10-27T06:00:00&lt;/pubDate&gt;
+  &lt;link&gt;https://www.sedaily.com/...&lt;/link&gt;
+  &lt;content&gt;기사 본문 내용...&lt;/content&gt;
+&lt;/article&gt;</div>
+
+        <h3>추출 데이터 항목</h3>
+        <table>
+            <tr>
+                <th>항목</th>
+                <th>XML 태그</th>
+                <th>수집</th>
+                <th>활용</th>
+            </tr>
+            <tr>
+                <td>기자명</td>
+                <td><code>&lt;writer&gt;</code></td>
+                <td><span class="badge-auto">자동</span></td>
+                <td>기자별 집계</td>
+            </tr>
+            <tr>
+                <td>면(Page)</td>
+                <td><code>&lt;pageNumber&gt;</code></td>
+                <td><span class="badge-auto">자동</span></td>
+                <td>1면 가중치</td>
+            </tr>
+            <tr>
+                <td>글자수</td>
+                <td><code>&lt;content&gt;</code> 길이</td>
+                <td><span class="badge-auto">자동</span></td>
+                <td>분량 측정</td>
+            </tr>
+            <tr>
+                <td>원문 링크</td>
+                <td><code>&lt;link&gt;</code></td>
+                <td><span class="badge-auto">자동</span></td>
+                <td>기사 확인</td>
+            </tr>
+            <tr>
+                <td>옵션1 (톱/단독)</td>
+                <td>-</td>
+                <td><span class="badge-manual">수동</span></td>
+                <td>특종 가산점</td>
+            </tr>
+            <tr>
+                <td>옵션2 (부장평가)</td>
+                <td>-</td>
+                <td><span class="badge-manual">수동</span></td>
+                <td>정성평가</td>
+            </tr>
+            <tr>
+                <td>옵션3 (기타)</td>
+                <td>-</td>
+                <td><span class="badge-manual">수동</span></td>
+                <td>메모</td>
+            </tr>
+        </table>
+
+        <!-- 2. 시스템 구조 -->
+        <h2>2. 시스템 구조</h2>
+        
+        <div class="flow-diagram">
+            <div class="flow-box source">
+                <strong>Firebase</strong><br>
+                <small>daily/*.xml</small>
+            </div>
+            <span class="flow-arrow">→</span>
+            <div class="flow-box process">
+                <strong>Python</strong><br>
+                <small>XML 파싱</small>
+            </div>
+            <span class="flow-arrow">→</span>
+            <div class="flow-box storage">
+                <strong>Database</strong><br>
+                <small>기사+평가</small>
+            </div>
+            <span class="flow-arrow">→</span>
+            <div class="flow-box output">
+                <strong>웹 대시보드</strong><br>
+                <small>조회/입력</small>
+            </div>
+        </div>
+
+        <h3>기술 스택</h3>
+        <table>
+            <tr>
+                <th>구분</th>
+                <th>기술</th>
+                <th>비고</th>
+            </tr>
+            <tr>
+                <td>데이터 소스</td>
+                <td>Firebase Storage</td>
+                <td>기존 시스템 활용</td>
+            </tr>
+            <tr>
+                <td>백엔드</td>
+                <td>Python Flask</td>
+                <td>XML 파싱, API 서버</td>
+            </tr>
+            <tr>
+                <td>데이터베이스</td>
+                <td>SQLite → PostgreSQL</td>
+                <td>MVP는 SQLite</td>
+            </tr>
+            <tr>
+                <td>프론트엔드</td>
+                <td>HTML/CSS/JS + Bootstrap</td>
+                <td>반응형 웹</td>
+            </tr>
+        </table>
+
+        <!-- 3. 점수 산정 로직 -->
+        <h2>3. 1단계: 기사 집계 (핵심)</h2>
+        
+        <div class="success-box">
+            <strong>⚡ 1단계만으로 평가 가능한 항목 (자동 집계):</strong>
+            <ul style="margin-top:0.5rem; margin-bottom:0;">
+                <li>기자별 총 기사 수</li>
+                <li>면별 기사 수 (1면, 2~3면, 경제면, 기타)</li>
+                <li>총 글자수 / 평균 글자수</li>
+            </ul>
+        </div>
+        
+        <h3>면별 기사 집계 예시</h3>
+        <div class="screen-mock">
+            <div class="screen-header">📊 기자별 기사 집계 - 2024년 10월</div>
+            <div class="screen-body">
+                <table>
+                    <tr>
+                        <th>기자명</th>
+                        <th>총 기사</th>
+                        <th>1면</th>
+                        <th>2~3면</th>
+                        <th>경제면</th>
+                        <th>기타</th>
+                        <th>총글자수</th>
+                        <th>평균글자수</th>
+                    </tr>
+                    <tr>
+                        <td>양준호</td>
+                        <td><strong>35</strong></td>
+                        <td>2</td>
+                        <td>5</td>
+                        <td>12</td>
+                        <td>16</td>
+                        <td>52,450</td>
+                        <td>1,499</td>
+                    </tr>
+                    <tr>
+                        <td>송이라</td>
+                        <td><strong>28</strong></td>
+                        <td>1</td>
+                        <td>3</td>
+                        <td>10</td>
+                        <td>14</td>
+                        <td>41,200</td>
+                        <td>1,471</td>
+                    </tr>
+                </table>
+                <small>※ 이 데이터만으로도 대략적인 성과 파악 가능</small>
+            </div>
+        </div>
+
+        <h2>4. 2단계: 선택적 가점 (옵션)</h2>
+        
+        <div class="highlight-box">
+            <strong>⚠️ 현실적 접근:</strong> 관리자가 모든 기사에 가점을 입력할 거라고 기대하면 안 됩니다.<br>
+            → 특정 기사에만 체크하는 방식 (아주 바쁠 경우 아무것도 안 해도 됨)
+        </div>
+        <h3>가점 항목 (선택적)</h3>
+        <div class="code-block"># 단독/배치 가점 (특정 기사만 체크)
+단독  → +25점
+톱   → +20점
+사이드(좌/우) → +10점
+하단  → +5점
+
+# 기획기사 가점 (특정 기사만 체크)
+기획 인정 → +15점
+
+# 기타 메모
+메모용 (점수 미반영)</div>
+
+        <h2>5. 3단계: 점수화 (확장)</h2>
+        
+        <div class="info-box">
+            <strong>확장 시 적용:</strong> 면별 가중치 + 글자수 점수 자동 계산
+        </div>
+        <div class="code-block"># 면별 가중치 (자동 반영)
+1면          → +20점
+2~3면        → +15점
+경제/증권면   → +10점
+기타         → +5점
+
+# 글자수 기준
+2,000자 이상  → +10점
+1,000~1,999자 → +7점
+500~999자    → +5점
+500자 미만   → +3점</div>
+
+        <div class="info-box">
+            <strong>총점 = 정량점수(자동) + 가점(선택)</strong><br>
+            <small>※ 1단계(집계)만으로도 평가 가능, 2~3단계는 필요 시 확장</small>
+        </div>
+
+        <!-- 4. 화면 구성 -->
+        <h2>6. 화면 구성</h2>
+
+        <h3>화면 1. 기자별 기사 집계 (1단계 - 핵심)</h3>
+        <div class="screen-mock">
+            <div class="screen-header">📊 기자별 기사 집계 - 2024년 10월</div>
+            <div class="screen-body">
+                <table>
+                    <tr>
+                        <th>기자명</th>
+                        <th>총 기사</th>
+                        <th>1면</th>
+                        <th>2~3면</th>
+                        <th>경제면</th>
+                        <th>기타</th>
+                        <th>총글자수</th>
+                        <th>평균글자수</th>
+                    </tr>
+                    <tr>
+                        <td>양준호</td>
+                        <td><strong>35</strong></td>
+                        <td>2</td>
+                        <td>5</td>
+                        <td>12</td>
+                        <td>16</td>
+                        <td>52,450</td>
+                        <td>1,499</td>
+                    </tr>
+                    <tr>
+                        <td>송이라</td>
+                        <td><strong>28</strong></td>
+                        <td>1</td>
+                        <td>3</td>
+                        <td>10</td>
+                        <td>14</td>
+                        <td>41,200</td>
+                        <td>1,471</td>
+                    </tr>
+                </table>
+                <small>• 일별/주별/월별 조회 • 엑셀 다운로드 • 인쇄</small>
+            </div>
+        </div>
+        
+        <div class="success-box">
+            <strong>💡 1단계 핵심:</strong> 이 화면만으로도 "누가 몇 건 썼고, 어느 면에 몇 개 나갔는지" 파악 가능
+        </div>
+
+        <h3>화면 2. 기사 목록 및 가점 입력 (2단계 - 선택)</h3>
+        <div class="screen-mock">
+            <div class="screen-header">📋 기사 목록 - 2024-10-27</div>
+            <div class="screen-body">
+                <table>
+                    <tr>
+                        <th>면</th>
+                        <th>제목</th>
+                        <th>기자</th>
+                        <th>글자수</th>
+                        <th>옵션1</th>
+                        <th>옵션2</th>
+                        <th>옵션3</th>
+                    </tr>
+                    <tr>
+                        <td><span style="background:#ffd700;padding:2px 6px;border-radius:3px;">1</span></td>
+                        <td>日, 70세 근무 비결...</td>
+                        <td>양종곤</td>
+                        <td>1,842</td>
+                        <td>[선택 ▼]</td>
+                        <td>[점수 ▼]</td>
+                        <td>[입력]</td>
+                    </tr>
+                    <tr>
+                        <td><span style="background:#ffd700;padding:2px 6px;border-radius:3px;">1</span></td>
+                        <td>美대선 불복리스크...</td>
+                        <td>윤홍우</td>
+                        <td>1,523</td>
+                        <td>[톱 ▼]</td>
+                        <td>[8 ▼]</td>
+                        <td>[입력]</td>
+                    </tr>
+                </table>
+                <small>• 날짜/기자 필터 • 제목 클릭 → 원문 이동 • 저장 버튼</small>
+            </div>
+        </div>
+
+        <h3>화면 3. 점수화 (3단계 - 확장)</h3>
+        <div class="screen-mock">
+            <div class="screen-header">📊 기자별 성과 점수 - 2024년 10월</div>
+            <div class="screen-body">
+                <table>
+                    <tr>
+                        <th>순위</th>
+                        <th>기자명</th>
+                        <th>기사수</th>
+                        <th>총글자수</th>
+                        <th>평균글자수</th>
+                        <th>정량점수</th>
+                        <th>가점</th>
+                        <th>총점</th>
+                    </tr>
+                    <tr>
+                        <td>1</td>
+                        <td>양준호</td>
+                        <td>5</td>
+                        <td>12,450</td>
+                        <td>2,490</td>
+                        <td>85</td>
+                        <td>+15</td>
+                        <td><strong>100</strong></td>
+                    </tr>
+                    <tr>
+                        <td>2</td>
+                        <td>송이라</td>
+                        <td>4</td>
+                        <td>9,820</td>
+                        <td>2,455</td>
+                        <td>78</td>
+                        <td>-</td>
+                        <td><strong>78</strong></td>
+                    </tr>
+                    <tr>
+                        <td>3</td>
+                        <td>윤지영</td>
+                        <td>2</td>
+                        <td>4,230</td>
+                        <td>2,115</td>
+                        <td>52</td>
+                        <td>-</td>
+                        <td><strong>52</strong></td>
+                    </tr>
+                </table>
+                <small>• 기간 선택 • 엑셀 다운로드 • 인쇄</small>
+            </div>
+        </div>
+        
+        <div class="info-box">
+            <strong>💡 단계별 접근:</strong> 1단계(집계)만 먼저 구현 → 2단계(가점) 추가 → 3단계(점수화) 확장
+        </div>
+
+        <!-- 5. 데이터베이스 설계 -->
+        <h2>7. 데이터베이스 설계</h2>
+
+        <h3>articles 테이블 (기사)</h3>
+        <div class="code-block">CREATE TABLE articles (
+    id INTEGER PRIMARY KEY,
+    title VARCHAR(500),        -- 제목
+    writer VARCHAR(100),       -- 기자명
+    page_number VARCHAR(20),   -- 면 정보
+    pub_date DATETIME,         -- 발행일
+    char_count INTEGER,        -- 글자수
+    link VARCHAR(500),         -- 원문 링크
+    created_at DATETIME
+);</div>
+
+        <h3>evaluations 테이블 (평가)</h3>
+        <div class="code-block">CREATE TABLE evaluations (
+    id INTEGER PRIMARY KEY,
+    article_id INTEGER,        -- 기사 FK
+    option1 VARCHAR(20),       -- 톱/단독/특집
+    option2 INTEGER,           -- 부장평가 (1-10)
+    option3 TEXT,              -- 기타 메모
+    evaluated_by VARCHAR(100), -- 평가자
+    evaluated_at DATETIME
+);</div>
+
+        <!-- 6. 샘플 테스트 결과 -->
+        <h2>8. 샘플 테스트 결과</h2>
+
+        <div class="success-box">
+            <strong>테스트 데이터:</strong> 2024-10-27 XML (8건)<br>
+            <strong>파싱 성공:</strong> 8/8건 (100%)<br>
+            <strong>처리 속도:</strong> &lt;1초
+        </div>
+
+        <h3>기자별 집계 결과</h3>
+        <table>
+            <tr>
+                <th>기자명</th>
+                <th>기사수</th>
+                <th>총글자수</th>
+                <th>평균글자수</th>
+                <th>정량점수</th>
+            </tr>
+            <tr>
+                <td>양준호 기자</td>
+                <td>2</td>
+                <td>3,842</td>
+                <td>1,921</td>
+                <td>32</tr>td>
+            </tr>
+            <tr>
+                <td>윤지영 기자</td>
+                <td>2</td>
+                <td>1,892</td>
+                <td>946</td>
+                <td>24</td>
+            </tr>
+            <tr>
+                <td>양종곤 기자</td>
+                <td>1</td>
+                <td>1,842</td>
+                <td>1,842</td>
+                <td>27</td>
+            </tr>
+            <tr>
+                <td>윤홍우 특파원</td>
+                <td>1</td>
+                <td>1,523</td>
+                <td>1,523</td>
+                <td>27</td>
+            </tr>
+            <tr>
+                <td>노우리 기자</td>
+                <td>1</td>
+                <td>2,156</td>
+                <td>2,156</td>
+                <td>17</td>
+            </tr>
+            <tr>
+                <td>송이라 기자</td>
+                <td>1</td>
+                <td>1,024</td>
+                <td>1,024</td>
+                <td>12</td>
+            </tr>
+        </table>
+        <div class="info-box" style="margin-top: 0.5rem;">
+            <strong>정량점수 계산:</strong> 면별 가중치(1면 +20, 2~3면 +15, 경제면 +10, 기타 +5) + 글자수 점수가 자동 반영됩니다.
+        </div>
+
+        <!-- 7. 개발 범위 -->
+        <h2>9. 개발 범위</h2>
+
+        <h3>1단계 MVP (핵심)</h3>
+        <ul>
+            <li>✅ Firebase Storage XML 읽기</li>
+            <li>✅ XML 파싱 → DB 저장</li>
+            <li>✅ 기자별 면별 기사수 집계</li>
+            <li>✅ 일별/주별/월별 통계</li>
+            <li>✅ 엑셀 다운로드</li>
+        </ul>
+
+        <h3>2단계 (선택적 가점)</h3>
+        <ul>
+            <li>⬜ 개별 기사 가점 입력 (단독/기획)</li>
+            <li>⬜ 특정 기사만 체크하는 UI</li>
+        </ul>
+
+        <h3>3단계 (확장)</h3>
+        <ul>
+            <li>⬜ 정량점수 자동 계산</li>
+            <li>⬜ 상대평가 변환</li>
+            <li>⬜ 부서별 통계</li>
+            <li>⬜ 월간/분기 리포트</li>
+        </ul>
+
+        <!-- 8. IT지원부 요청사항 -->
+        <h2>10. IT지원부 요청사항</h2>
+
+        <div class="highlight-box">
+            <strong>필요 권한:</strong>
+            <ol>
+                <li>Firebase Storage 읽기 권한 (daily 폴더)</li>
+                <li>서비스 계정 키(JSON) 발급</li>
+                <li>또는 XML 데이터 API 형태로 제공</li>
+            </ol>
+        </div>
+
+        <h3>개발 요청</h3>
+        <table>
+            <tr>
+                <th>항목</th>
+                <th>내용</th>
+                <th>비고</th>
+            </tr>
+            <tr>
+                <td>Firebase 연동</td>
+                <td>daily 폴더 XML 접근</td>
+                <td>읽기 전용</td>
+            </tr>
+            <tr>
+                <td>백엔드 서버</td>
+                <td>Python Flask API</td>
+                <td>사내 서버 또는 AWS</td>
+            </tr>
+            <tr>
+                <td>데이터베이스</td>
+                <td>SQLite (MVP) → PostgreSQL</td>
+                <td>확장 시 전환</td>
+            </tr>
+            <tr>
+                <td>웹 호스팅</td>
+                <td>대시보드 웹페이지</td>
+                <td>사내망 접근</td>
+            </tr>
+        </table>
+
+        <!-- 9. 기대 효과 -->
+        <h2>11. 기대 효과</h2>
+
+        <table>
+            <tr>
+                <th>항목</th>
+                <th>현재 (수작업)</th>
+                <th>도입 후 (자동화)</th>
+            </tr>
+            <tr>
+                <td>집계 시간</td>
+                <td>주 5시간 이상</td>
+                <td>실시간 자동</td>
+            </tr>
+            <tr>
+                <td>오류 가능성</td>
+                <td>수기 입력 오류</td>
+                <td>시스템 자동 계산</td>
+            </tr>
+            <tr>
+                <td>현황 파악</td>
+                <td>월말 집계 후</td>
+                <td>실시간 조회</td>
+            </tr>
+            <tr>
+                <td>평가 기준</td>
+                <td>주관적</td>
+                <td>일관된 기준 적용</td>
+            </tr>
+        </table>
+
+        <!-- 인쇄 버튼 -->
+        <div class="text-center mt-5 no-print">
+            <button class="btn btn-dark btn-lg me-2" onclick="window.print()">
+                🖨️ 인쇄 / PDF 저장
+            </button>
+            <a href="index.html" class="btn btn-outline-dark btn-lg">
+                📊 대시보드 미리보기
+            </a>
+        </div>
+
+        <div class="text-center mt-4 text-muted" style="font-size:0.85rem;">
+            작성일: 2024년 10월 28일 | 서울경제 편집국
+        </div>
+    </div>
+</body>
+</html>
