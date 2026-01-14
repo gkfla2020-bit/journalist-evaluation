@@ -5,7 +5,7 @@
 import requests
 import json
 
-API_KEY = "254bec69-1c13-470f-904a-c4bc9e46cc80"
+API_KEY = "254be2332bc9e46cc80"
 # 여러 엔드포인트 시도
 ENDPOINTS = [
     "https://tools.kinds.or.kr:8888/search/news",
