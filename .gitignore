@@ -1,0 +1,30 @@
+# Python
+__pycache__/
+*.py[cod]
+*.db
+venv/
+
+# Backup files
+*_backup*.html
+*_backup*.json
+
+# Local data (contains real article data)
+dashboard/data.json
+dashboard/data_backup.json
+
+# DNS records (contains AWS account info)
+dns-record.json
+
+# Lambda zip
+lambda/*.zip
+
+# Profile repo (submodule)
+profile-repo/
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db

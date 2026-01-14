@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>기자 목록 - KPI 시스템</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+    <style>
+        body { background: #f5f5f5; font-family: 'Pretendard', -apple-system, sans-serif; }
+        .container-main { max-width: 1400px; margin: 0 auto; padding: 1.5rem; }
+        .header { background: linear-gradient(135deg, #4487a1, #159895); color: white; padding: 1.5rem; border-radius: 12px; margin-bottom: 1.5rem; }
+        .card { border: none; border-radius: 12px; box-shadow: 0 2px 12px rgba(0,0,0,0.08); margin-bottom: 1.5rem; }
+        .card-header { background: #1a5f7a; color: white; font-weight: 600; border-radius: 12px 12px 0 0 !important; padding: 1rem 1.5rem; }
+        .stat-card { background: white; border-radius: 12px; padding: 1.5rem; text-align: center; box-shadow: 0 2px 12px rgba(0,0,0,0.08); }
+        .stat-card .value { font-size: 2.5rem; font-weight: 700; color: #1a5f7a; }
+        .stat-card .label { font-size: 0.9rem; color: #6c757d; margin-top: 0.5rem; }
+        .reporter-row { cursor: pointer; transition: background 0.2s; }
+        .reporter-row:hover { background: #e8f4f8 !important; }
+        .search-box { max-width: 300px; }
+        .toast-container { position: fixed; top: 20px; right: 20px; z-index: 9999; }
+    </style>
+</head>
+<body>
+<div class="container-main">
+
+<!-- 토스트 -->
+<div class="toast-container">
+    <div id="toast" class="toast align-items-center text-bg-success border-0" role="alert">
+        <div class="d-flex">
+            <div class="toast-body" id="toastMsg"></div>
+            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+        </div>
+    </div>
+</div>
+
+<!-- 헤더 -->
+<div class="header">
+    <div class="d-flex justify-content-between align-items-center">
+        <div>
+            <h1 style="font-size:1.8rem; margin-bottom:0.25rem;"><i class="bi bi-bar-chart-fill me-2"></i>기자 정량평가 시스템</h1>
+            <div style="opacity:0.9;">서울경제신문 KPI 관리</div>
+        </div>
+        <div class="d-flex gap-2 align-items-center">
+            <a href="index.html" class="btn btn-outline-light btn-sm">
+                <i class="bi bi-person me-1"></i>샘플
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- 기간 선택 & 동기화 -->
+<div class="card mb-4">
+    <div class="card-body">
+        <div class="row align-items-center">
+            <div class="col-md-8">
+                <div class="d-flex align-items-center gap-2 flex-wrap">
+                    <label class="fw-bold text-nowrap me-2">조회 기간</label>
+                    <div class="btn-group" role="group">
+                        <button type="button" class="btn btn-outline-primary active" onclick="setPeriod('all', this)">전체</button>
+                        <button type="button" class="btn btn-outline-primary" onclick="setPeriod('daily', this)">일별</button>
+                        <button type="button" class="btn btn-outline-primary" onclick="setPeriod('weekly', this)">주별</button>
+                        <button type="button" class="btn btn-outline-primary" onclick="setPeriod('monthly', this)">월별</button>
+                    </div>
+                    <div id="periodNav" class="d-flex align-items-center gap-2 ms-3" style="display:none;"></div>
+                </div>
+            </div>
+            <div class="col-md-4 text-end">
+                <button class="btn btn-outline-success" id="syncBtn" onclick="syncData()">
+                    <i class="bi bi-cloud-download me-1"></i>데이터 동기화
+                </button>
+            </div>
+        </div>
+        <div class="mt-2">
+            <small class="text-muted">
+                <i class="bi bi-info-circle me-1"></i>
+                데이터 기간: <span id="dataRange">-</span> | 
+                마지막 동기화: <span id="lastSyncTime">-</span>
+            </small>
+        </div>
+    </div>
+</div>
+
+<!-- 요약 통계 -->
+<div class="row g-3 mb-4">
+    <div class="col-md-3">
+        <div class="stat-card">
+            <div class="value" id="stat-articles">-</div>
+            <div class="label">총 기사 수</div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="stat-card">
+            <div class="value" id="stat-reporters">-</div>
+            <div class="label">기자 수</div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="stat-card">
+            <div class="value" id="stat-evaluated">0</div>
+            <div class="label">평가 완료</div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="stat-card">
+            <div class="value" id="stat-period">01-09</div>
+            <div class="label">데이터 기간</div>
+        </div>
+    </div>
+</div>
+
+<!-- 기자 목록 -->
+<div class="card">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <span><i class="bi bi-people-fill me-2"></i>기자 목록</span>
+        <div class="d-flex gap-2 align-items-center">
+            <input type="text" class="form-control form-control-sm search-box" id="searchInput" placeholder="기자명 검색...">
+            <span class="badge bg-light text-dark" id="reporterCount">0명</span>
+        </div>
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th style="width:5%">#</th>
+                        <th style="width:20%">기자명</th>
+                        <th style="width:15%">기사 수</th>
+                        <th style="width:20%">총 글자수</th>
+                        <th style="width:20%">평균 글자수</th>
+                        <th style="width:20%">상세</th>
+                    </tr>
+                </thead>
+                <tbody id="reporterList">
+                    <tr><td colspan="6" class="text-center py-4 text-muted">데이터 로딩중...</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- 하단 정보 -->
+<div class="text-center text-muted small mt-4">
+    <p>데이터 출처: 서울경제신문 XML | 데이터 기준일: 2026-01-09</p>
+</div>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+let allData = null;
+let currentPeriod = 'all';
+let selectedDate = new Date();
+
+// 초기 로드
+document.addEventListener('DOMContentLoaded', loadData);
+
+// 데이터 로드
+async function loadData() {
+    try {
+        const res = await fetch('data.json');
+        allData = await res.json();
+        
+        // 기간 정보
+        document.getElementById('dataRange').textContent = `${allData.period_start} ~ ${allData.period_end}`;
+        document.getElementById('lastSyncTime').textContent = allData.last_sync;
+        
+        // 선택 날짜를 데이터 마지막 날짜의 전날로 (오늘 동기화하면 어제 데이터가 최신)
+        const lastDate = new Date(allData.period_end);
+        lastDate.setDate(lastDate.getDate() - 1);
+        selectedDate = lastDate;
+        
+        updateView();
+        
+        // 검색
+        document.getElementById('searchInput').addEventListener('input', function() {
+            updateView(this.value);
+        });
+    } catch (err) {
+        console.error(err);
+        document.getElementById('reporterList').innerHTML = '<tr><td colspan="6" class="text-center py-4 text-danger">데이터 로드 실패</td></tr>';
+    }
+}
+
+// 기간 설정
+function setPeriod(period, btn) {
+    currentPeriod = period;
+    document.querySelectorAll('.btn-group .btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    updatePeriodNav();
+    updateView(null);
+}
+
+// 기간 네비게이션 UI
+function updatePeriodNav() {
+    const nav = document.getElementById('periodNav');
+    if (currentPeriod === 'all') {
+        nav.style.display = 'none';
+        return;
+    }
+    nav.style.display = 'flex';
+    
+    if (currentPeriod === 'daily') {
+        nav.innerHTML = `
+            <button class="btn btn-sm btn-outline-secondary" onclick="moveDate(-1)"><i class="bi bi-chevron-left"></i></button>
+            <input type="date" class="form-control form-control-sm" value="${formatDate(selectedDate)}" style="width:150px;" onchange="selectedDate=new Date(this.value);updateView()">
+            <button class="btn btn-sm btn-outline-secondary" onclick="moveDate(1)"><i class="bi bi-chevron-right"></i></button>
+            <span class="ms-2 fw-bold">${formatDateKR(selectedDate)}</span>
+        `;
+    } else if (currentPeriod === 'weekly') {
+        const ws = getWeekStart(selectedDate);
+        const we = new Date(ws); we.setDate(ws.getDate() + 6);
+        nav.innerHTML = `
+            <button class="btn btn-sm btn-outline-secondary" onclick="moveDate(-7)"><i class="bi bi-chevron-left"></i> 이전주</button>
+            <span class="mx-3 fw-bold">${formatDate(ws)} ~ ${formatDate(we)}</span>
+            <button class="btn btn-sm btn-outline-secondary" onclick="moveDate(7)">다음주 <i class="bi bi-chevron-right"></i></button>
+        `;
+    } else if (currentPeriod === 'monthly') {
+        nav.innerHTML = `
+            <button class="btn btn-sm btn-outline-secondary" onclick="moveMonth(-1)"><i class="bi bi-chevron-left"></i> 이전달</button>
+            <span class="mx-3 fw-bold">${selectedDate.getFullYear()}년 ${selectedDate.getMonth()+1}월</span>
+            <button class="btn btn-sm btn-outline-secondary" onclick="moveMonth(1)">다음달 <i class="bi bi-chevron-right"></i></button>
+        `;
+    }
+}
+
+// 뷰 업데이트
+function updateView(searchKeyword = null) {
+    // 검색어가 null이면 현재 입력값 사용
+    if (searchKeyword === null) {
+        searchKeyword = document.getElementById('searchInput').value;
+    }
+    const filtered = getFilteredData(searchKeyword);
+    
+    // 통계
+    const totalArticles = filtered.reduce((s, r) => s + r.article_count, 0);
+    document.getElementById('stat-articles').textContent = totalArticles;
+    document.getElementById('stat-reporters').textContent = filtered.length;
+    document.getElementById('reporterCount').textContent = filtered.length + '명';
+    
+    // 기간 표시
+    let periodText = `${allData.period_start.slice(5)} ~ ${allData.period_end.slice(5)}`;
+    if (currentPeriod === 'daily') periodText = formatDate(selectedDate).slice(5);
+    else if (currentPeriod === 'weekly') {
+        const ws = getWeekStart(selectedDate);
+        const we = new Date(ws); we.setDate(ws.getDate() + 6);
+        periodText = `${formatDate(ws).slice(5)} ~ ${formatDate(we).slice(5)}`;
+    } else if (currentPeriod === 'monthly') periodText = `${selectedDate.getMonth()+1}월`;
+    document.getElementById('stat-period').textContent = periodText;
+    
+    // 테이블
+    renderTable(filtered);
+}
+
+// 필터링된 데이터
+function getFilteredData(searchKeyword = '') {
+    if (!allData) return [];
+    
+    // 모든 기사 합치기
+    let articles = allData.reporters.flatMap(r => r.articles || []);
+    
+    // 기간 필터
+    if (currentPeriod === 'daily') {
+        const ds = formatDate(selectedDate);
+        articles = articles.filter(a => a.pub_date === ds);
+    } else if (currentPeriod === 'weekly') {
+        const ws = getWeekStart(selectedDate);
+        const we = new Date(ws); we.setDate(ws.getDate() + 6);
+        articles = articles.filter(a => {
+            const d = new Date(a.pub_date);
+            return d >= ws && d <= we;
+        });
+    } else if (currentPeriod === 'monthly') {
+        const ms = `${selectedDate.getFullYear()}-${String(selectedDate.getMonth()+1).padStart(2,'0')}`;
+        articles = articles.filter(a => a.pub_date && a.pub_date.startsWith(ms));
+    }
+    
+    // 기자별 재집계
+    const map = {};
+    articles.forEach(a => {
+        const n = a.reporter_name;
+        if (!map[n]) map[n] = { name: n, articles: [], total_chars: 0 };
+        map[n].articles.push(a);
+        map[n].total_chars += a.char_count || 0;
+    });
+    
+    let result = Object.values(map).map(r => ({
+        name: r.name,
+        article_count: r.articles.length,
+        total_chars: r.total_chars,
+        avg_chars: r.articles.length > 0 ? Math.round(r.total_chars / r.articles.length) : 0
+    }));
+    
+    // 검색
+    if (searchKeyword) {
+        const kw = searchKeyword.toLowerCase();
+        result = result.filter(r => r.name.toLowerCase().includes(kw));
+    }
+    
+    return result.sort((a, b) => b.article_count - a.article_count);
+}
+
+// 테이블 렌더링
+function renderTable(reporters) {
+    const tbody = document.getElementById('reporterList');
+    if (reporters.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="6" class="text-center py-4 text-muted">해당 기간에 기사가 없습니다</td></tr>';
+        return;
+    }
+    tbody.innerHTML = reporters.map((r, i) => `
+        <tr class="reporter-row" onclick="location.href='reporter.html?name=${encodeURIComponent(r.name)}'">
+            <td>${i + 1}</td>
+            <td><strong>${escapeHtml(r.name)}</strong></td>
+            <td>${r.article_count}</td>
+            <td>${r.total_chars.toLocaleString()}</td>
+            <td>${r.avg_chars.toLocaleString()}</td>
+            <td><button class="btn btn-sm btn-outline-primary">상세보기</button></td>
+        </tr>
+    `).join('');
+}
+
+// 날짜 이동
+function moveDate(days) {
+    selectedDate.setDate(selectedDate.getDate() + days);
+    updatePeriodNav();
+    updateView(null);
+}
+function moveMonth(m) {
+    selectedDate.setMonth(selectedDate.getMonth() + m);
+    updatePeriodNav();
+    updateView(null);
+}
+
+// 유틸
+function formatDate(d) {
+    return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+}
+function formatDateKR(d) {
+    const days = ['일','월','화','수','목','금','토'];
+    return `${d.getFullYear()}년 ${d.getMonth()+1}월 ${d.getDate()}일 (${days[d.getDay()]})`;
+}
+function getWeekStart(d) {
+    const r = new Date(d);
+    r.setDate(r.getDate() - r.getDay());
+    return r;
+}
+function escapeHtml(t) {
+    const d = document.createElement('div');
+    d.textContent = t;
+    return d.innerHTML;
+}
+
+// 동기화
+async function syncData() {
+    const btn = document.getElementById('syncBtn');
+    btn.disabled = true;
+    btn.innerHTML = '<i class="bi bi-arrow-repeat spin me-1"></i>동기화 중...';
+    try {
+        const res = await fetch('https://3pxmyosj2eunachemenbx4b6ay0dzqvd.lambda-url.us-east-1.on.aws/');
+        const result = await res.json();
+        if (result.success) {
+            showToast(`동기화 완료! ${result.total_articles}건`, 'success');
+            setTimeout(() => location.reload(), 1500);
+        } else {
+            showToast('동기화 실패: ' + (result.error || '오류'), 'danger');
+        }
+    } catch (e) {
+        showToast('동기화 실패: 네트워크 오류', 'danger');
+    }
+    btn.disabled = false;
+    btn.innerHTML = '<i class="bi bi-cloud-download me-1"></i>데이터 동기화';
+}
+
+function showToast(msg, type = 'success') {
+    const t = document.getElementById('toast');
+    t.className = `toast align-items-center text-bg-${type} border-0`;
+    document.getElementById('toastMsg').textContent = msg;
+    new bootstrap.Toast(t).show();
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,629 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>기자 상세 - KPI 시스템</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+    <style>
+        body { background: #f5f5f5; font-family: 'Pretendard', -apple-system, sans-serif; }
+        .container-main { max-width: 1200px; margin: 0 auto; padding: 1.5rem; }
+        .header { background: linear-gradient(135deg, #4487a1, #159895); color: white; padding: 1.5rem; border-radius: 12px; margin-bottom: 1.5rem; }
+        .profile-section { display: flex; align-items: center; gap: 1.5rem; }
+        .profile-icon { width: 80px; height: 80px; background: rgba(255,255,255,0.2); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 2.5rem; }
+        .card { border: none; border-radius: 12px; box-shadow: 0 2px 12px rgba(0,0,0,0.08); margin-bottom: 1.5rem; }
+        .card-header { background: #1a5f7a; color: white; font-weight: 600; border-radius: 12px 12px 0 0 !important; }
+        .stat-box { background: #f8f9fa; border-radius: 8px; padding: 1rem; text-align: center; }
+        .stat-box .value { font-size: 2rem; font-weight: 700; color: #1a5f7a; }
+        .stat-box .label { font-size: 0.85rem; color: #6c757d; }
+        .page-badge { display: inline-block; width: 32px; height: 32px; line-height: 32px; text-align: center; border-radius: 6px; font-weight: 700; font-size: 0.9rem; }
+        .page-1 { background: #ffd700; color: #333; }
+        .page-2-3 { background: #17a2b8; color: white; }
+        .page-other { background: #6c757d; color: white; }
+        .page-grid { display: grid; grid-template-columns: repeat(16, 1fr); gap: 4px; margin: 1rem 0; }
+        .page-cell { background: #e9ecef; border-radius: 4px; padding: 0.3rem; text-align: center; font-size: 0.7rem; font-weight: 600; }
+        .page-cell.active { background: #1a5f7a; color: white; }
+        .page-cell.highlight { background: #ffc107; color: #333; }
+        .nav-tabs { border-bottom: 2px solid #1a5f7a; }
+        .nav-tabs .nav-link { color: #1a5f7a; font-weight: 600; padding: 0.75rem 2rem; border: none; border-bottom: 3px solid transparent; margin-bottom: -2px; }
+        .nav-tabs .nav-link:hover { border-color: transparent; background: #e8f4f8; }
+        .nav-tabs .nav-link.active { color: white; background: #1a5f7a; border-bottom: 3px solid #ffc107; border-radius: 8px 8px 0 0; }
+        .toast-container { position: fixed; top: 20px; right: 20px; z-index: 9999; }
+        .loading { text-align: center; padding: 3rem; color: #6c757d; }
+        .edit-page i, .edit-chars i { pointer-events: none; }
+    </style>
+</head>
+<body>
+<div class="container-main">
+
+<!-- 토스트 메시지 -->
+<div class="toast-container">
+    <div id="saveToast" class="toast align-items-center text-bg-success border-0" role="alert">
+        <div class="d-flex">
+            <div class="toast-body"><i class="bi bi-check-circle me-2"></i>저장되었습니다</div>
+            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+        </div>
+    </div>
+</div>
+
+<!-- 헤더 -->
+<div class="header">
+    <div class="profile-section">
+        <div class="profile-icon"><i class="bi bi-person-fill"></i></div>
+        <div>
+            <h1 style="font-size:1.8rem; margin-bottom:0.25rem;" id="reporterName">기자명</h1>
+            <div style="opacity:0.9;" id="reporterDept">기자</div>
+        </div>
+        <div class="ms-auto text-end">
+            <div class="small opacity-75">조회 기간</div>
+            <div class="fw-bold" id="currentPeriod">2026-01-09</div>
+        </div>
+    </div>
+</div>
+
+<!-- 기간 선택 탭 -->
+<ul class="nav nav-tabs mb-4" role="tablist">
+    <li class="nav-item"><button class="nav-link active" data-period="daily" type="button">일별</button></li>
+    <li class="nav-item"><button class="nav-link" data-period="weekly" type="button">주별</button></li>
+    <li class="nav-item"><button class="nav-link" data-period="monthly" type="button">월별</button></li>
+    <li class="nav-item"><button class="nav-link" data-period="quarterly" type="button">분기별</button></li>
+    <li class="nav-item"><button class="nav-link" data-period="halfyear" type="button">반기별</button></li>
+</ul>
+
+<!-- 메인 컨텐츠 영역 -->
+<div id="mainContent">
+    <div class="loading"><i class="bi bi-arrow-repeat"></i> 데이터 로딩중...</div>
+</div>
+
+<!-- 하단 버튼 -->
+<div class="d-flex justify-content-between mt-4">
+    <a href="list.html" class="btn btn-outline-secondary"><i class="bi bi-arrow-left me-1"></i>기자 목록</a>
+    <div>
+        <button class="btn btn-success me-2" onclick="exportExcel()"><i class="bi bi-file-earmark-excel me-1"></i>엑셀</button>
+        <button class="btn btn-primary" onclick="window.print()"><i class="bi bi-printer me-1"></i>인쇄</button>
+    </div>
+</div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+// URL에서 기자명 가져오기
+const urlParams = new URLSearchParams(window.location.search);
+const reporterName = urlParams.get('name') || '';
+let currentPeriod = 'daily';
+let allData = null;
+let reporterData = null;
+
+// localStorage 키
+const STORAGE_KEY = 'kpi_evaluations';
+
+// 초기화
+document.getElementById('reporterName').textContent = reporterName + ' 기자';
+document.title = `기자 상세 - ${reporterName}`;
+
+// 탭 클릭 이벤트
+document.querySelectorAll('.nav-link').forEach(btn => {
+    btn.addEventListener('click', function() {
+        document.querySelectorAll('.nav-link').forEach(b => b.classList.remove('active'));
+        this.classList.add('active');
+        currentPeriod = this.dataset.period;
+        renderContent();
+    });
+});
+
+// 데이터 로드
+async function loadData() {
+    document.getElementById('mainContent').innerHTML = '<div class="loading"><i class="bi bi-arrow-repeat"></i> 로딩중...</div>';
+    
+    try {
+        const res = await fetch('data.json');
+        allData = await res.json();
+        
+        // 해당 기자 데이터 찾기
+        reporterData = allData.reporters.find(r => r.name === reporterName);
+        
+        if (!reporterData) {
+            document.getElementById('mainContent').innerHTML = '<div class="p-4 text-danger text-center">해당 기자를 찾을 수 없습니다. <a href="list.html">기자 목록</a>에서 선택해주세요.</div>';
+            return;
+        }
+        
+        // localStorage에서 저장된 평가 데이터 불러오기
+        loadSavedEvaluations();
+        
+        // 컨텐츠 렌더링
+        renderContent();
+        
+    } catch (err) {
+        console.error(err);
+        document.getElementById('mainContent').innerHTML = '<div class="p-4 text-danger text-center">데이터 로드 실패</div>';
+    }
+}
+
+// localStorage에서 평가 데이터 불러오기
+function loadSavedEvaluations() {
+    const saved = localStorage.getItem(STORAGE_KEY);
+    if (saved) {
+        const evaluations = JSON.parse(saved);
+        reporterData.articles.forEach(article => {
+            if (evaluations[article.nsid]) {
+                Object.assign(article, evaluations[article.nsid]);
+            }
+        });
+    }
+}
+
+// 평가 데이터 저장
+function saveEvaluation(nsid, data) {
+    const saved = localStorage.getItem(STORAGE_KEY);
+    const evaluations = saved ? JSON.parse(saved) : {};
+    evaluations[nsid] = { ...evaluations[nsid], ...data };
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(evaluations));
+}
+
+// 컨텐츠 렌더링
+function renderContent() {
+    // 기간별 필터링 적용
+    const articles = getFilteredArticles();
+    
+    // 조회 기간 표시 업데이트
+    document.getElementById('currentPeriod').textContent = getPeriodText();
+    
+    // 통계 계산
+    const stats = {
+        article_count: articles.length,
+        total_chars: articles.reduce((sum, a) => sum + (a.char_count || 0), 0),
+        front_page: articles.filter(a => a.paper_number === 1).length,
+        page_2_3: articles.filter(a => a.paper_number >= 2 && a.paper_number <= 3).length,
+        scoop_count: articles.filter(a => a.coverage_type === '특종').length,
+        exclusive_count: articles.filter(a => a.coverage_type === '단독').length,
+        s_grade: articles.filter(a => a.impact_grade === 'S').length,
+        a_grade: articles.filter(a => a.impact_grade === 'A').length
+    };
+    
+    // 면별 분포 계산
+    const pageDistribution = {};
+    for (let i = 1; i <= 32; i++) pageDistribution[i] = 0;
+    articles.forEach(a => {
+        if (a.paper_number >= 1 && a.paper_number <= 32) {
+            pageDistribution[a.paper_number]++;
+        }
+    });
+    
+    let html = `
+        <!-- KPI 요약 -->
+        <div class="row g-3 mb-4">
+            <div class="col-md-2"><div class="stat-box"><div class="value">${stats.article_count}</div><div class="label">기사건수</div></div></div>
+            <div class="col-md-2"><div class="stat-box"><div class="value">${stats.total_chars.toLocaleString()}</div><div class="label">글자수</div></div></div>
+            <div class="col-md-2"><div class="stat-box"><div class="value" style="color:#dc3545;">${stats.scoop_count}</div><div class="label">특종</div></div></div>
+            <div class="col-md-2"><div class="stat-box"><div class="value" style="color:#fd7e14;">${stats.exclusive_count}</div><div class="label">단독</div></div></div>
+            <div class="col-md-2"><div class="stat-box"><div class="value" style="color:#dc3545; font-weight:700;">${stats.s_grade}</div><div class="label">S등급</div></div></div>
+            <div class="col-md-2"><div class="stat-box"><div class="value" style="color:#fd7e14;">${stats.a_grade}</div><div class="label">A등급</div></div></div>
+        </div>
+        
+        <!-- 면별 기사 분포 -->
+        <div class="card">
+            <div class="card-header"><i class="bi bi-grid-3x3 me-2"></i>면별 기사 분포 (1~32면)</div>
+            <div class="card-body">
+                <div class="page-grid mb-2">
+                    ${renderPageGrid(pageDistribution, 1, 16)}
+                </div>
+                <div class="page-grid">
+                    ${renderPageGrid(pageDistribution, 17, 32)}
+                </div>
+            </div>
+        </div>
+        
+        <!-- 집계 테이블 -->
+        <div class="card">
+            <div class="card-header"><i class="bi bi-calendar-range me-2"></i>${getPeriodLabel()} 집계</div>
+            <table class="table table-bordered mb-0">
+                <thead class="table-dark">
+                    <tr><th>기간</th><th>기사수</th><th>1면</th><th>2~3면</th><th>4면~</th><th>총글자수</th><th>평균</th><th>단독</th><th>기획</th></tr>
+                </thead>
+                <tbody>
+                    <tr class="table-warning">
+                        <td><strong>2026-01-09</strong></td>
+                        <td><strong>${stats.article_count}</strong></td>
+                        <td>${stats.front_page > 0 ? '<span class="badge bg-warning text-dark">' + stats.front_page + '</span>' : '0'}</td>
+                        <td>${stats.page_2_3}</td>
+                        <td>${stats.article_count - stats.front_page - stats.page_2_3}</td>
+                        <td>${stats.total_chars.toLocaleString()}</td>
+                        <td>${stats.article_count > 0 ? Math.round(stats.total_chars / stats.article_count).toLocaleString() : 0}</td>
+                        <td>${stats.exclusive_count > 0 ? '<span class="badge bg-success">' + stats.exclusive_count + '</span>' : '0'}</td>
+                        <td>${stats.scoop_count > 0 ? '<span class="badge bg-info">' + stats.scoop_count + '</span>' : '0'}</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        
+        <!-- 기사 목록 -->
+        <div class="card">
+            <div class="card-header d-flex justify-content-between">
+                <span><i class="bi bi-newspaper me-2"></i>기사 목록</span>
+                <span class="badge bg-light text-dark">${articles.length}건</span>
+            </div>
+            <div class="card-body p-0">
+                ${renderArticleTable(articles)}
+            </div>
+        </div>
+    `;
+    
+    document.getElementById('mainContent').innerHTML = html;
+    
+    // 저장 버튼 이벤트 바인딩
+    bindSaveEvents();
+}
+
+// 면별 그리드 렌더링
+function renderPageGrid(dist, start, end) {
+    let html = '';
+    for (let i = start; i <= end; i++) {
+        const count = dist[i] || 0;
+        let cellClass = 'page-cell';
+        if (i === 1 && count > 0) cellClass += ' highlight';
+        else if (count > 0) cellClass += ' active';
+        html += `<div class="${cellClass}">${i}면<br>${count > 0 ? '<b>' + count + '</b>' : '0'}</div>`;
+    }
+    return html;
+}
+
+// 기간 라벨
+function getPeriodLabel() {
+    const labels = { daily: '일별', weekly: '주별', monthly: '월별', quarterly: '분기별', halfyear: '반기별' };
+    return labels[currentPeriod] || '기간별';
+}
+
+// 기간별 필터링된 기사 가져오기
+function getFilteredArticles() {
+    if (!reporterData || !reporterData.articles) return [];
+    
+    const articles = reporterData.articles;
+    // 데이터 마지막 날짜의 전날 기준 (오늘 동기화하면 어제 데이터가 최신)
+    const baseDate = new Date(allData.period_end || '2026-01-13');
+    baseDate.setDate(baseDate.getDate() - 1);
+    
+    switch (currentPeriod) {
+        case 'daily': {
+            const dateStr = formatDate(baseDate);
+            return articles.filter(a => a.pub_date === dateStr);
+        }
+        case 'weekly': {
+            const weekStart = new Date(baseDate);
+            weekStart.setDate(baseDate.getDate() - baseDate.getDay()); // 일요일 시작
+            const weekEnd = new Date(weekStart);
+            weekEnd.setDate(weekStart.getDate() + 6);
+            return articles.filter(a => {
+                const d = new Date(a.pub_date);
+                return d >= weekStart && d <= weekEnd;
+            });
+        }
+        case 'monthly': {
+            const monthStr = `${baseDate.getFullYear()}-${String(baseDate.getMonth() + 1).padStart(2, '0')}`;
+            return articles.filter(a => a.pub_date && a.pub_date.startsWith(monthStr));
+        }
+        case 'quarterly': {
+            const quarter = Math.floor(baseDate.getMonth() / 3);
+            const qStart = new Date(baseDate.getFullYear(), quarter * 3, 1);
+            const qEnd = new Date(baseDate.getFullYear(), quarter * 3 + 3, 0);
+            return articles.filter(a => {
+                const d = new Date(a.pub_date);
+                return d >= qStart && d <= qEnd;
+            });
+        }
+        case 'halfyear': {
+            const half = baseDate.getMonth() < 6 ? 0 : 1;
+            const hStart = new Date(baseDate.getFullYear(), half * 6, 1);
+            const hEnd = new Date(baseDate.getFullYear(), half * 6 + 6, 0);
+            return articles.filter(a => {
+                const d = new Date(a.pub_date);
+                return d >= hStart && d <= hEnd;
+            });
+        }
+        default:
+            return articles;
+    }
+}
+
+// 기간 텍스트 표시
+function getPeriodText() {
+    const baseDate = new Date(allData.period_end || '2026-01-13');
+    baseDate.setDate(baseDate.getDate() - 1);
+    
+    switch (currentPeriod) {
+        case 'daily':
+            return formatDate(baseDate);
+        case 'weekly': {
+            const weekStart = new Date(baseDate);
+            weekStart.setDate(baseDate.getDate() - baseDate.getDay());
+            const weekEnd = new Date(weekStart);
+            weekEnd.setDate(weekStart.getDate() + 6);
+            return `${formatDate(weekStart)} ~ ${formatDate(weekEnd)}`;
+        }
+        case 'monthly':
+            return `${baseDate.getFullYear()}년 ${baseDate.getMonth() + 1}월`;
+        case 'quarterly': {
+            const quarter = Math.floor(baseDate.getMonth() / 3) + 1;
+            return `${baseDate.getFullYear()}년 ${quarter}분기`;
+        }
+        case 'halfyear': {
+            const half = baseDate.getMonth() < 6 ? '상반기' : '하반기';
+            return `${baseDate.getFullYear()}년 ${half}`;
+        }
+        default:
+            return allData.period_start + ' ~ ' + allData.period_end;
+    }
+}
+
+// 날짜 포맷
+function formatDate(d) {
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+}
+
+// 기사 테이블 렌더링
+function renderArticleTable(articles) {
+    if (articles.length === 0) {
+        return '<div class="p-4 text-muted text-center">기사가 없습니다</div>';
+    }
+    
+    let html = `
+        <table class="table table-hover mb-0" style="font-size:0.85rem;">
+            <thead class="table-light">
+                <tr>
+                    <th style="width:8%">날짜</th>
+                    <th style="width:26%">제목</th>
+                    <th style="width:6%">면</th>
+                    <th style="width:8%">글자수</th>
+                    <th style="width:10%">위치</th>
+                    <th style="width:10%">취재유형</th>
+                    <th style="width:10%">기사성격</th>
+                    <th style="width:12%">임팩트</th>
+                    <th style="width:10%">저장</th>
+                </tr>
+            </thead>
+            <tbody>
+    `;
+    
+    articles.forEach(article => {
+        const pageClass = article.paper_number == 1 ? 'page-1' : (article.paper_number <= 3 ? 'page-2-3' : 'page-other');
+        const isHighlight = article.paper_number >= 1 && article.paper_number <= 3 ? 'style="background:#fffbeb;"' : '';
+        const isSaved = article.impact_grade ? true : false;
+        
+        html += `
+            <tr ${isHighlight} data-nsid="${article.nsid}">
+                <td>${article.pub_date ? article.pub_date.slice(5) : '-'}</td>
+                <td><a href="${article.url || '#'}" target="_blank" class="text-decoration-none fw-bold">${escapeHtml(article.title || '')}</a></td>
+                <td><span class="page-badge ${pageClass}">${article.paper_number || '-'}</span> <button type="button" class="btn btn-link btn-sm p-0 text-muted edit-page" title="수정"><i class="bi bi-pencil" style="font-size:0.7rem;"></i></button></td>
+                <td>${article.char_count ? article.char_count.toLocaleString() : '-'} <button type="button" class="btn btn-link btn-sm p-0 text-muted edit-chars" title="수정"><i class="bi bi-pencil" style="font-size:0.7rem;"></i></button></td>
+                <td>
+                    ${article.is_auto_top ? 
+                        `<span class="text-muted">톱(자동)</span>` :
+                        `<select class="form-select form-select-sm eval-position" style="width:85px;">
+                            <option value="">선택</option>
+                            <option value="톱" ${article.position === '톱' ? 'selected' : ''}>톱</option>
+                            <option value="사이드(좌)" ${article.position === '사이드(좌)' ? 'selected' : ''}>사이드(좌)</option>
+                            <option value="사이드(우)" ${article.position === '사이드(우)' ? 'selected' : ''}>사이드(우)</option>
+                            <option value="하단" ${article.position === '하단' ? 'selected' : ''}>하단</option>
+                            <option value="기타" ${article.position === '기타' ? 'selected' : ''}>기타</option>
+                        </select>`
+                    }
+                </td>
+                <td>
+                    <select class="form-select form-select-sm eval-type" style="width:80px;">
+                        <option value="">선택</option>
+                        <option value="특종" ${article.coverage_type === '특종' ? 'selected' : ''}>특종</option>
+                        <option value="단독" ${article.coverage_type === '단독' ? 'selected' : ''}>단독</option>
+                        <option value="기획발굴" ${article.coverage_type === '기획발굴' ? 'selected' : ''}>기획발굴</option>
+                        <option value="현장취재" ${article.coverage_type === '현장취재' ? 'selected' : ''}>현장취재</option>
+                        <option value="단순발생" ${article.coverage_type === '단순발생' ? 'selected' : ''}>단순발생</option>
+                        <option value="보도자료" ${article.coverage_type === '보도자료' ? 'selected' : ''}>보도자료</option>
+                        <option value="인용외신" ${article.coverage_type === '인용외신' ? 'selected' : ''}>인용외신</option>
+                    </select>
+                </td>
+                <td>
+                    <select class="form-select form-select-sm eval-nature" style="width:80px;">
+                        <option value="">선택</option>
+                        <option value="탐사심층" ${article.article_nature === '탐사심층' ? 'selected' : ''}>탐사심층</option>
+                        <option value="해설분석" ${article.article_nature === '해설분석' ? 'selected' : ''}>해설분석</option>
+                        <option value="인터뷰" ${article.article_nature === '인터뷰' ? 'selected' : ''}>인터뷰</option>
+                        <option value="르포스케치" ${article.article_nature === '르포스케치' ? 'selected' : ''}>르포스케치</option>
+                        <option value="스트레이트" ${article.article_nature === '스트레이트' ? 'selected' : ''}>스트레이트</option>
+                        <option value="가십미담" ${article.article_nature === '가십미담' ? 'selected' : ''}>가십미담</option>
+                    </select>
+                </td>
+                <td>
+                    <select class="form-select form-select-sm eval-impact" style="width:90px;">
+                        <option value="">선택</option>
+                        <option value="S" ${article.impact_grade === 'S' ? 'selected' : ''}>S등급</option>
+                        <option value="A" ${article.impact_grade === 'A' ? 'selected' : ''}>A등급</option>
+                        <option value="B" ${article.impact_grade === 'B' ? 'selected' : ''}>B등급</option>
+                        <option value="C" ${article.impact_grade === 'C' ? 'selected' : ''}>C등급</option>
+                        <option value="D" ${article.impact_grade === 'D' ? 'selected' : ''}>D등급</option>
+                    </select>
+                </td>
+                <td>
+                    <button type="button" class="btn btn-sm ${isSaved ? 'btn-success' : 'btn-outline-primary'} save-btn">
+                        <i class="bi bi-${isSaved ? 'check2' : 'save'}"></i>
+                    </button>
+                </td>
+            </tr>
+        `;
+    });
+    
+    html += '</tbody></table>';
+    return html;
+}
+</script>
+
+<script>
+// 저장 버튼 이벤트 바인딩
+function bindSaveEvents() {
+    // 저장 버튼
+    document.querySelectorAll('.save-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const row = this.closest('tr');
+            const nsid = row.dataset.nsid;
+            
+            const evalData = {
+                position: row.querySelector('.eval-position') ? row.querySelector('.eval-position').value : '톱',
+                coverage_type: row.querySelector('.eval-type').value,
+                article_nature: row.querySelector('.eval-nature').value,
+                impact_grade: row.querySelector('.eval-impact').value
+            };
+            
+            // localStorage에 저장
+            saveEvaluation(nsid, evalData);
+            
+            // 기자 데이터에도 반영
+            const article = reporterData.articles.find(a => a.nsid === nsid);
+            if (article) {
+                Object.assign(article, evalData);
+            }
+            
+            showToast('저장되었습니다');
+            this.classList.remove('btn-outline-primary');
+            this.classList.add('btn-success');
+            this.innerHTML = '<i class="bi bi-check2"></i>';
+            
+            // 통계 업데이트
+            renderContent();
+        });
+    });
+    
+    // 면 수정 버튼
+    document.querySelectorAll('.edit-page').forEach(btn => {
+        btn.addEventListener('click', function(e) {
+            e.preventDefault();
+            const td = this.closest('td');
+            const badge = td.querySelector('.page-badge');
+            const currentVal = badge ? badge.textContent.trim() : '0';
+            
+            const originalHTML = td.innerHTML;
+            td.innerHTML = `
+                <input type="number" class="form-control form-control-sm d-inline-block" value="${currentVal === '-' ? 0 : currentVal}" style="width:50px;" min="0" max="32">
+                <button type="button" class="btn btn-sm btn-success ms-1 edit-page-save"><i class="bi bi-check"></i></button>
+                <button type="button" class="btn btn-sm btn-outline-secondary ms-1 edit-page-cancel"><i class="bi bi-x"></i></button>
+            `;
+            td.dataset.originalHtml = originalHTML;
+            td.querySelector('input').focus();
+        });
+    });
+    
+    // 글자수 수정 버튼
+    document.querySelectorAll('.edit-chars').forEach(btn => {
+        btn.addEventListener('click', function(e) {
+            e.preventDefault();
+            const td = this.closest('td');
+            const currentText = td.textContent.trim();
+            const currentVal = currentText.replace(/[^0-9]/g, '') || '0';
+            
+            const originalHTML = td.innerHTML;
+            td.innerHTML = `
+                <input type="number" class="form-control form-control-sm d-inline-block" value="${currentVal}" style="width:80px;" min="0">
+                <button type="button" class="btn btn-sm btn-success ms-1 edit-chars-save"><i class="bi bi-check"></i></button>
+                <button type="button" class="btn btn-sm btn-outline-secondary ms-1 edit-chars-cancel"><i class="bi bi-x"></i></button>
+            `;
+            td.dataset.originalHtml = originalHTML;
+            td.querySelector('input').focus();
+        });
+    });
+}
+
+// 전역 클릭 이벤트 (동적 버튼용)
+document.addEventListener('click', function(e) {
+    // 면 수정 저장
+    if (e.target.closest('.edit-page-save')) {
+        const td = e.target.closest('td');
+        const row = td.closest('tr');
+        const nsid = row.dataset.nsid;
+        const input = td.querySelector('input');
+        const newVal = parseInt(input.value) || 0;
+        
+        // localStorage에 저장
+        saveEvaluation(nsid, { paper_number: newVal });
+        
+        // 기자 데이터에도 반영
+        const article = reporterData.articles.find(a => a.nsid === nsid);
+        if (article) {
+            article.paper_number = newVal;
+        }
+        
+        const pageClass = newVal == 1 ? 'page-1' : (newVal <= 3 ? 'page-2-3' : 'page-other');
+        td.innerHTML = `<span class="page-badge ${pageClass}">${newVal}</span> <button type="button" class="btn btn-link btn-sm p-0 text-muted edit-page" title="수정"><i class="bi bi-pencil" style="font-size:0.7rem;"></i></button>`;
+        showToast('면이 수정되었습니다');
+        bindSaveEvents();
+        
+        // 면별 분포 업데이트
+        renderContent();
+    }
+    
+    // 면 수정 취소
+    if (e.target.closest('.edit-page-cancel')) {
+        const td = e.target.closest('td');
+        td.innerHTML = td.dataset.originalHtml || '';
+        bindSaveEvents();
+    }
+    
+    // 글자수 수정 저장
+    if (e.target.closest('.edit-chars-save')) {
+        const td = e.target.closest('td');
+        const row = td.closest('tr');
+        const nsid = row.dataset.nsid;
+        const input = td.querySelector('input');
+        const newVal = parseInt(input.value) || 0;
+        
+        // localStorage에 저장
+        saveEvaluation(nsid, { char_count: newVal });
+        
+        // 기자 데이터에도 반영
+        const article = reporterData.articles.find(a => a.nsid === nsid);
+        if (article) {
+            article.char_count = newVal;
+        }
+        
+        td.innerHTML = `${newVal.toLocaleString()} <button type="button" class="btn btn-link btn-sm p-0 text-muted edit-chars" title="수정"><i class="bi bi-pencil" style="font-size:0.7rem;"></i></button>`;
+        showToast('글자수가 수정되었습니다');
+        bindSaveEvents();
+        
+        // 통계 업데이트
+        renderContent();
+    }
+    
+    // 글자수 수정 취소
+    if (e.target.closest('.edit-chars-cancel')) {
+        const td = e.target.closest('td');
+        td.innerHTML = td.dataset.originalHtml || '';
+        bindSaveEvents();
+    }
+});
+
+// 토스트 표시
+function showToast(message) {
+    const toastEl = document.getElementById('saveToast');
+    toastEl.querySelector('.toast-body').innerHTML = '<i class="bi bi-check-circle me-2"></i>' + message;
+    const toast = new bootstrap.Toast(toastEl, { delay: 2000 });
+    toast.show();
+}
+
+// HTML 이스케이프
+function escapeHtml(text) {
+    if (!text) return '';
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+}
+
+// 엑셀 내보내기
+function exportExcel() {
+    alert('엑셀 내보내기 기능은 추후 구현 예정입니다.');
+}
+
+// 초기 로드
+if (reporterName) {
+    loadData();
+} else {
+    document.getElementById('mainContent').innerHTML = '<div class="p-4 text-danger text-center">기자명이 지정되지 않았습니다. <a href="list.html">기자 목록</a>에서 선택해주세요.</div>';
+}
+</script>
+</body>
+</html>
