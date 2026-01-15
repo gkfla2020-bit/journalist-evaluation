@@ -28,3 +28,6 @@ profile-repo/
 # OS
 .DS_Store
 Thumbs.db
+
+# MCP settings (contains API keys)
+.kiro/settings/mcp.json

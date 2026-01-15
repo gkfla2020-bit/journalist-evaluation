@@ -158,7 +158,7 @@ document.addEventListener('DOMContentLoaded', loadData);
 // 데이터 로드
 async function loadData() {
     try {
-        const res = await fetch('data.json');
+        const res = await fetch('data.json?t=' + Date.now());
         allData = await res.json();
         
         // 기간 정보

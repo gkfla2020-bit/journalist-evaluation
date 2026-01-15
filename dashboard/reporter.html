@@ -53,7 +53,10 @@
         <div class="profile-icon"><i class="bi bi-person-fill"></i></div>
         <div>
             <h1 style="font-size:1.8rem; margin-bottom:0.25rem;" id="reporterName">기자명</h1>
-            <div style="opacity:0.9;" id="reporterDept">기자</div>
+            <div style="opacity:0.9; cursor:pointer;" id="reporterDept" onclick="editPosition()" title="클릭하여 직위 수정">
+                <span id="positionText">기자</span>
+                <i class="bi bi-pencil-fill ms-1" style="font-size:0.7rem;"></i>
+            </div>
         </div>
         <div class="ms-auto text-end">
             <div class="small opacity-75">조회 기간</div>
@@ -117,7 +120,7 @@ async function loadData() {
     document.getElementById('mainContent').innerHTML = '<div class="loading"><i class="bi bi-arrow-repeat"></i> 로딩중...</div>';
     
     try {
-        const res = await fetch('data.json');
+        const res = await fetch('data.json?t=' + Date.now());
         allData = await res.json();
         
         // 해당 기자 데이터 찾기
@@ -618,9 +621,67 @@ function exportExcel() {
     alert('엑셀 내보내기 기능은 추후 구현 예정입니다.');
 }
 
+// 직위 수정
+function editPosition() {
+    const positions = ['기자', '선임기자', '차장', '부장', '국장', '논설위원', '대기자', '특파원'];
+    const currentPos = document.getElementById('positionText').textContent;
+    
+    const select = document.createElement('select');
+    select.className = 'form-select form-select-sm';
+    select.style.cssText = 'width:120px; display:inline-block; background:rgba(255,255,255,0.9); color:#333;';
+    
+    positions.forEach(p => {
+        const opt = document.createElement('option');
+        opt.value = p;
+        opt.textContent = p;
+        if (p === currentPos) opt.selected = true;
+        select.appendChild(opt);
+    });
+    
+    const container = document.getElementById('reporterDept');
+    container.innerHTML = '';
+    container.appendChild(select);
+    
+    const saveBtn = document.createElement('button');
+    saveBtn.className = 'btn btn-sm btn-light ms-2';
+    saveBtn.innerHTML = '<i class="bi bi-check"></i>';
+    saveBtn.onclick = function(e) {
+        e.stopPropagation();
+        const newPos = select.value;
+        
+        // localStorage에 저장
+        const posKey = 'kpi_positions';
+        const saved = localStorage.getItem(posKey);
+        const positions = saved ? JSON.parse(saved) : {};
+        positions[reporterName] = newPos;
+        localStorage.setItem(posKey, JSON.stringify(positions));
+        
+        container.innerHTML = `<span id="positionText">${newPos}</span><i class="bi bi-pencil-fill ms-1" style="font-size:0.7rem;"></i>`;
+        container.onclick = editPosition;
+        showToast('직위가 저장되었습니다');
+    };
+    container.appendChild(saveBtn);
+    
+    select.focus();
+    container.onclick = null;
+}
+
+// 저장된 직위 불러오기
+function loadSavedPosition() {
+    const posKey = 'kpi_positions';
+    const saved = localStorage.getItem(posKey);
+    if (saved) {
+        const positions = JSON.parse(saved);
+        if (positions[reporterName]) {
+            document.getElementById('positionText').textContent = positions[reporterName];
+        }
+    }
+}
+
 // 초기 로드
 if (reporterName) {
     loadData();
+    loadSavedPosition();
 } else {
     document.getElementById('mainContent').innerHTML = '<div class="p-4 text-danger text-center">기자명이 지정되지 않았습니다. <a href="list.html">기자 목록</a>에서 선택해주세요.</div>';
 }
