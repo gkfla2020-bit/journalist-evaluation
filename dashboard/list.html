@@ -172,10 +172,10 @@ async function loadData() {
         
         updateView();
         
-        // 검색
-        document.getElementById('searchInput').addEventListener('input', function() {
-            updateView(this.value);
-        });
+        // 검색 (이벤트 중복 방지)
+        const searchInput = document.getElementById('searchInput');
+        searchInput.removeEventListener('input', handleSearch);
+        searchInput.addEventListener('input', handleSearch);
     } catch (err) {
         console.error(err);
         document.getElementById('reporterList').innerHTML = '<tr><td colspan="6" class="text-center py-4 text-danger">데이터 로드 실패</td></tr>';
@@ -376,6 +376,11 @@ function showToast(msg, type = 'success') {
     t.className = `toast align-items-center text-bg-${type} border-0`;
     document.getElementById('toastMsg').textContent = msg;
     new bootstrap.Toast(t).show();
+}
+
+// 검색 핸들러
+function handleSearch() {
+    updateView(this.value);
 }
 </script>
 </body>

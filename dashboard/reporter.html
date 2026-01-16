@@ -100,6 +100,7 @@ let reporterData = null;
 
 // localStorage 키
 const STORAGE_KEY = 'kpi_evaluations';
+const EVAL_API_URL = 'https://yyffk7tpfey7s2kv7hoitskxb40aljqw.lambda-url.us-east-1.on.aws/';
 
 // 초기화
 document.getElementById('reporterName').textContent = reporterName + ' 기자';
@@ -132,7 +133,7 @@ async function loadData() {
         }
         
         // localStorage에서 저장된 평가 데이터 불러오기
-        loadSavedEvaluations();
+        await loadSavedEvaluations();
         
         // 컨텐츠 렌더링
         renderContent();
@@ -143,8 +144,37 @@ async function loadData() {
     }
 }
 
-// localStorage에서 평가 데이터 불러오기
-function loadSavedEvaluations() {
+// 서버에서 평가 데이터 불러오기
+async function loadSavedEvaluations() {
+    console.log('평가 데이터 로드 시작...');
+    try {
+        // 서버에서 먼저 불러오기 (캐시 방지)
+        const url = EVAL_API_URL + '?t=' + Date.now();
+        console.log('API 호출:', url);
+        const res = await fetch(url);
+        console.log('API 응답 상태:', res.status);
+        if (res.ok) {
+            const serverData = await res.json();
+            console.log('서버 데이터:', serverData);
+            // localStorage에도 동기화
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(serverData));
+            // 기사에 적용
+            let appliedCount = 0;
+            reporterData.articles.forEach(article => {
+                if (serverData[article.nsid]) {
+                    Object.assign(article, serverData[article.nsid]);
+                    appliedCount++;
+                }
+            });
+            console.log('적용된 평가 수:', appliedCount);
+            return;
+        }
+    } catch (e) {
+        console.error('서버 데이터 로드 실패:', e);
+    }
+    
+    // 서버 실패시 localStorage 사용
+    console.log('localStorage에서 로드...');
     const saved = localStorage.getItem(STORAGE_KEY);
     if (saved) {
         const evaluations = JSON.parse(saved);
@@ -156,12 +186,50 @@ function loadSavedEvaluations() {
     }
 }
 
-// 평가 데이터 저장
-function saveEvaluation(nsid, data) {
+// 평가 데이터 저장 (localStorage + 서버)
+async function saveEvaluation(nsid, data) {
+    // localStorage에 저장
     const saved = localStorage.getItem(STORAGE_KEY);
     const evaluations = saved ? JSON.parse(saved) : {};
     evaluations[nsid] = { ...evaluations[nsid], ...data };
     localStorage.setItem(STORAGE_KEY, JSON.stringify(evaluations));
+    
+    // 서버에도 저장
+    try {
+        const payload = {};
+        payload[nsid] = evaluations[nsid];
+        await fetch(EVAL_API_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        });
+    } catch (e) {
+        console.log('서버 저장 실패:', e);
+    }
+}
+
+// 통계만 업데이트 (테이블 다시 안 그림)
+function updateStats() {
+    const articles = getFilteredArticles();
+    const stats = {
+        article_count: articles.length,
+        total_chars: articles.reduce((sum, a) => sum + (a.char_count || 0), 0),
+        scoop_count: articles.filter(a => a.coverage_type === '특종').length,
+        exclusive_count: articles.filter(a => a.coverage_type === '단독').length,
+        s_grade: articles.filter(a => a.impact_grade === 'S').length,
+        a_grade: articles.filter(a => a.impact_grade === 'A').length
+    };
+    
+    // 상단 통계 카드 업데이트
+    const statBoxes = document.querySelectorAll('.stat-box .value');
+    if (statBoxes.length >= 6) {
+        statBoxes[0].textContent = stats.article_count;
+        statBoxes[1].textContent = stats.total_chars.toLocaleString();
+        statBoxes[2].textContent = stats.scoop_count;
+        statBoxes[3].textContent = stats.exclusive_count;
+        statBoxes[4].textContent = stats.s_grade;
+        statBoxes[5].textContent = stats.a_grade;
+    }
 }
 
 // 컨텐츠 렌더링
@@ -226,7 +294,7 @@ function renderContent() {
                 </thead>
                 <tbody>
                     <tr class="table-warning">
-                        <td><strong>2026-01-09</strong></td>
+                        <td><strong>${getPeriodText()}</strong></td>
                         <td><strong>${stats.article_count}</strong></td>
                         <td>${stats.front_page > 0 ? '<span class="badge bg-warning text-dark">' + stats.front_page + '</span>' : '0'}</td>
                         <td>${stats.page_2_3}</td>
@@ -283,12 +351,14 @@ function getFilteredArticles() {
     
     const articles = reporterData.articles;
     // 데이터 마지막 날짜의 전날 기준 (오늘 동기화하면 어제 데이터가 최신)
-    const baseDate = new Date(allData.period_end || '2026-01-13');
-    baseDate.setDate(baseDate.getDate() - 1);
+    const periodEnd = new Date(allData.period_end || '2026-01-15');
+    const baseDate = new Date(periodEnd);
+    baseDate.setDate(periodEnd.getDate() - 1);
     
     switch (currentPeriod) {
         case 'daily': {
             const dateStr = formatDate(baseDate);
+            console.log('Daily filter:', dateStr, 'period_end:', allData.period_end);
             return articles.filter(a => a.pub_date === dateStr);
         }
         case 'weekly': {
@@ -330,8 +400,9 @@ function getFilteredArticles() {
 
 // 기간 텍스트 표시
 function getPeriodText() {
-    const baseDate = new Date(allData.period_end || '2026-01-13');
-    baseDate.setDate(baseDate.getDate() - 1);
+    const periodEnd = new Date(allData.period_end || '2026-01-15');
+    const baseDate = new Date(periodEnd);
+    baseDate.setDate(periodEnd.getDate() - 1);
     
     switch (currentPeriod) {
         case 'daily':
@@ -463,9 +534,10 @@ function renderArticleTable(articles) {
 function bindSaveEvents() {
     // 저장 버튼
     document.querySelectorAll('.save-btn').forEach(btn => {
-        btn.addEventListener('click', function() {
+        btn.addEventListener('click', async function() {
             const row = this.closest('tr');
             const nsid = row.dataset.nsid;
+            const saveBtn = this;
             
             const evalData = {
                 position: row.querySelector('.eval-position') ? row.querySelector('.eval-position').value : '톱',
@@ -474,22 +546,22 @@ function bindSaveEvents() {
                 impact_grade: row.querySelector('.eval-impact').value
             };
             
-            // localStorage에 저장
-            saveEvaluation(nsid, evalData);
-            
-            // 기자 데이터에도 반영
+            // 기자 데이터에 먼저 반영
             const article = reporterData.articles.find(a => a.nsid === nsid);
             if (article) {
                 Object.assign(article, evalData);
             }
             
-            showToast('저장되었습니다');
-            this.classList.remove('btn-outline-primary');
-            this.classList.add('btn-success');
-            this.innerHTML = '<i class="bi bi-check2"></i>';
+            // 서버에 저장
+            await saveEvaluation(nsid, evalData);
             
-            // 통계 업데이트
-            renderContent();
+            showToast('저장되었습니다');
+            saveBtn.classList.remove('btn-outline-primary');
+            saveBtn.classList.add('btn-success');
+            saveBtn.innerHTML = '<i class="bi bi-check2"></i>';
+            
+            // 통계만 업데이트 (전체 렌더링 안함)
+            updateStats();
         });
     });
     

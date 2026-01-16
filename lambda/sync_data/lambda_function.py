@@ -139,12 +139,13 @@ def lambda_handler(event, context):
         'reporters': reporters_data
     }
     
-    # S3에 업로드
+    # S3에 업로드 (캐시 방지 헤더 추가)
     s3.put_object(
         Bucket=WEB_BUCKET,
         Key='data.json',
         Body=json.dumps(data, ensure_ascii=False, indent=2),
-        ContentType='application/json; charset=utf-8'
+        ContentType='application/json; charset=utf-8',
+        CacheControl='no-cache, no-store, must-revalidate'
     )
     
     return {
