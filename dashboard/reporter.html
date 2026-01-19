@@ -717,16 +717,27 @@ function editPosition() {
     const saveBtn = document.createElement('button');
     saveBtn.className = 'btn btn-sm btn-light ms-2';
     saveBtn.innerHTML = '<i class="bi bi-check"></i>';
-    saveBtn.onclick = function(e) {
+    saveBtn.onclick = async function(e) {
         e.stopPropagation();
         const newPos = select.value;
         
         // localStorage에 저장
         const posKey = 'kpi_positions';
         const saved = localStorage.getItem(posKey);
-        const positions = saved ? JSON.parse(saved) : {};
-        positions[reporterName] = newPos;
-        localStorage.setItem(posKey, JSON.stringify(positions));
+        const positionsData = saved ? JSON.parse(saved) : {};
+        positionsData[reporterName] = newPos;
+        localStorage.setItem(posKey, JSON.stringify(positionsData));
+        
+        // 서버에도 저장
+        try {
+            await fetch(EVAL_API_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ ['position_' + reporterName]: { position: newPos } })
+            });
+        } catch (e) {
+            console.log('직위 서버 저장 실패:', e);
+        }
         
         container.innerHTML = `<span id="positionText">${newPos}</span><i class="bi bi-pencil-fill ms-1" style="font-size:0.7rem;"></i>`;
         container.onclick = editPosition;
@@ -739,7 +750,23 @@ function editPosition() {
 }
 
 // 저장된 직위 불러오기
-function loadSavedPosition() {
+async function loadSavedPosition() {
+    // 서버에서 먼저 불러오기
+    try {
+        const res = await fetch(EVAL_API_URL + '?t=' + Date.now());
+        if (res.ok) {
+            const serverData = await res.json();
+            const posKey = 'position_' + reporterName;
+            if (serverData[posKey] && serverData[posKey].position) {
+                document.getElementById('positionText').textContent = serverData[posKey].position;
+                return;
+            }
+        }
+    } catch (e) {
+        console.log('직위 서버 로드 실패:', e);
+    }
+    
+    // 서버 실패시 localStorage
     const posKey = 'kpi_positions';
     const saved = localStorage.getItem(posKey);
     if (saved) {
