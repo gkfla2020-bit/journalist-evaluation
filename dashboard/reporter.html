@@ -60,19 +60,30 @@
         </div>
         <div class="ms-auto text-end">
             <div class="small opacity-75">조회 기간</div>
-            <div class="fw-bold" id="currentPeriod">2026-01-09</div>
+            <div class="fw-bold" id="currentPeriod">-</div>
         </div>
     </div>
 </div>
 
 <!-- 기간 선택 탭 -->
-<ul class="nav nav-tabs mb-4" role="tablist">
+<ul class="nav nav-tabs mb-3" role="tablist">
     <li class="nav-item"><button class="nav-link active" data-period="daily" type="button">일별</button></li>
     <li class="nav-item"><button class="nav-link" data-period="weekly" type="button">주별</button></li>
     <li class="nav-item"><button class="nav-link" data-period="monthly" type="button">월별</button></li>
     <li class="nav-item"><button class="nav-link" data-period="quarterly" type="button">분기별</button></li>
     <li class="nav-item"><button class="nav-link" data-period="halfyear" type="button">반기별</button></li>
 </ul>
+
+<!-- 날짜 네비게이션 -->
+<div class="d-flex justify-content-center align-items-center mb-4" id="dateNav">
+    <button class="btn btn-outline-secondary btn-sm me-3" id="prevBtn" onclick="navigatePeriod(-1)">
+        <i class="bi bi-chevron-left"></i> 이전
+    </button>
+    <span class="fw-bold fs-5" id="navPeriodText">-</span>
+    <button class="btn btn-outline-secondary btn-sm ms-3" id="nextBtn" onclick="navigatePeriod(1)">
+        다음 <i class="bi bi-chevron-right"></i>
+    </button>
+</div>
 
 <!-- 메인 컨텐츠 영역 -->
 <div id="mainContent">
@@ -97,6 +108,7 @@ const reporterName = urlParams.get('name') || '';
 let currentPeriod = 'daily';
 let allData = null;
 let reporterData = null;
+let selectedDate = new Date(); // 현재 선택된 날짜 (네비게이션용)
 
 // localStorage 키
 const STORAGE_KEY = 'kpi_evaluations';
@@ -112,9 +124,39 @@ document.querySelectorAll('.nav-link').forEach(btn => {
         document.querySelectorAll('.nav-link').forEach(b => b.classList.remove('active'));
         this.classList.add('active');
         currentPeriod = this.dataset.period;
+        selectedDate = new Date(); // 탭 변경시 오늘 날짜로 리셋
         renderContent();
+        updateNavText();
     });
 });
+
+// 날짜 네비게이션
+function navigatePeriod(direction) {
+    switch (currentPeriod) {
+        case 'daily':
+            selectedDate.setDate(selectedDate.getDate() + direction);
+            break;
+        case 'weekly':
+            selectedDate.setDate(selectedDate.getDate() + (direction * 7));
+            break;
+        case 'monthly':
+            selectedDate.setMonth(selectedDate.getMonth() + direction);
+            break;
+        case 'quarterly':
+            selectedDate.setMonth(selectedDate.getMonth() + (direction * 3));
+            break;
+        case 'halfyear':
+            selectedDate.setMonth(selectedDate.getMonth() + (direction * 6));
+            break;
+    }
+    renderContent();
+    updateNavText();
+}
+
+// 네비게이션 텍스트 업데이트
+function updateNavText() {
+    document.getElementById('navPeriodText').textContent = getPeriodText();
+}
 
 // 데이터 로드
 async function loadData() {
@@ -239,6 +281,7 @@ function renderContent() {
     
     // 조회 기간 표시 업데이트
     document.getElementById('currentPeriod').textContent = getPeriodText();
+    document.getElementById('navPeriodText').textContent = getPeriodText();
     
     // 통계 계산
     const stats = {
@@ -350,10 +393,7 @@ function getFilteredArticles() {
     if (!reporterData || !reporterData.articles) return [];
     
     const articles = reporterData.articles;
-    // 데이터 마지막 날짜의 전날 기준 (오늘 동기화하면 어제 데이터가 최신)
-    const periodEnd = new Date(allData.period_end || '2026-01-15');
-    const baseDate = new Date(periodEnd);
-    baseDate.setDate(periodEnd.getDate() - 1);
+    const baseDate = selectedDate;
     
     switch (currentPeriod) {
         case 'daily': {
@@ -400,9 +440,7 @@ function getFilteredArticles() {
 
 // 기간 텍스트 표시
 function getPeriodText() {
-    const periodEnd = new Date(allData.period_end || '2026-01-15');
-    const baseDate = new Date(periodEnd);
-    baseDate.setDate(periodEnd.getDate() - 1);
+    const baseDate = selectedDate;
     
     switch (currentPeriod) {
         case 'daily':
@@ -470,17 +508,15 @@ function renderArticleTable(articles) {
                 <td><span class="page-badge ${pageClass}">${article.paper_number || '-'}</span> <button type="button" class="btn btn-link btn-sm p-0 text-muted edit-page" title="수정"><i class="bi bi-pencil" style="font-size:0.7rem;"></i></button></td>
                 <td>${article.char_count ? article.char_count.toLocaleString() : '-'} <button type="button" class="btn btn-link btn-sm p-0 text-muted edit-chars" title="수정"><i class="bi bi-pencil" style="font-size:0.7rem;"></i></button></td>
                 <td>
-                    ${article.is_auto_top ? 
-                        `<span class="text-muted">톱(자동)</span>` :
-                        `<select class="form-select form-select-sm eval-position" style="width:85px;">
-                            <option value="">선택</option>
-                            <option value="톱" ${article.position === '톱' ? 'selected' : ''}>톱</option>
-                            <option value="사이드(좌)" ${article.position === '사이드(좌)' ? 'selected' : ''}>사이드(좌)</option>
-                            <option value="사이드(우)" ${article.position === '사이드(우)' ? 'selected' : ''}>사이드(우)</option>
-                            <option value="하단" ${article.position === '하단' ? 'selected' : ''}>하단</option>
-                            <option value="기타" ${article.position === '기타' ? 'selected' : ''}>기타</option>
-                        </select>`
-                    }
+                    <select class="form-select form-select-sm eval-position" style="width:85px;">
+                        <option value="">선택</option>
+                        <option value="톱(자동)" ${article.is_auto_top ? 'selected' : ''}>톱(자동)</option>
+                        <option value="톱" ${!article.is_auto_top && article.position === '톱' ? 'selected' : ''}>톱</option>
+                        <option value="사이드(좌)" ${article.position === '사이드(좌)' ? 'selected' : ''}>사이드(좌)</option>
+                        <option value="사이드(우)" ${article.position === '사이드(우)' ? 'selected' : ''}>사이드(우)</option>
+                        <option value="하단" ${article.position === '하단' ? 'selected' : ''}>하단</option>
+                        <option value="기타" ${article.position === '기타' ? 'selected' : ''}>기타</option>
+                    </select>
                 </td>
                 <td>
                     <select class="form-select form-select-sm eval-type" style="width:80px;">
@@ -540,7 +576,7 @@ function bindSaveEvents() {
             const saveBtn = this;
             
             const evalData = {
-                position: row.querySelector('.eval-position') ? row.querySelector('.eval-position').value : '톱',
+                position: row.querySelector('.eval-position').value,
                 coverage_type: row.querySelector('.eval-type').value,
                 article_nature: row.querySelector('.eval-nature').value,
                 impact_grade: row.querySelector('.eval-impact').value

@@ -103,7 +103,7 @@
     </div>
     <div class="col-md-3">
         <div class="stat-card">
-            <div class="value" id="stat-period">01-09</div>
+            <div class="value" id="stat-period">-</div>
             <div class="label">데이터 기간</div>
         </div>
     </div>
@@ -165,10 +165,8 @@ async function loadData() {
         document.getElementById('dataRange').textContent = `${allData.period_start} ~ ${allData.period_end}`;
         document.getElementById('lastSyncTime').textContent = allData.last_sync;
         
-        // 선택 날짜를 데이터 마지막 날짜의 전날로 (오늘 동기화하면 어제 데이터가 최신)
-        const lastDate = new Date(allData.period_end);
-        lastDate.setDate(lastDate.getDate() - 1);
-        selectedDate = lastDate;
+        // 선택 날짜를 오늘로 설정
+        selectedDate = new Date();
         
         updateView();
         

@@ -38,20 +38,40 @@ def extract_reporters(author_str):
             result.append(match.group(1))
     return result if result else ['']
 
-def lambda_handler(event, context):
-    # 2026년 XML 목록 가져오기
-    response = s3.list_objects_v2(Bucket=XML_BUCKET, Prefix='daily-xml/2026')
-    dates = sorted([re.search(r'(\d{8})\.xml', o['Key']).group(1) 
-                    for o in response.get('Contents', []) if '2026' in o['Key']])
+def get_all_xml_files():
+    """daily-xml 폴더의 모든 XML 파일 목록 가져오기 (지면 정보 포함된 XML만)"""
+    xml_files = []
     
-    if not dates:
+    # daily-xml 폴더의 모든 XML (25년~26년)
+    response = s3.list_objects_v2(Bucket=XML_BUCKET, Prefix='daily-xml/')
+    for obj in response.get('Contents', []):
+        key = obj['Key']
+        # 20260119.xml 형식
+        match = re.search(r'(\d{8})\.xml', key)
+        if match:
+            date_str = match.group(1)
+            xml_files.append({'date': date_str, 'key': key})
+    
+    # 날짜순 정렬
+    xml_files.sort(key=lambda x: x['date'])
+    return xml_files
+
+def lambda_handler(event, context):
+    # 모든 XML 파일 목록 가져오기 (25년~26년)
+    xml_files = get_all_xml_files()
+    
+    if not xml_files:
         return {'statusCode': 404, 'body': json.dumps({'error': 'No XML files found'})}
+    
+    print(f"총 {len(xml_files)}개 XML 파일 처리 시작")
     
     reporter_articles = defaultdict(list)
     
-    for date in dates:
+    for xml_info in xml_files:
+        date = xml_info['date']
+        key = xml_info['key']
         try:
-            r = s3.get_object(Bucket=XML_BUCKET, Key=f'daily-xml/{date}.xml')
+            r = s3.get_object(Bucket=XML_BUCKET, Key=key)
             content = r['Body'].read().decode('utf-8')
             root = ET.fromstring(content)
             
@@ -119,6 +139,7 @@ def lambda_handler(event, context):
             print(f'Error processing {date}: {e}')
     
     # 기자별 정리
+    dates = [f['date'] for f in xml_files]
     reporters_data = []
     for name, articles in sorted(reporter_articles.items(), key=lambda x: len(x[1]), reverse=True):
         total_chars = sum(a['char_count'] for a in articles)
