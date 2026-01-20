@@ -25,11 +25,14 @@ def clean_content(content_str):
 def extract_reporters(author_str):
     if not author_str:
         return ['']
-    if '=' in author_str:
-        author_str = author_str.split('=')[1]
+    # 지역=이름 형식 처리 (베이징=송종호 → 송종호)
+    author_str = re.sub(r'[가-힣a-zA-Z]+\s*=\s*', '', author_str)
+    # 이메일 제거
     author_str = re.sub(r'\([^)]*@[^)]*\)', '', author_str)
+    # 직함 제거
     author_str = re.sub(r'\s*(기자|특파원|선임기자|차장|부장|국장|위원|대기자|논설위원)\s*', ' ', author_str)
-    names = re.split(r'[·,/]', author_str)
+    # 구분자로 분리 (·, ,, /, ·)
+    names = re.split(r'[·,/·]', author_str)
     result = []
     for name in names:
         name = name.strip()
@@ -75,6 +78,7 @@ def lambda_handler(event, context):
             content = r['Body'].read().decode('utf-8')
             root = ET.fromstring(content)
             
+            # 기존 형식: <item type="text"> ... <paper><editingInfo><paperNumber>
             for item in root.findall('.//item'):
                 if item.get('type') != 'text':
                     continue
@@ -135,20 +139,85 @@ def lambda_handler(event, context):
                         'category': category
                     }
                     reporter_articles[reporter_name].append(article)
+            
+            # 새 형식: <article> ... <pageNumber>
+            for article_elem in root.findall('.//article'):
+                pn = article_elem.findtext('pageNumber', '0')
+                paper_num = int(pn) if pn and pn.isdigit() else 0
+                
+                if paper_num < 1:
+                    continue
+                
+                title = article_elem.findtext('title', '').strip()
+                title = html.unescape(title).replace('&quot;', '"')
+                
+                author = article_elem.findtext('writer', '')
+                content_text = clean_content(article_elem.findtext('content', ''))
+                char_count = len(content_text.replace(' ', ''))
+                
+                url = article_elem.findtext('link', '')
+                
+                # pubDate에서 날짜 추출 (2025-12-30 20:35:35 형식)
+                pub_date_str = article_elem.findtext('pubDate', '')
+                pub_date = pub_date_str.split(' ')[0] if pub_date_str else ''
+                pub_time = pub_date_str.split(' ')[1] if ' ' in pub_date_str else ''
+                
+                # 톱 여부 (1면이면 톱으로 간주)
+                is_auto_top = (paper_num == 1)
+                position = '톱' if is_auto_top else ''
+                
+                reporters = extract_reporters(author)
+                
+                for reporter_name in reporters:
+                    if not reporter_name:
+                        continue
+                    article = {
+                        'nsid': article_elem.findtext('link', '').split('/')[-1] if article_elem.findtext('link', '') else '',
+                        'title': title,
+                        'author': author,
+                        'reporter_name': reporter_name,
+                        'pub_date': pub_date,
+                        'pub_time': pub_time,
+                        'content': content_text[:500],
+                        'char_count': char_count,
+                        'url': url,
+                        'paper_number': paper_num,
+                        'paper_position': '',
+                        'paper_paragraph': '',
+                        'position': position,
+                        'is_auto_top': is_auto_top,
+                        'category': ''
+                    }
+                    reporter_articles[reporter_name].append(article)
         except Exception as e:
             print(f'Error processing {date}: {e}')
     
-    # 기자별 정리
+    # 기자별 정리 (중복 제거)
     dates = [f['date'] for f in xml_files]
     reporters_data = []
     for name, articles in sorted(reporter_articles.items(), key=lambda x: len(x[1]), reverse=True):
-        total_chars = sum(a['char_count'] for a in articles)
+        # 중복 제거: URL 기준 (같은 기사가 제목만 다르게 수정된 경우 대응)
+        seen = set()
+        unique_articles = []
+        for a in articles:
+            # URL에서 기사 ID 추출 (NewsView/XXXXX 형식)
+            url = a.get('url', '')
+            if '/NewsView/' in url:
+                key = url.split('/NewsView/')[-1].split('?')[0]
+            else:
+                key = (a['title'], a['pub_date'])  # URL 없으면 제목+날짜
+            
+            if key not in seen:
+                seen.add(key)
+                unique_articles.append(a)
+        
+        total_chars = sum(a['char_count'] for a in unique_articles)
         reporters_data.append({
             'name': name,
-            'articles': articles,
+            'articles': unique_articles,
             'total_chars': total_chars,
-            'article_count': len(articles),
-            'avg_chars': total_chars // len(articles) if articles else 0
+            'article_count': len(unique_articles),
+            'avg_chars': total_chars // len(unique_articles) if unique_articles else 0
         })
     
     data = {

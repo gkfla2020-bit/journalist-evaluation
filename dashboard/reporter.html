@@ -72,6 +72,7 @@
     <li class="nav-item"><button class="nav-link" data-period="monthly" type="button">월별</button></li>
     <li class="nav-item"><button class="nav-link" data-period="quarterly" type="button">분기별</button></li>
     <li class="nav-item"><button class="nav-link" data-period="halfyear" type="button">반기별</button></li>
+    <li class="nav-item"><button class="nav-link" data-period="all" type="button">전체</button></li>
 </ul>
 
 <!-- 날짜 네비게이션 -->
@@ -101,6 +102,7 @@
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>
 <script>
 // URL에서 기자명 가져오기
 const urlParams = new URLSearchParams(window.location.search);
@@ -156,6 +158,15 @@ function navigatePeriod(direction) {
 // 네비게이션 텍스트 업데이트
 function updateNavText() {
     document.getElementById('navPeriodText').textContent = getPeriodText();
+    // 전체 탭일 때는 네비게이션 버튼 숨기기
+    const dateNav = document.getElementById('dateNav');
+    if (currentPeriod === 'all') {
+        dateNav.querySelector('#prevBtn').style.display = 'none';
+        dateNav.querySelector('#nextBtn').style.display = 'none';
+    } else {
+        dateNav.querySelector('#prevBtn').style.display = '';
+        dateNav.querySelector('#nextBtn').style.display = '';
+    }
 }
 
 // 데이터 로드
@@ -396,6 +407,8 @@ function getFilteredArticles() {
     const baseDate = selectedDate;
     
     switch (currentPeriod) {
+        case 'all':
+            return articles;
         case 'daily': {
             const dateStr = formatDate(baseDate);
             console.log('Daily filter:', dateStr, 'period_end:', allData.period_end);
@@ -443,6 +456,8 @@ function getPeriodText() {
     const baseDate = selectedDate;
     
     switch (currentPeriod) {
+        case 'all':
+            return allData.period_start + ' ~ ' + allData.period_end;
         case 'daily':
             return formatDate(baseDate);
         case 'weekly': {
@@ -726,7 +741,80 @@ function escapeHtml(text) {
 
 // 엑셀 내보내기
 function exportExcel() {
-    alert('엑셀 내보내기 기능은 추후 구현 예정입니다.');
+    const articles = getFilteredArticles();
+    if (articles.length === 0) {
+        alert('내보낼 기사가 없습니다.');
+        return;
+    }
+    
+    // 엑셀 데이터 준비
+    const excelData = articles.map((a, i) => ({
+        '번호': i + 1,
+        '날짜': a.pub_date || '',
+        '제목': a.title || '',
+        '면': a.paper_number || '',
+        '글자수': a.char_count || 0,
+        '위치': a.position || '',
+        '취재유형': a.coverage_type || '',
+        '기사성격': a.article_nature || '',
+        '임팩트등급': a.impact_grade || '',
+        'URL': a.url || ''
+    }));
+    
+    // 통계 요약 행 추가
+    const stats = {
+        article_count: articles.length,
+        total_chars: articles.reduce((sum, a) => sum + (a.char_count || 0), 0),
+        scoop_count: articles.filter(a => a.coverage_type === '특종').length,
+        exclusive_count: articles.filter(a => a.coverage_type === '단독').length,
+        s_grade: articles.filter(a => a.impact_grade === 'S').length,
+        a_grade: articles.filter(a => a.impact_grade === 'A').length
+    };
+    
+    // 워크북 생성
+    const wb = XLSX.utils.book_new();
+    
+    // 기사 목록 시트
+    const ws = XLSX.utils.json_to_sheet(excelData);
+    
+    // 컬럼 너비 설정
+    ws['!cols'] = [
+        { wch: 5 },   // 번호
+        { wch: 12 },  // 날짜
+        { wch: 50 },  // 제목
+        { wch: 5 },   // 면
+        { wch: 8 },   // 글자수
+        { wch: 10 },  // 위치
+        { wch: 10 },  // 취재유형
+        { wch: 10 },  // 기사성격
+        { wch: 10 },  // 임팩트등급
+        { wch: 40 }   // URL
+    ];
+    
+    XLSX.utils.book_append_sheet(wb, ws, '기사목록');
+    
+    // 요약 시트
+    const summaryData = [
+        { '항목': '기자명', '값': reporterName },
+        { '항목': '조회기간', '값': getPeriodText() },
+        { '항목': '기사건수', '값': stats.article_count },
+        { '항목': '총글자수', '값': stats.total_chars },
+        { '항목': '평균글자수', '값': stats.article_count > 0 ? Math.round(stats.total_chars / stats.article_count) : 0 },
+        { '항목': '특종', '값': stats.scoop_count },
+        { '항목': '단독', '값': stats.exclusive_count },
+        { '항목': 'S등급', '값': stats.s_grade },
+        { '항목': 'A등급', '값': stats.a_grade }
+    ];
+    const ws2 = XLSX.utils.json_to_sheet(summaryData);
+    ws2['!cols'] = [{ wch: 15 }, { wch: 30 }];
+    XLSX.utils.book_append_sheet(wb, ws2, '요약');
+    
+    // 파일명 생성
+    const fileName = `${reporterName}_${getPeriodText().replace(/[~\s]/g, '_')}.xlsx`;
+    
+    // 다운로드
+    XLSX.writeFile(wb, fileName);
+    showToast('엑셀 파일이 다운로드되었습니다');
 }
 
 // 직위 수정

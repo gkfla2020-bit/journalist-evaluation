@@ -139,6 +139,14 @@
     </div>
 </div>
 
+<!-- 하단 버튼 -->
+<div class="d-flex justify-content-between mt-4">
+    <div></div>
+    <button class="btn btn-success" onclick="exportExcel()">
+        <i class="bi bi-file-earmark-excel me-1"></i>엑셀 내보내기
+    </button>
+</div>
+
 <!-- 하단 정보 -->
 <div class="text-center text-muted small mt-4">
     <p>데이터 출처: 서울경제신문 XML</p>
@@ -147,6 +155,7 @@
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>
 <script>
 let allData = null;
 let currentPeriod = 'all';
@@ -379,6 +388,68 @@ function showToast(msg, type = 'success') {
 // 검색 핸들러
 function handleSearch() {
     updateView(this.value);
+}
+
+// 엑셀 내보내기
+function exportExcel() {
+    const reporters = getFilteredData(document.getElementById('searchInput').value);
+    if (reporters.length === 0) {
+        alert('내보낼 데이터가 없습니다.');
+        return;
+    }
+    
+    // 기자 목록 데이터
+    const reporterData = reporters.map((r, i) => ({
+        '순위': i + 1,
+        '기자명': r.name,
+        '기사수': r.article_count,
+        '총글자수': r.total_chars,
+        '평균글자수': r.avg_chars
+    }));
+    
+    // 기간 텍스트
+    let periodText = `${allData.period_start} ~ ${allData.period_end}`;
+    if (currentPeriod === 'daily') periodText = formatDate(selectedDate);
+    else if (currentPeriod === 'weekly') {
+        const ws = getWeekStart(selectedDate);
+        const we = new Date(ws); we.setDate(ws.getDate() + 6);
+        periodText = `${formatDate(ws)} ~ ${formatDate(we)}`;
+    } else if (currentPeriod === 'monthly') periodText = `${selectedDate.getFullYear()}년 ${selectedDate.getMonth()+1}월`;
+    
+    // 워크북 생성
+    const wb = XLSX.utils.book_new();
+    
+    // 기자 목록 시트
+    const ws = XLSX.utils.json_to_sheet(reporterData);
+    ws['!cols'] = [
+        { wch: 6 },   // 순위
+        { wch: 15 },  // 기자명
+        { wch: 10 },  // 기사수
+        { wch: 12 },  // 총글자수
+        { wch: 12 }   // 평균글자수
+    ];
+    XLSX.utils.book_append_sheet(wb, ws, '기자목록');
+    
+    // 요약 시트
+    const totalArticles = reporters.reduce((s, r) => s + r.article_count, 0);
+    const totalChars = reporters.reduce((s, r) => s + r.total_chars, 0);
+    const summaryData = [
+        { '항목': '조회기간', '값': periodText },
+        { '항목': '기자수', '값': reporters.length },
+        { '항목': '총기사수', '값': totalArticles },
+        { '항목': '총글자수', '값': totalChars },
+        { '항목': '기자당평균기사', '값': reporters.length > 0 ? Math.round(totalArticles / reporters.length) : 0 }
+    ];
+    const ws2 = XLSX.utils.json_to_sheet(summaryData);
+    ws2['!cols'] = [{ wch: 15 }, { wch: 25 }];
+    XLSX.utils.book_append_sheet(wb, ws2, '요약');
+    
+    // 파일명
+    const fileName = `기자목록_${periodText.replace(/[~\s]/g, '_')}.xlsx`;
+    
+    // 다운로드
+    XLSX.writeFile(wb, fileName);
+    showToast('엑셀 파일이 다운로드되었습니다', 'success');
 }
 </script>
 </body>
