@@ -8,11 +8,12 @@ import json
 import html
 import xml.etree.ElementTree as ET
 from collections import defaultdict
-from datetime import datetime
+from datetime import datetime, timezone, timedelta
 
 s3 = boto3.client('s3')
 XML_BUCKET = 'sedaily-news-xml-storage'
 WEB_BUCKET = 'kpi.sedaily.ai'
+KST = timezone(timedelta(hours=9))
 
 def clean_content(content_str):
     if not content_str:
@@ -221,7 +222,7 @@ def lambda_handler(event, context):
         })
     
     data = {
-        'last_sync': datetime.now().strftime('%Y-%m-%d %H:%M'),
+        'last_sync': datetime.now(KST).strftime('%Y-%m-%d %H:%M'),
         'period_start': f'{dates[0][:4]}-{dates[0][4:6]}-{dates[0][6:8]}',
         'period_end': f'{dates[-1][:4]}-{dates[-1][4:6]}-{dates[-1][6:8]}',
         'total_articles': sum(len(r['articles']) for r in reporters_data),

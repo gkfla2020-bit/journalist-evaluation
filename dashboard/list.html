@@ -19,6 +19,9 @@
         .reporter-row:hover { background: #e8f4f8 !important; }
         .search-box { max-width: 300px; }
         .toast-container { position: fixed; top: 20px; right: 20px; z-index: 9999; }
+        .nav-menu { background: white; border-radius: 12px; padding: 1rem; margin-bottom: 1.5rem; box-shadow: 0 2px 12px rgba(0,0,0,0.08); }
+        .nav-menu a { color: #1a5f7a; text-decoration: none; padding: 0.5rem 1rem; border-radius: 8px; margin-right: 0.5rem; }
+        .nav-menu a:hover, .nav-menu a.active { background: #1a5f7a; color: white; }
     </style>
 </head>
 <body>
@@ -41,12 +44,13 @@
             <h1 style="font-size:1.8rem; margin-bottom:0.25rem;"><i class="bi bi-bar-chart-fill me-2"></i>기자 정량평가 시스템</h1>
             <div style="opacity:0.9;">서울경제신문 KPI 관리</div>
         </div>
-        <div class="d-flex gap-2 align-items-center">
-            <a href="index.html" class="btn btn-outline-light btn-sm">
-                <i class="bi bi-person me-1"></i>샘플
-            </a>
-        </div>
     </div>
+</div>
+
+<!-- 네비게이션 -->
+<div class="nav-menu">
+    <a href="home.html"><i class="bi bi-house-door me-1"></i>대시보드</a>
+    <a href="list.html" class="active"><i class="bi bi-people me-1"></i>기자 목록</a>
 </div>
 
 <!-- 기간 선택 & 동기화 -->

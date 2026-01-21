@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>대시보드 - KPI 시스템</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body { background: #f5f5f5; font-family: 'Pretendard', -apple-system, sans-serif; }
+        .container-main { max-width: 1400px; margin: 0 auto; padding: 1.5rem; }
+        .header { background: linear-gradient(135deg, #4487a1, #159895); color: white; padding: 1.5rem; border-radius: 12px; margin-bottom: 1.5rem; }
+        .card { border: none; border-radius: 12px; box-shadow: 0 2px 12px rgba(0,0,0,0.08); margin-bottom: 1.5rem; }
+        .card-header { background: #1a5f7a; color: white; font-weight: 600; border-radius: 12px 12px 0 0 !important; padding: 1rem 1.5rem; }
+        .stat-card { background: white; border-radius: 12px; padding: 1.5rem; text-align: center; box-shadow: 0 2px 12px rgba(0,0,0,0.08); height: 100%; }
+        .stat-card .value { font-size: 2.5rem; font-weight: 700; color: #1a5f7a; }
+        .stat-card .label { font-size: 0.9rem; color: #6c757d; margin-top: 0.5rem; }
+        .stat-card .icon { font-size: 2rem; color: #159895; margin-bottom: 0.5rem; }
+        .rank-badge { display: inline-block; width: 28px; height: 28px; line-height: 28px; text-align: center; border-radius: 50%; font-weight: 700; font-size: 0.85rem; }
+        .rank-1 { background: #ffd700; color: #333; }
+        .rank-2 { background: #c0c0c0; color: #333; }
+        .rank-3 { background: #cd7f32; color: white; }
+        .rank-other { background: #e9ecef; color: #666; }
+        .chart-container { position: relative; height: 300px; }
+        .nav-menu { background: white; border-radius: 12px; padding: 1rem; margin-bottom: 1.5rem; box-shadow: 0 2px 12px rgba(0,0,0,0.08); }
+        .nav-menu a { color: #1a5f7a; text-decoration: none; padding: 0.5rem 1rem; border-radius: 8px; margin-right: 0.5rem; }
+        .nav-menu a:hover, .nav-menu a.active { background: #1a5f7a; color: white; }
+    </style>
+</head>
+<body>
+<div class="container-main">
+
+<!-- 헤더 -->
+<div class="header">
+    <div class="d-flex justify-content-between align-items-center">
+        <div>
+            <h1 style="font-size:1.8rem; margin-bottom:0.25rem;"><i class="bi bi-speedometer2 me-2"></i>기자 정량평가 대시보드</h1>
+            <div style="opacity:0.9;">서울경제신문 KPI 관리 시스템</div>
+        </div>
+        <div>
+            <span class="badge bg-light text-dark fs-6" id="periodBadge">-</span>
+        </div>
+    </div>
+</div>
+
+<!-- 네비게이션 -->
+<div class="nav-menu">
+    <a href="home.html" class="active"><i class="bi bi-house-door me-1"></i>대시보드</a>
+    <a href="list.html"><i class="bi bi-people me-1"></i>기자 목록</a>
+</div>
+
+<!-- 요약 통계 -->
+<div class="row g-3 mb-4">
+    <div class="col-md-3">
+        <div class="stat-card">
+            <div class="icon"><i class="bi bi-newspaper"></i></div>
+            <div class="value" id="totalArticles">-</div>
+            <div class="label">총 기사 수</div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="stat-card">
+            <div class="icon"><i class="bi bi-people-fill"></i></div>
+            <div class="value" id="totalReporters">-</div>
+            <div class="label">기자 수</div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="stat-card">
+            <div class="icon"><i class="bi bi-file-text"></i></div>
+            <div class="value" id="avgChars">-</div>
+            <div class="label">평균 글자수</div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="stat-card">
+            <div class="icon"><i class="bi bi-clock-history"></i></div>
+            <div class="value" id="lastSync" style="font-size:1.1rem; line-height:1.3;">-</div>
+            <div class="label">마지막 동기화</div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <!-- 기자 순위 TOP 10 -->
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header"><i class="bi bi-trophy me-2"></i>기사수 TOP 10</div>
+            <div class="card-body p-0">
+                <table class="table table-hover mb-0">
+                    <thead class="table-light">
+                        <tr><th style="width:15%">순위</th><th>기자명</th><th style="width:20%">기사수</th><th style="width:25%">글자수</th></tr>
+                    </thead>
+                    <tbody id="topReporters"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 일별 증감 -->
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header"><i class="bi bi-arrow-down-up me-2"></i>최근 일별 기사수 증감</div>
+            <div class="card-body p-0">
+                <table class="table table-hover mb-0">
+                    <thead class="table-light">
+                        <tr><th>날짜</th><th style="width:25%">기사수</th><th style="width:30%">전일 대비</th></tr>
+                    </thead>
+                    <tbody id="dailyChange"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <!-- 일별 기사수 추이 -->
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header"><i class="bi bi-graph-up me-2"></i>일별 기사수 추이</div>
+            <div class="card-body">
+                <div class="chart-container">
+                    <canvas id="dailyChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+let allData = null;
+let dailyChart = null;
+
+document.addEventListener('DOMContentLoaded', loadData);
+
+async function loadData() {
+    try {
+        const res = await fetch('data.json?t=' + Date.now());
+        allData = await res.json();
+        renderDashboard();
+    } catch (err) {
+        console.error(err);
+    }
+}
+
+function renderDashboard() {
+    // 기간 표시
+    document.getElementById('periodBadge').textContent = `${allData.period_start} ~ ${allData.period_end}`;
+    
+    // 통계
+    document.getElementById('totalArticles').textContent = allData.total_articles.toLocaleString();
+    document.getElementById('totalReporters').textContent = allData.total_reporters;
+    document.getElementById('lastSync').textContent = allData.last_sync;
+    
+    // 평균 글자수 계산
+    const totalChars = allData.reporters.reduce((sum, r) => sum + r.total_chars, 0);
+    const avgChars = allData.total_articles > 0 ? Math.round(totalChars / allData.total_articles) : 0;
+    document.getElementById('avgChars').textContent = avgChars.toLocaleString();
+    
+    // TOP 10 기자
+    renderTopReporters();
+    
+    // 일별 증감
+    renderDailyChange();
+    
+    // 차트
+    renderDailyChart();
+}
+
+function renderTopReporters() {
+    const top10 = allData.reporters.slice(0, 10);
+    const tbody = document.getElementById('topReporters');
+    
+    tbody.innerHTML = top10.map((r, i) => {
+        const rankClass = i === 0 ? 'rank-1' : i === 1 ? 'rank-2' : i === 2 ? 'rank-3' : 'rank-other';
+        return `
+            <tr style="cursor:pointer;" onclick="location.href='reporter.html?name=${encodeURIComponent(r.name)}'">
+                <td><span class="rank-badge ${rankClass}">${i + 1}</span></td>
+                <td><strong>${r.name}</strong></td>
+                <td>${r.article_count}</td>
+                <td>${r.total_chars.toLocaleString()}</td>
+            </tr>
+        `;
+    }).join('');
+}
+
+function renderDailyChange() {
+    // 일별 집계
+    const dailyCount = {};
+    
+    allData.reporters.forEach(r => {
+        r.articles.forEach(a => {
+            const date = a.pub_date;
+            if (date) {
+                dailyCount[date] = (dailyCount[date] || 0) + 1;
+            }
+        });
+    });
+    
+    // 날짜순 정렬 (최신순)
+    const sortedDates = Object.keys(dailyCount).sort().reverse().slice(0, 10);
+    
+    const tbody = document.getElementById('dailyChange');
+    tbody.innerHTML = sortedDates.map((date, i) => {
+        const count = dailyCount[date];
+        const prevDate = sortedDates[i + 1];
+        const prevCount = prevDate ? dailyCount[prevDate] : count;
+        const diff = count - prevCount;
+        
+        let diffHtml = '';
+        if (i < sortedDates.length - 1) {
+            if (diff > 0) {
+                diffHtml = `<span class="text-success fw-bold"><i class="bi bi-arrow-up"></i> +${diff}</span>`;
+            } else if (diff < 0) {
+                diffHtml = `<span class="text-danger fw-bold"><i class="bi bi-arrow-down"></i> ${diff}</span>`;
+            } else {
+                diffHtml = `<span class="text-muted">-</span>`;
+            }
+        } else {
+            diffHtml = `<span class="text-muted">-</span>`;
+        }
+        
+        return `
+            <tr>
+                <td>${date.slice(5)}</td>
+                <td><strong>${count}</strong></td>
+                <td>${diffHtml}</td>
+            </tr>
+        `;
+    }).join('');
+}
+
+function renderDailyChart() {
+    // 일별 집계
+    const dailyCount = {};
+    
+    allData.reporters.forEach(r => {
+        r.articles.forEach(a => {
+            const date = a.pub_date;
+            if (date) {
+                dailyCount[date] = (dailyCount[date] || 0) + 1;
+            }
+        });
+    });
+    
+    // 날짜순 정렬
+    const sortedDates = Object.keys(dailyCount).sort();
+    const labels = sortedDates.map(d => d.slice(5)); // MM-DD 형식
+    const data = sortedDates.map(d => dailyCount[d]);
+    
+    const ctx = document.getElementById('dailyChart').getContext('2d');
+    if (dailyChart) dailyChart.destroy();
+    
+    dailyChart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: labels,
+            datasets: [{
+                label: '기사수',
+                data: data,
+                backgroundColor: '#1a5f7a',
+                borderRadius: 4
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { display: false }
+            },
+            scales: {
+                y: { beginAtZero: true }
+            }
+        }
+    });
+}
+</script>
+</body>
+</html>

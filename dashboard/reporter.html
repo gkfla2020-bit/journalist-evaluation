@@ -32,6 +32,9 @@
         .toast-container { position: fixed; top: 20px; right: 20px; z-index: 9999; }
         .loading { text-align: center; padding: 3rem; color: #6c757d; }
         .edit-page i, .edit-chars i { pointer-events: none; }
+        .nav-menu { background: white; border-radius: 12px; padding: 1rem; margin-bottom: 1.5rem; box-shadow: 0 2px 12px rgba(0,0,0,0.08); }
+        .nav-menu a { color: #1a5f7a; text-decoration: none; padding: 0.5rem 1rem; border-radius: 8px; margin-right: 0.5rem; }
+        .nav-menu a:hover { background: #1a5f7a; color: white; }
     </style>
 </head>
 <body>
@@ -45,6 +48,12 @@
             <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
         </div>
     </div>
+</div>
+
+<!-- 네비게이션 -->
+<div class="nav-menu">
+    <a href="home.html"><i class="bi bi-house-door me-1"></i>대시보드</a>
+    <a href="list.html"><i class="bi bi-people me-1"></i>기자 목록</a>
 </div>
 
 <!-- 헤더 -->
