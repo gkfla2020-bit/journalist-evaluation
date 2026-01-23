@@ -151,14 +151,23 @@ function renderDashboard() {
     // 기간 표시
     document.getElementById('periodBadge').textContent = `${allData.period_start} ~ ${allData.period_end}`;
     
+    // 고유 기사수 계산 (nsid 기준 중복 제거)
+    const allNsids = new Set();
+    allData.reporters.forEach(r => {
+        r.articles.forEach(a => {
+            if (a.nsid) allNsids.add(a.nsid);
+        });
+    });
+    const uniqueArticleCount = allNsids.size;
+    
     // 통계
-    document.getElementById('totalArticles').textContent = allData.total_articles.toLocaleString();
+    document.getElementById('totalArticles').textContent = uniqueArticleCount.toLocaleString();
     document.getElementById('totalReporters').textContent = allData.total_reporters;
     document.getElementById('lastSync').textContent = allData.last_sync;
     
     // 평균 글자수 계산
     const totalChars = allData.reporters.reduce((sum, r) => sum + r.total_chars, 0);
-    const avgChars = allData.total_articles > 0 ? Math.round(totalChars / allData.total_articles) : 0;
+    const avgChars = uniqueArticleCount > 0 ? Math.round(totalChars / uniqueArticleCount) : 0;
     document.getElementById('avgChars').textContent = avgChars.toLocaleString();
     
     // TOP 10 기자
@@ -172,7 +181,9 @@ function renderDashboard() {
 }
 
 function renderTopReporters() {
-    const top10 = allData.reporters.slice(0, 10);
+    // 기사수 기준 내림차순 정렬 후 TOP 10
+    const sorted = [...allData.reporters].sort((a, b) => b.article_count - a.article_count);
+    const top10 = sorted.slice(0, 10);
     const tbody = document.getElementById('topReporters');
     
     tbody.innerHTML = top10.map((r, i) => {
@@ -189,44 +200,71 @@ function renderTopReporters() {
 }
 
 function renderDailyChange() {
-    // 일별 집계
-    const dailyCount = {};
+    // 일별 집계 (nsid 기준 중복 제거 - 순수 기사 건수)
+    const dailyArticles = {};
     
     allData.reporters.forEach(r => {
         r.articles.forEach(a => {
             const date = a.pub_date;
-            if (date) {
-                dailyCount[date] = (dailyCount[date] || 0) + 1;
+            const nsid = a.nsid || a.url;  // 고유 식별자
+            if (date && nsid) {
+                if (!dailyArticles[date]) dailyArticles[date] = new Set();
+                dailyArticles[date].add(nsid);
             }
         });
     });
     
-    // 날짜순 정렬 (최신순)
-    const sortedDates = Object.keys(dailyCount).sort().reverse().slice(0, 10);
+    // Set을 count로 변환
+    const dailyCount = {};
+    Object.keys(dailyArticles).forEach(date => {
+        dailyCount[date] = dailyArticles[date].size;
+    });
+    
+    // 최근 10일 연속 날짜 생성 (일요일 포함, 없으면 0건)
+    const today = new Date();
+    const allDates = [];
+    for (let i = 0; i < 14; i++) {  // 14일 중 10일 표시
+        const d = new Date(today);
+        d.setDate(d.getDate() - i);
+        const dateStr = d.toISOString().slice(0, 10);
+        allDates.push(dateStr);
+    }
+    
+    // 데이터가 있는 날짜만 필터링하되, 일요일은 0건으로 표시
+    const sortedDates = allDates.filter(date => {
+        const dayOfWeek = new Date(date).getDay();
+        // 일요일(0)은 항상 포함 (0건으로 표시)
+        // 다른 날은 데이터가 있거나 최근 10일 이내면 포함
+        return dayOfWeek === 0 || dailyCount[date] !== undefined;
+    }).slice(0, 12);
     
     const tbody = document.getElementById('dailyChange');
     tbody.innerHTML = sortedDates.map((date, i) => {
-        const count = dailyCount[date];
+        const count = dailyCount[date] || 0;  // 없으면 0건
+        const dayOfWeek = new Date(date).getDay();
+        const isSunday = dayOfWeek === 0;
+        
+        // 전일 = 더 과거 날짜 (sortedDates에서 다음 인덱스)
         const prevDate = sortedDates[i + 1];
-        const prevCount = prevDate ? dailyCount[prevDate] : count;
-        const diff = count - prevCount;
+        const prevCount = prevDate ? (dailyCount[prevDate] || 0) : null;
         
         let diffHtml = '';
-        if (i < sortedDates.length - 1) {
+        if (prevCount !== null) {
+            const diff = count - prevCount;
             if (diff > 0) {
                 diffHtml = `<span class="text-success fw-bold"><i class="bi bi-arrow-up"></i> +${diff}</span>`;
             } else if (diff < 0) {
                 diffHtml = `<span class="text-danger fw-bold"><i class="bi bi-arrow-down"></i> ${diff}</span>`;
             } else {
-                diffHtml = `<span class="text-muted">-</span>`;
+                diffHtml = `<span class="text-muted">0</span>`;
             }
         } else {
             diffHtml = `<span class="text-muted">-</span>`;
         }
         
         return `
-            <tr>
-                <td>${date.slice(5)}</td>
+            <tr${isSunday ? ' class="table-secondary"' : ''}>
+                <td>${date.slice(5)}${isSunday ? ' <small class="text-muted">(일)</small>' : ''}</td>
                 <td><strong>${count}</strong></td>
                 <td>${diffHtml}</td>
             </tr>
@@ -235,22 +273,43 @@ function renderDailyChange() {
 }
 
 function renderDailyChart() {
-    // 일별 집계
-    const dailyCount = {};
+    // 일별 집계 (nsid 기준 중복 제거 - 순수 기사 건수)
+    const dailyArticles = {};
     
     allData.reporters.forEach(r => {
         r.articles.forEach(a => {
             const date = a.pub_date;
-            if (date) {
-                dailyCount[date] = (dailyCount[date] || 0) + 1;
+            const nsid = a.nsid || a.url;
+            if (date && nsid) {
+                if (!dailyArticles[date]) dailyArticles[date] = new Set();
+                dailyArticles[date].add(nsid);
             }
         });
     });
     
-    // 날짜순 정렬
-    const sortedDates = Object.keys(dailyCount).sort();
-    const labels = sortedDates.map(d => d.slice(5)); // MM-DD 형식
-    const data = sortedDates.map(d => dailyCount[d]);
+    // Set을 count로 변환
+    const dailyCount = {};
+    Object.keys(dailyArticles).forEach(date => {
+        dailyCount[date] = dailyArticles[date].size;
+    });
+    
+    // 최근 14일 연속 날짜 생성 (일요일 0건 포함)
+    const today = new Date();
+    const allDates = [];
+    for (let i = 13; i >= 0; i--) {
+        const d = new Date(today);
+        d.setDate(d.getDate() - i);
+        allDates.push(d.toISOString().slice(0, 10));
+    }
+    
+    const labels = allDates.map(d => d.slice(5)); // MM-DD 형식
+    const data = allDates.map(d => dailyCount[d] || 0);  // 없으면 0
+    
+    // 일요일 표시용 배경색 (일요일은 연한 색)
+    const bgColors = allDates.map(d => {
+        const dayOfWeek = new Date(d).getDay();
+        return dayOfWeek === 0 ? '#cccccc' : '#1a5f7a';
+    });
     
     const ctx = document.getElementById('dailyChart').getContext('2d');
     if (dailyChart) dailyChart.destroy();
@@ -262,7 +321,7 @@ function renderDailyChart() {
             datasets: [{
                 label: '기사수',
                 data: data,
-                backgroundColor: '#1a5f7a',
+                backgroundColor: bgColors,
                 borderRadius: 4
             }]
         },

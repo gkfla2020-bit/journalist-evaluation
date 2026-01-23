@@ -26,20 +26,32 @@ def clean_content(content_str):
 def extract_reporters(author_str):
     if not author_str:
         return ['']
-    # 지역=이름 형식 처리 (베이징=송종호 → 송종호)
-    author_str = re.sub(r'[가-힣a-zA-Z]+\s*=\s*', '', author_str)
+    # 괄호 안 내용 제거 (글·사진), (사진), (영상) 등
+    author_str = re.sub(r'\([^)]*\)', '', author_str)
+    # 지역=이름 형식 처리 (라스베이거스=김태호, 베이징=송종호 → 김태호, 송종호)
+    # 지역명 제거하고 이름만 남김
+    author_str = re.sub(r'[가-힣a-zA-Z0-9]+\s*=\s*', '', author_str)
     # 이메일 제거
-    author_str = re.sub(r'\([^)]*@[^)]*\)', '', author_str)
+    author_str = re.sub(r'[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+', '', author_str)
     # 직함 제거
-    author_str = re.sub(r'\s*(기자|특파원|선임기자|차장|부장|국장|위원|대기자|논설위원)\s*', ' ', author_str)
-    # 구분자로 분리 (·, ,, /, ·)
-    names = re.split(r'[·,/·]', author_str)
+    author_str = re.sub(r'\s*(기자|특파원|선임기자|수석기자|차장|부장|국장|위원|대기자|논설위원|객원기자|통신원)\s*', ' ', author_str)
+    # 구분자로 분리 (·, ,, /, ·, 와, 및)
+    names = re.split(r'[·,/·]|\s+와\s+|\s+및\s+', author_str)
     result = []
     for name in names:
         name = name.strip()
-        match = re.match(r'^([가-힣]{2,4})', name)
+        # 한글 이름 2~4자 추출 (지역명 등 제외)
+        # 지역명 패턴 제외: 베이징, 뉴욕, 워싱턴, 도쿄, 상하이, 라스베이거스 등
+        if name in ['베이징', '뉴욕', '워싱턴', '도쿄', '상하이', '라스베이거스', '홍콩', '런던', '파리', '서울', '부산', '대구', '광주', '대전', '인천', '세종']:
+            continue
+        match = re.match(r'^([가-힣]{2,4})$', name)
         if match:
             result.append(match.group(1))
+        else:
+            # 이름 뒤에 다른 문자가 붙은 경우 (예: 김태호 기자)
+            match = re.match(r'^([가-힣]{2,4})', name)
+            if match and match.group(1) not in ['베이징', '뉴욕', '워싱턴', '도쿄', '상하이', '라스베이거스', '홍콩', '런던', '파리']:
+                result.append(match.group(1))
     return result if result else ['']
 
 def get_all_xml_files():
@@ -119,6 +131,15 @@ def lambda_handler(event, context):
                 
                 reporters = extract_reporters(author)
                 
+                # 입력일자: publishInfo/date (신문 발행일) 사용
+                publish_info = paper.find('publishInfo')
+                pub_date_raw = publish_info.findtext('date', '') if publish_info is not None else ''
+                if pub_date_raw and len(pub_date_raw) == 8:
+                    input_date = f'{pub_date_raw[:4]}-{pub_date_raw[4:6]}-{pub_date_raw[6:8]}'
+                else:
+                    # publishInfo/date 없으면 XML 파일명 날짜 사용
+                    input_date = f'{date[:4]}-{date[4:6]}-{date[6:8]}'
+                
                 for reporter_name in reporters:
                     if not reporter_name:
                         continue
@@ -127,9 +148,8 @@ def lambda_handler(event, context):
                         'title': title,
                         'author': author,
                         'reporter_name': reporter_name,
-                        'pub_date': item.findtext('date', ''),
+                        'pub_date': input_date,  # 입력일자 기준으로 변경
                         'pub_time': item.findtext('time', ''),
-                        'content': content_text[:500],
                         'char_count': char_count,
                         'url': url,
                         'paper_number': paper_num,
@@ -142,6 +162,7 @@ def lambda_handler(event, context):
                     reporter_articles[reporter_name].append(article)
             
             # 새 형식: <article> ... <pageNumber>
+            # pubDate를 기준으로 신문 발행일 계산 (일요일은 신문 없음)
             for article_elem in root.findall('.//article'):
                 pn = article_elem.findtext('pageNumber', '0')
                 paper_num = int(pn) if pn and pn.isdigit() else 0
@@ -158,10 +179,30 @@ def lambda_handler(event, context):
                 
                 url = article_elem.findtext('link', '')
                 
-                # pubDate에서 날짜 추출 (2025-12-30 20:35:35 형식)
+                # 입력일자: pubDate에서 신문 발행일 계산
+                # 규칙: 오전 7시 ~ 다음날 오전 5시 → 다음날 신문
+                # 단, 일요일은 신문 없음 → 월요일로 이동
                 pub_date_str = article_elem.findtext('pubDate', '')
-                pub_date = pub_date_str.split(' ')[0] if pub_date_str else ''
-                pub_time = pub_date_str.split(' ')[1] if ' ' in pub_date_str else ''
+                pub_time = ''
+                if pub_date_str and ' ' in pub_date_str:
+                    pub_time = pub_date_str.split(' ')[1]
+                    try:
+                        dt = datetime.strptime(pub_date_str, '%Y-%m-%d %H:%M:%S')
+                        # 오전 5시 이전이면 당일 신문, 오전 5시 이후면 다음날 신문
+                        if dt.hour < 5:
+                            paper_date = dt
+                        else:
+                            paper_date = dt + timedelta(days=1)
+                        
+                        # 일요일(6)이면 월요일로 이동
+                        if paper_date.weekday() == 6:  # Sunday
+                            paper_date = paper_date + timedelta(days=1)
+                        
+                        input_date = paper_date.strftime('%Y-%m-%d')
+                    except:
+                        input_date = f'{date[:4]}-{date[4:6]}-{date[6:8]}'
+                else:
+                    input_date = f'{date[:4]}-{date[4:6]}-{date[6:8]}'
                 
                 # 톱 여부 (1면이면 톱으로 간주)
                 is_auto_top = (paper_num == 1)
@@ -177,9 +218,8 @@ def lambda_handler(event, context):
                         'title': title,
                         'author': author,
                         'reporter_name': reporter_name,
-                        'pub_date': pub_date,
+                        'pub_date': input_date,  # 입력일자 기준으로 변경
                         'pub_time': pub_time,
-                        'content': content_text[:500],
                         'char_count': char_count,
                         'url': url,
                         'paper_number': paper_num,
@@ -196,7 +236,7 @@ def lambda_handler(event, context):
     # 기자별 정리 (중복 제거)
     dates = [f['date'] for f in xml_files]
     reporters_data = []
-    for name, articles in sorted(reporter_articles.items(), key=lambda x: len(x[1]), reverse=True):
+    for name, articles in reporter_articles.items():
         # 중복 제거: URL 기준 (같은 기사가 제목만 다르게 수정된 경우 대응)
         seen = set()
         unique_articles = []
@@ -220,6 +260,9 @@ def lambda_handler(event, context):
             'article_count': len(unique_articles),
             'avg_chars': total_chars // len(unique_articles) if unique_articles else 0
         })
+    
+    # 기사수 기준 내림차순 정렬 (중복 제거 후)
+    reporters_data.sort(key=lambda x: x['article_count'], reverse=True)
     
     data = {
         'last_sync': datetime.now(KST).strftime('%Y-%m-%d %H:%M'),
