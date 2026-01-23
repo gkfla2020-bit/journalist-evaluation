@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>내 실적 - KPI 시스템</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body { background: #f5f5f5; font-family: 'Pretendard', -apple-system, sans-serif; }
+        .container-main { max-width: 1200px; margin: 0 auto; padding: 1.5rem; }
+        .header { background: linear-gradient(135deg, #4487a1, #159895); color: white; padding: 1.5rem; border-radius: 12px; margin-bottom: 1.5rem; }
+        .card { border: none; border-radius: 12px; box-shadow: 0 2px 12px rgba(0,0,0,0.08); margin-bottom: 1.5rem; }
+        .card-header { background: #1a5f7a; color: white; font-weight: 600; border-radius: 12px 12px 0 0 !important; padding: 1rem 1.5rem; }
+        .stat-card { background: white; border-radius: 12px; padding: 1.5rem; text-align: center; box-shadow: 0 2px 12px rgba(0,0,0,0.08); height: 100%; }
+        .stat-card .value { font-size: 2.5rem; font-weight: 700; color: #1a5f7a; }
+        .stat-card .label { font-size: 0.9rem; color: #6c757d; margin-top: 0.5rem; }
+        .stat-card .icon { font-size: 2rem; color: #159895; margin-bottom: 0.5rem; }
+        .chart-container { position: relative; height: 250px; }
+        .page-badge { display: inline-block; width: 28px; height: 28px; line-height: 28px; text-align: center; border-radius: 6px; font-weight: 700; font-size: 0.85rem; }
+        .page-1 { background: #ffd700; color: #333; }
+        .page-2-3 { background: #17a2b8; color: white; }
+        .page-other { background: #6c757d; color: white; }
+    </style>
+</head>
+<body>
+<div class="container-main">
+
+<!-- 헤더 -->
+<div class="header">
+    <div class="d-flex justify-content-between align-items-center">
+        <div>
+            <h1 style="font-size:1.8rem; margin-bottom:0.25rem;"><i class="bi bi-person-circle me-2"></i><span id="reporterName">기자</span>님의 실적</h1>
+            <div style="opacity:0.9;">서울경제신문 KPI 시스템</div>
+        </div>
+        <div class="text-end">
+            <span class="badge bg-light text-dark fs-6" id="periodBadge">-</span>
+            <div class="mt-2">
+                <button class="btn btn-sm btn-outline-light" onclick="logout()"><i class="bi bi-box-arrow-right"></i> 로그아웃</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 요약 통계 -->
+<div class="row g-3 mb-4">
+    <div class="col-md-4">
+        <div class="stat-card">
+            <div class="icon"><i class="bi bi-newspaper"></i></div>
+            <div class="value" id="totalArticles">-</div>
+            <div class="label">총 기사 수</div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="stat-card">
+            <div class="icon"><i class="bi bi-file-text"></i></div>
+            <div class="value" id="totalChars">-</div>
+            <div class="label">총 글자수</div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="stat-card">
+            <div class="icon"><i class="bi bi-calculator"></i></div>
+            <div class="value" id="avgChars">-</div>
+            <div class="label">평균 글자수</div>
+        </div>
+    </div>
+</div>
+
+<!-- 일별 기사수 추이 -->
+<div class="card">
+    <div class="card-header"><i class="bi bi-graph-up me-2"></i>일별 기사수 추이 (최근 2주)</div>
+    <div class="card-body">
+        <div class="chart-container">
+            <canvas id="dailyChart"></canvas>
+        </div>
+    </div>
+</div>
+
+<!-- 최근 기사 목록 -->
+<div class="card">
+    <div class="card-header"><i class="bi bi-list-ul me-2"></i>최근 기사 목록</div>
+    <div class="card-body p-0">
+        <table class="table table-hover mb-0">
+            <thead class="table-light">
+                <tr>
+                    <th style="width:12%">날짜</th>
+                    <th>제목</th>
+                    <th style="width:10%">면</th>
+                    <th style="width:12%">글자수</th>
+                </tr>
+            </thead>
+            <tbody id="articleList">
+                <tr><td colspan="4" class="text-center py-4 text-muted">로딩중...</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+// 로그인 체크
+const session = JSON.parse(localStorage.getItem('kpi_session') || 'null');
+if (!session || session.role !== 'reporter') {
+    location.href = 'login.html';
+}
+
+const reporterName = session.name;
+document.getElementById('reporterName').textContent = reporterName;
+
+function logout() {
+    localStorage.removeItem('kpi_session');
+    location.href = 'login.html';
+}
+
+let allData = null;
+let reporterData = null;
+let dailyChart = null;
+
+document.addEventListener('DOMContentLoaded', loadData);
+
+async function loadData() {
+    try {
+        const res = await fetch('data.json?t=' + Date.now());
+        allData = await res.json();
+        
+        // 해당 기자 데이터 찾기
+        reporterData = allData.reporters.find(r => r.name === reporterName);
+        
+        if (!reporterData) {
+            document.getElementById('articleList').innerHTML = '<tr><td colspan="4" class="text-center py-4 text-danger">데이터를 찾을 수 없습니다</td></tr>';
+            return;
+        }
+        
+        // 기간 표시
+        document.getElementById('periodBadge').textContent = `${allData.period_start} ~ ${allData.period_end}`;
+        
+        // 순위 계산
+        const sorted = [...allData.reporters].sort((a, b) => b.article_count - a.article_count);
+        const rank = sorted.findIndex(r => r.name === reporterName) + 1;
+        
+        // 통계 표시
+        document.getElementById('totalArticles').textContent = reporterData.article_count;
+        document.getElementById('totalChars').textContent = reporterData.total_chars.toLocaleString();
+        document.getElementById('avgChars').textContent = reporterData.avg_chars.toLocaleString();
+        document.getElementById('ranking').textContent = rank + '위 / ' + allData.total_reporters + '명';
+        
+        // 차트 렌더링
+        renderDailyChart();
+        
+        // 기사 목록 렌더링
+        renderArticleList();
+        
+    } catch (err) {
+        console.error(err);
+    }
+}
+
+function renderDailyChart() {
+    // 일별 집계
+    const dailyCount = {};
+    reporterData.articles.forEach(a => {
+        const date = a.pub_date;
+        if (date) {
+            dailyCount[date] = (dailyCount[date] || 0) + 1;
+        }
+    });
+    
+    // 최근 14일 연속 날짜 생성
+    const today = new Date();
+    const allDates = [];
+    for (let i = 13; i >= 0; i--) {
+        const d = new Date(today);
+        d.setDate(d.getDate() - i);
+        allDates.push(d.toISOString().slice(0, 10));
+    }
+    
+    const labels = allDates.map(d => {
+        const dayOfWeek = new Date(d).getDay();
+        const dayNames = ['일', '월', '화', '수', '목', '금', '토'];
+        return d.slice(5) + '(' + dayNames[dayOfWeek] + ')';
+    });
+    const data = allDates.map(d => dailyCount[d] || 0);
+    
+    // 일요일 회색
+    const bgColors = allDates.map(d => {
+        const dayOfWeek = new Date(d).getDay();
+        return dayOfWeek === 0 ? '#cccccc' : '#1a5f7a';
+    });
+    
+    const ctx = document.getElementById('dailyChart').getContext('2d');
+    if (dailyChart) dailyChart.destroy();
+    
+    dailyChart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: labels,
+            datasets: [{
+                label: '기사수',
+                data: data,
+                backgroundColor: bgColors,
+                borderRadius: 4
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { display: false } },
+            scales: {
+                y: { beginAtZero: true, ticks: { stepSize: 1 } }
+            }
+        }
+    });
+}
+
+function renderArticleList() {
+    // 최근 기사 20개
+    const articles = [...reporterData.articles]
+        .sort((a, b) => b.pub_date.localeCompare(a.pub_date))
+        .slice(0, 20);
+    
+    const tbody = document.getElementById('articleList');
+    
+    if (articles.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="4" class="text-center py-4 text-muted">기사가 없습니다</td></tr>';
+        return;
+    }
+    
+    tbody.innerHTML = articles.map(a => {
+        const pageClass = a.paper_number == 1 ? 'page-1' : (a.paper_number <= 3 ? 'page-2-3' : 'page-other');
+        return `
+            <tr>
+                <td>${a.pub_date ? a.pub_date.slice(5) : '-'}</td>
+                <td><a href="${a.url || '#'}" target="_blank" class="text-decoration-none">${a.title || '-'}</a></td>
+                <td><span class="page-badge ${pageClass}">${a.paper_number || '-'}</span></td>
+                <td>${a.char_count ? a.char_count.toLocaleString() : '-'}</td>
+            </tr>
+        `;
+    }).join('');
+}
+</script>
+</body>
+</html>

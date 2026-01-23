@@ -1,0 +1,24 @@
+title: 민혁의 개발 블로그
+description: 프로젝트와 개발 기록을 정리합니다
+author: 윤민혁
+
+# GitHub Pages 설정
+baseurl: ""
+url: "https://gkfla2020-bit.github.io"
+
+# 테마 설정
+remote_theme: pages-themes/minimal@v0.2.0
+plugins:
+  - jekyll-remote-theme
+
+# 마크다운 설정
+markdown: kramdown
+highlighter: rouge
+
+# 기본값
+defaults:
+  - scope:
+      path: ""
+      type: "posts"
+    values:
+      layout: "default"

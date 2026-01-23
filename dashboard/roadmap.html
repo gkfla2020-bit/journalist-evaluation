@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>향후 계획</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+            background: linear-gradient(135deg, #1a5f7a 0%, #159895 100%); 
+            min-height: 100vh; 
+            font-family: 'Pretendard', -apple-system, sans-serif;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+        }
+        .container {
+            width: 100%;
+            max-width: 1200px;
+        }
+        h1 {
+            color: white;
+            text-align: center;
+            font-size: 2.5rem;
+            margin-bottom: 2.5rem;
+            font-weight: 700;
+        }
+        .roadmap {
+            display: flex;
+            justify-content: space-between;
+            gap: 1.5rem;
+        }
+        .card {
+            flex: 1;
+            background: white;
+            border-radius: 16px;
+            padding: 2rem 1.5rem;
+            text-align: center;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+            transition: transform 0.3s;
+        }
+        .card:hover {
+            transform: translateY(-10px);
+        }
+        .icon {
+            width: 70px;
+            height: 70px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1.2rem;
+            font-size: 2rem;
+            color: white;
+        }
+        .card:nth-child(1) .icon { background: linear-gradient(135deg, #667eea, #764ba2); }
+        .card:nth-child(2) .icon { background: linear-gradient(135deg, #f093fb, #f5576c); }
+        .card:nth-child(3) .icon { background: linear-gradient(135deg, #4facfe, #00f2fe); }
+        .card:nth-child(4) .icon { background: linear-gradient(135deg, #43e97b, #38f9d7); }
+        .title {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: #1a5f7a;
+            margin-bottom: 0.8rem;
+        }
+        .desc {
+            font-size: 0.95rem;
+            color: #666;
+            line-height: 1.6;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1>향후 계획</h1>
+    <div class="roadmap">
+        <div class="card">
+            <div class="icon"><i class="bi bi-person-lock"></i></div>
+            <div class="title">로그인 페이지</div>
+            <div class="desc">사용자 인증 및<br>권한 관리</div>
+        </div>
+        <div class="card">
+            <div class="icon"><i class="bi bi-people"></i></div>
+            <div class="title">부서별 집계</div>
+            <div class="desc">부서 정보 추가<br>팀별 통계</div>
+        </div>
+
+        <div class="card">
+            <div class="icon"><i class="bi bi-clock-history"></i></div>
+            <div class="title">평가 히스토리</div>
+            <div class="desc">평가 이력 로그<br>수정 추적</div>
+        </div>
+    </div>
+</div>
+</body>
+</html>

@@ -38,8 +38,12 @@
             <h1 style="font-size:1.8rem; margin-bottom:0.25rem;"><i class="bi bi-speedometer2 me-2"></i>기자 정량평가 대시보드</h1>
             <div style="opacity:0.9;">서울경제신문 KPI 관리 시스템</div>
         </div>
-        <div>
+        <div class="text-end">
             <span class="badge bg-light text-dark fs-6" id="periodBadge">-</span>
+            <div class="mt-2">
+                <small id="userInfo" class="me-2"></small>
+                <button class="btn btn-sm btn-outline-light" onclick="logout()"><i class="bi bi-box-arrow-right"></i> 로그아웃</button>
+            </div>
         </div>
     </div>
 </div>
@@ -132,6 +136,18 @@
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script>
+// 로그인 체크
+const session = JSON.parse(localStorage.getItem('kpi_session') || 'null');
+if (!session || session.role !== 'admin') {
+    location.href = 'login.html';
+}
+document.getElementById('userInfo').textContent = session ? session.name + '님' : '';
+
+function logout() {
+    localStorage.removeItem('kpi_session');
+    location.href = 'login.html';
+}
+
 let allData = null;
 let dailyChart = null;
 

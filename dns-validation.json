@@ -1,0 +1,11 @@
+{
+  "Changes": [{
+    "Action": "UPSERT",
+    "ResourceRecordSet": {
+      "Name": "_3e23727a4f2efb19957d561d8eef932e.kpi.sedaily.ai.",
+      "Type": "CNAME",
+      "TTL": 300,
+      "ResourceRecords": [{"Value": "_f024a93015eb0815440c168435dde4f2.jkddzztszm.acm-validations.aws."}]
+    }
+  }]
+}

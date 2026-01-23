@@ -6,6 +6,7 @@
     <title>기자 상세 - KPI 시스템</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         body { background: #f5f5f5; font-family: 'Pretendard', -apple-system, sans-serif; }
         .container-main { max-width: 1200px; margin: 0 auto; padding: 1.5rem; }
@@ -35,6 +36,7 @@
         .nav-menu { background: white; border-radius: 12px; padding: 1rem; margin-bottom: 1.5rem; box-shadow: 0 2px 12px rgba(0,0,0,0.08); }
         .nav-menu a { color: #1a5f7a; text-decoration: none; padding: 0.5rem 1rem; border-radius: 8px; margin-right: 0.5rem; }
         .nav-menu a:hover { background: #1a5f7a; color: white; }
+        .chart-container { position: relative; height: 200px; }
     </style>
 </head>
 <body>
@@ -51,9 +53,13 @@
 </div>
 
 <!-- 네비게이션 -->
-<div class="nav-menu">
+<div class="nav-menu" id="navMenu">
     <a href="home.html"><i class="bi bi-house-door me-1"></i>대시보드</a>
     <a href="list.html"><i class="bi bi-people me-1"></i>기자 목록</a>
+    <span class="float-end">
+        <small id="userInfo" class="me-2 text-muted"></small>
+        <button class="btn btn-sm btn-outline-secondary" onclick="logout()"><i class="bi bi-box-arrow-right"></i> 로그아웃</button>
+    </span>
 </div>
 
 <!-- 헤더 -->
@@ -62,9 +68,11 @@
         <div class="profile-icon"><i class="bi bi-person-fill"></i></div>
         <div>
             <h1 style="font-size:1.8rem; margin-bottom:0.25rem;" id="reporterName">기자명</h1>
-            <div style="opacity:0.9; cursor:pointer;" id="reporterDept" onclick="editPosition()" title="클릭하여 직위 수정">
+            <div style="opacity:0.9;" id="reporterDept">
                 <span id="positionText">기자</span>
-                <i class="bi bi-pencil-fill ms-1" style="font-size:0.7rem;"></i>
+                <span id="editPositionBtn" style="cursor:pointer;" onclick="editPosition()" title="클릭하여 직위 수정">
+                    <i class="bi bi-pencil-fill ms-1" style="font-size:0.7rem;"></i>
+                </span>
             </div>
         </div>
         <div class="ms-auto text-end">
@@ -101,8 +109,8 @@
 </div>
 
 <!-- 하단 버튼 -->
-<div class="d-flex justify-content-between mt-4">
-    <a href="list.html" class="btn btn-outline-secondary"><i class="bi bi-arrow-left me-1"></i>기자 목록</a>
+<div class="d-flex justify-content-between mt-4" id="bottomButtons">
+    <a href="list.html" class="btn btn-outline-secondary" id="backToListBtn"><i class="bi bi-arrow-left me-1"></i>기자 목록</a>
     <div>
         <button class="btn btn-success me-2" onclick="exportExcel()"><i class="bi bi-file-earmark-excel me-1"></i>엑셀</button>
         <button class="btn btn-primary" onclick="window.print()"><i class="bi bi-printer me-1"></i>인쇄</button>
@@ -113,9 +121,47 @@
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>
 <script>
+// 로그인 체크
+const session = JSON.parse(localStorage.getItem('kpi_session') || 'null');
+if (!session) {
+    location.href = 'login.html';
+}
+const isAdmin = session && session.role === 'admin';
+const isOwnPage = session && session.role === 'reporter';
+
+// 기자 본인이면 네비게이션 숨기기 (대시보드/기자목록 접근 불가)
+if (isOwnPage) {
+    document.getElementById('navMenu').innerHTML = `
+        <span class="text-muted"><i class="bi bi-person-circle me-1"></i>내 실적 조회</span>
+        <span class="float-end">
+            <small class="me-2 text-muted">${session.name}님</small>
+            <button class="btn btn-sm btn-outline-secondary" onclick="logout()"><i class="bi bi-box-arrow-right"></i> 로그아웃</button>
+        </span>
+    `;
+    // 직위 수정 버튼 숨기기
+    const editBtn = document.getElementById('editPositionBtn');
+    if (editBtn) editBtn.style.display = 'none';
+    // 하단 기자목록 버튼 숨기기
+    const backBtn = document.getElementById('backToListBtn');
+    if (backBtn) backBtn.style.display = 'none';
+} else {
+    document.getElementById('userInfo').textContent = session ? session.name + '님' : '';
+}
+
+function logout() {
+    localStorage.removeItem('kpi_session');
+    location.href = 'login.html';
+}
+
 // URL에서 기자명 가져오기
 const urlParams = new URLSearchParams(window.location.search);
 const reporterName = urlParams.get('name') || '';
+
+// 기자 본인은 자기 페이지만 접근 가능
+if (isOwnPage && reporterName !== session.name) {
+    location.href = 'reporter.html?name=' + encodeURIComponent(session.name);
+}
+
 let currentPeriod = 'daily';
 let allData = null;
 let reporterData = null;
@@ -335,6 +381,16 @@ function renderContent() {
             <div class="col-md-2"><div class="stat-box"><div class="value" style="color:#fd7e14;">${stats.a_grade}</div><div class="label">A등급</div></div></div>
         </div>
         
+        <!-- 일별 기사수 추이 -->
+        <div class="card">
+            <div class="card-header"><i class="bi bi-graph-up me-2"></i>일별 기사수 추이 (최근 2주)</div>
+            <div class="card-body">
+                <div class="chart-container">
+                    <canvas id="dailyChart"></canvas>
+                </div>
+            </div>
+        </div>
+        
         <!-- 면별 기사 분포 -->
         <div class="card">
             <div class="card-header"><i class="bi bi-grid-3x3 me-2"></i>면별 기사 분포 (1~32면)</div>
@@ -387,6 +443,77 @@ function renderContent() {
     
     // 저장 버튼 이벤트 바인딩
     bindSaveEvents();
+    
+    // 일별 기사수 차트 렌더링
+    renderDailyChart();
+}
+
+// 일별 기사수 차트 렌더링
+let dailyChart = null;
+function renderDailyChart() {
+    if (!reporterData || !reporterData.articles) return;
+    
+    // 일별 집계
+    const dailyCount = {};
+    reporterData.articles.forEach(a => {
+        const date = a.pub_date;
+        if (date) {
+            dailyCount[date] = (dailyCount[date] || 0) + 1;
+        }
+    });
+    
+    // 최근 14일 연속 날짜 생성
+    const today = new Date();
+    const allDates = [];
+    for (let i = 13; i >= 0; i--) {
+        const d = new Date(today);
+        d.setDate(d.getDate() - i);
+        allDates.push(d.toISOString().slice(0, 10));
+    }
+    
+    const labels = allDates.map(d => {
+        const dayOfWeek = new Date(d).getDay();
+        const dayNames = ['일', '월', '화', '수', '목', '금', '토'];
+        return d.slice(5) + '(' + dayNames[dayOfWeek] + ')';
+    });
+    const data = allDates.map(d => dailyCount[d] || 0);
+    
+    // 일요일 표시용 배경색
+    const bgColors = allDates.map(d => {
+        const dayOfWeek = new Date(d).getDay();
+        return dayOfWeek === 0 ? '#cccccc' : '#1a5f7a';
+    });
+    
+    const ctx = document.getElementById('dailyChart');
+    if (!ctx) return;
+    
+    if (dailyChart) dailyChart.destroy();
+    
+    dailyChart = new Chart(ctx.getContext('2d'), {
+        type: 'bar',
+        data: {
+            labels: labels,
+            datasets: [{
+                label: '기사수',
+                data: data,
+                backgroundColor: bgColors,
+                borderRadius: 4
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { display: false }
+            },
+            scales: {
+                y: { 
+                    beginAtZero: true,
+                    ticks: { stepSize: 1 }
+                }
+            }
+        }
+    });
 }
 
 // 면별 그리드 렌더링
@@ -502,19 +629,24 @@ function renderArticleTable(articles) {
         return '<div class="p-4 text-muted text-center">기사가 없습니다</div>';
     }
     
+    // 기자 본인은 평가 컬럼 숨김
+    const showEvalCols = isAdmin;
+    
     let html = `
         <table class="table table-hover mb-0" style="font-size:0.85rem;">
             <thead class="table-light">
                 <tr>
-                    <th style="width:8%">날짜</th>
-                    <th style="width:26%">제목</th>
-                    <th style="width:6%">면</th>
-                    <th style="width:8%">글자수</th>
+                    <th style="width:10%">날짜</th>
+                    <th style="width:${showEvalCols ? '26%' : '50%'}">제목</th>
+                    <th style="width:8%">면</th>
+                    <th style="width:10%">글자수</th>
+                    ${showEvalCols ? `
                     <th style="width:10%">위치</th>
                     <th style="width:10%">취재유형</th>
                     <th style="width:10%">기사성격</th>
-                    <th style="width:12%">임팩트</th>
-                    <th style="width:10%">저장</th>
+                    <th style="width:10%">임팩트</th>
+                    <th style="width:6%">저장</th>
+                    ` : ''}
                 </tr>
             </thead>
             <tbody>
@@ -529,8 +661,9 @@ function renderArticleTable(articles) {
             <tr ${isHighlight} data-nsid="${article.nsid}">
                 <td>${article.pub_date ? article.pub_date.slice(5) : '-'}</td>
                 <td><a href="${article.url || '#'}" target="_blank" class="text-decoration-none fw-bold">${escapeHtml(article.title || '')}</a></td>
-                <td><span class="page-badge ${pageClass}">${article.paper_number || '-'}</span> <button type="button" class="btn btn-link btn-sm p-0 text-muted edit-page" title="수정"><i class="bi bi-pencil" style="font-size:0.7rem;"></i></button></td>
-                <td>${article.char_count ? article.char_count.toLocaleString() : '-'} <button type="button" class="btn btn-link btn-sm p-0 text-muted edit-chars" title="수정"><i class="bi bi-pencil" style="font-size:0.7rem;"></i></button></td>
+                <td><span class="page-badge ${pageClass}">${article.paper_number || '-'}</span>${showEvalCols ? ' <button type="button" class="btn btn-link btn-sm p-0 text-muted edit-page" title="수정"><i class="bi bi-pencil" style="font-size:0.7rem;"></i></button>' : ''}</td>
+                <td>${article.char_count ? article.char_count.toLocaleString() : '-'}${showEvalCols ? ' <button type="button" class="btn btn-link btn-sm p-0 text-muted edit-chars" title="수정"><i class="bi bi-pencil" style="font-size:0.7rem;"></i></button>' : ''}</td>
+                ${showEvalCols ? `
                 <td>
                     <select class="form-select form-select-sm eval-position" style="width:85px;">
                         <option value="">선택</option>
@@ -579,6 +712,7 @@ function renderArticleTable(articles) {
                     <button type="button" class="btn btn-sm ${isSaved ? 'btn-success' : 'btn-outline-primary'} save-btn">
                         <i class="bi bi-${isSaved ? 'check2' : 'save'}"></i>
                     </button>
+                ` : ''}
                 </td>
             </tr>
         `;
