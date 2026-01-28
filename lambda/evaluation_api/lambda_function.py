@@ -5,10 +5,14 @@ Lambda: 평가 데이터 저장/불러오기 API
 """
 import boto3
 import json
+from datetime import datetime, timezone, timedelta
 
 s3 = boto3.client('s3')
+cloudfront = boto3.client('cloudfront')
 BUCKET = 'kpi.sedaily.ai'
 KEY = 'evaluations.json'
+CLOUDFRONT_DIST_ID = 'E1DJQD9MHS4VRO'
+KST = timezone(timedelta(hours=9))
 
 def lambda_handler(event, context):
     method = event.get('requestContext', {}).get('http', {}).get('method', 'GET')
@@ -69,8 +73,21 @@ def lambda_handler(event, context):
                 Bucket=BUCKET,
                 Key=KEY,
                 Body=json.dumps(existing, ensure_ascii=False, indent=2),
-                ContentType='application/json; charset=utf-8'
+                ContentType='application/json; charset=utf-8',
+                CacheControl='no-cache, no-store, must-revalidate'
             )
+            
+            # CloudFront 캐시 무효화
+            try:
+                cloudfront.create_invalidation(
+                    DistributionId=CLOUDFRONT_DIST_ID,
+                    InvalidationBatch={
+                        'Paths': {'Quantity': 1, 'Items': ['/evaluations.json']},
+                        'CallerReference': f'eval-{datetime.now(KST).strftime("%Y%m%d%H%M%S")}'
+                    }
+                )
+            except:
+                pass
             
             return {
                 'statusCode': 200,
