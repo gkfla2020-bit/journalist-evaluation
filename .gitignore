@@ -8,15 +8,6 @@ venv/
 *_backup*.html
 *_backup*.json
 
-# Local data (contains real article data)
-dashboard/data.json
-dashboard/data_backup.json
-
-# User data (contains personal info)
-dashboard/users.json
-KPI_계정목록.xlsx
-기자*.xlsx
-
 # DNS records (contains AWS account info)
 dns-record.json
 
