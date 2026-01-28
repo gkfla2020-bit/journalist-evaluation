@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>사원 관리 - KPI</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+    <style>
+        body { background: #f5f5f5; font-family: 'Pretendard', -apple-system, sans-serif; }
+        .container-main { max-width: 1200px; margin: 0 auto; padding: 1.5rem; }
+        .header { background: linear-gradient(135deg, #4487a1, #159895); color: white; padding: 1.5rem; border-radius: 12px; margin-bottom: 1.5rem; }
+        .card { border: none; border-radius: 12px; box-shadow: 0 2px 12px rgba(0,0,0,0.08); margin-bottom: 1.5rem; }
+        .card-header { background: #1a5f7a; color: white; font-weight: 600; border-radius: 12px 12px 0 0 !important; padding: 1rem 1.5rem; }
+        .nav-menu { background: white; border-radius: 12px; padding: 1rem; margin-bottom: 1.5rem; box-shadow: 0 2px 12px rgba(0,0,0,0.08); }
+        .nav-menu a { color: #1a5f7a; text-decoration: none; padding: 0.5rem 1rem; border-radius: 8px; margin-right: 0.5rem; }
+        .nav-menu a:hover, .nav-menu a.active { background: #1a5f7a; color: white; }
+        .toast-container { position: fixed; top: 20px; right: 20px; z-index: 9999; }
+        .role-badge { padding: 0.25rem 0.5rem; border-radius: 4px; font-size: 0.8rem; }
+        .role-admin { background: #dc3545; color: white; }
+        .role-manager { background: #0d6efd; color: white; }
+        .role-reporter { background: #6c757d; color: white; }
+    </style>
+</head>
+<body>
+<div class="container-main">
+
+<!-- 토스트 -->
+<div class="toast-container">
+    <div id="toast" class="toast align-items-center text-bg-success border-0" role="alert">
+        <div class="d-flex">
+            <div class="toast-body" id="toastMsg"></div>
+            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+        </div>
+    </div>
+</div>
+
+<!-- 헤더 -->
+<div class="header">
+    <div class="d-flex justify-content-between align-items-center">
+        <div>
+            <h1 style="font-size:1.8rem; margin-bottom:0.25rem;"><i class="bi bi-people-fill me-2"></i>사원 관리</h1>
+            <div style="opacity:0.9;">부서 및 권한 변경</div>
+        </div>
+        <div class="text-end">
+            <small id="userInfo" class="me-2"></small>
+            <button class="btn btn-sm btn-outline-light" onclick="logout()"><i class="bi bi-box-arrow-right"></i> 로그아웃</button>
+        </div>
+    </div>
+</div>
+
+<!-- 네비게이션 -->
+<div class="nav-menu">
+    <a href="home.html"><i class="bi bi-house-door me-1"></i>대시보드</a>
+    <a href="list.html"><i class="bi bi-people me-1"></i>기자 목록</a>
+    <a href="admin.html" class="active"><i class="bi bi-gear me-1"></i>사원 관리</a>
+</div>
+
+<!-- 필터 -->
+<div class="card">
+    <div class="card-body">
+        <div class="row g-3 align-items-center">
+            <div class="col-md-3">
+                <label class="form-label fw-bold">부서 필터</label>
+                <select class="form-select" id="deptFilter" onchange="filterUsers()">
+                    <option value="">전체 부서</option>
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label class="form-label fw-bold">권한 필터</label>
+                <select class="form-select" id="roleFilter" onchange="filterUsers()">
+                    <option value="">전체 권한</option>
+                    <option value="admin">관리자</option>
+                    <option value="manager">부장</option>
+                    <option value="reporter">기자</option>
+                </select>
+            </div>
+            <div class="col-md-4">
+                <label class="form-label fw-bold">검색</label>
+                <input type="text" class="form-control" id="searchInput" placeholder="이름 또는 사번 검색..." oninput="filterUsers()">
+            </div>
+            <div class="col-md-2 text-end">
+                <label class="form-label">&nbsp;</label>
+                <div>
+                    <span class="badge bg-secondary" id="userCount">0명</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 사원 목록 -->
+<div class="card">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <span><i class="bi bi-list-ul me-2"></i>사원 목록</span>
+        <button class="btn btn-sm btn-light" onclick="saveAllChanges()">
+            <i class="bi bi-save me-1"></i>변경사항 저장
+        </button>
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th style="width:8%">사번</th>
+                        <th style="width:12%">이름</th>
+                        <th style="width:20%">부서</th>
+                        <th style="width:15%">직급</th>
+                        <th style="width:15%">권한</th>
+                        <th style="width:20%">이메일</th>
+                        <th style="width:10%">수정</th>
+                    </tr>
+                </thead>
+                <tbody id="userList">
+                    <tr><td colspan="7" class="text-center py-4 text-muted">로딩중...</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+</div>
+
+<!-- 수정 모달 -->
+<div class="modal fade" id="editModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title"><i class="bi bi-pencil me-2"></i>사원 정보 수정</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="editUserId">
+                <div class="mb-3">
+                    <label class="form-label fw-bold">이름</label>
+                    <input type="text" class="form-control" id="editName" readonly>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label fw-bold">부서</label>
+                    <select class="form-select" id="editDept"></select>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label fw-bold">직급</label>
+                    <select class="form-select" id="editPosition">
+                        <option value="">선택</option>
+                        <option value="기자">기자</option>
+                        <option value="견습기자">견습기자</option>
+                        <option value="선임기자">선임기자</option>
+                        <option value="차장">차장</option>
+                        <option value="차장대우">차장대우</option>
+                        <option value="부장">부장</option>
+                        <option value="부장대우">부장대우</option>
+                        <option value="부장직대">부장직대</option>
+                        <option value="국장">국장</option>
+                        <option value="팀장">팀장</option>
+                        <option value="논설위원">논설위원</option>
+                    </select>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label fw-bold">권한</label>
+                    <select class="form-select" id="editRole">
+                        <option value="reporter">기자</option>
+                        <option value="manager">부장 (부서 관리)</option>
+                        <option value="admin">관리자 (전체 관리)</option>
+                    </select>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">취소</button>
+                <button type="button" class="btn btn-primary" onclick="saveUserEdit()">저장</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+// 로그인 체크 - admin만 접근 가능
+const session = JSON.parse(localStorage.getItem('kpi_session') || 'null');
+if (!session || session.role !== 'admin') {
+    location.href = 'login.html';
+}
+document.getElementById('userInfo').textContent = session.name + '님';
+
+function logout() {
+    localStorage.removeItem('kpi_session');
+    location.href = 'login.html';
+}
+
+let allUsers = [];
+let departments = [];
+let changedUsers = {};
+
+// 초기 로드
+document.addEventListener('DOMContentLoaded', loadUsers);
+
+async function loadUsers() {
+    try {
+        const res = await fetch('users.json?t=' + Date.now());
+        allUsers = await res.json();
+        
+        // 부서 목록 추출
+        departments = [...new Set(allUsers.map(u => u.department).filter(d => d && d !== '전체'))];
+        departments.sort();
+        
+        // 부서 필터 옵션
+        const deptFilter = document.getElementById('deptFilter');
+        const editDept = document.getElementById('editDept');
+        departments.forEach(d => {
+            deptFilter.innerHTML += `<option value="${d}">${d}</option>`;
+            editDept.innerHTML += `<option value="${d}">${d}</option>`;
+        });
+        
+        filterUsers();
+    } catch (e) {
+        console.error('사용자 로드 실패:', e);
+    }
+}
+
+function filterUsers() {
+    const deptFilter = document.getElementById('deptFilter').value;
+    const roleFilter = document.getElementById('roleFilter').value;
+    const search = document.getElementById('searchInput').value.toLowerCase();
+    
+    let filtered = allUsers.filter(u => {
+        if (deptFilter && u.department !== deptFilter) return false;
+        if (roleFilter && u.role !== roleFilter) return false;
+        if (search && !u.name.toLowerCase().includes(search) && !u.id.includes(search)) return false;
+        return true;
+    });
+    
+    document.getElementById('userCount').textContent = filtered.length + '명';
+    renderTable(filtered);
+}
+
+function renderTable(users) {
+    const tbody = document.getElementById('userList');
+    if (users.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="7" class="text-center py-4 text-muted">검색 결과가 없습니다</td></tr>';
+        return;
+    }
+    
+    tbody.innerHTML = users.map(u => {
+        const roleClass = u.role === 'admin' ? 'role-admin' : (u.role === 'manager' ? 'role-manager' : 'role-reporter');
+        const roleText = u.role === 'admin' ? '관리자' : (u.role === 'manager' ? '부장' : '기자');
+        const isChanged = changedUsers[u.id] ? 'table-warning' : '';
+        
+        return `
+            <tr class="${isChanged}">
+                <td>${u.id}</td>
+                <td><strong>${u.name}</strong></td>
+                <td>${u.department}</td>
+                <td>${u.position || '-'}</td>
+                <td><span class="role-badge ${roleClass}">${roleText}</span></td>
+                <td><small>${u.email || '-'}</small></td>
+                <td>
+                    <button class="btn btn-sm btn-outline-primary" onclick="openEditModal('${u.id}')">
+                        <i class="bi bi-pencil"></i>
+                    </button>
+                </td>
+            </tr>
+        `;
+    }).join('');
+}
+
+function openEditModal(userId) {
+    const user = allUsers.find(u => u.id === userId);
+    if (!user) return;
+    
+    document.getElementById('editUserId').value = userId;
+    document.getElementById('editName').value = user.name;
+    document.getElementById('editDept').value = user.department;
+    document.getElementById('editPosition').value = user.position || '';
+    document.getElementById('editRole').value = user.role;
+    
+    new bootstrap.Modal(document.getElementById('editModal')).show();
+}
+
+function saveUserEdit() {
+    const userId = document.getElementById('editUserId').value;
+    const newDept = document.getElementById('editDept').value;
+    const newPosition = document.getElementById('editPosition').value;
+    const newRole = document.getElementById('editRole').value;
+    
+    // allUsers에서 해당 사용자 찾아서 수정
+    const user = allUsers.find(u => u.id === userId);
+    if (user) {
+        user.department = newDept;
+        user.position = newPosition;
+        user.role = newRole;
+        changedUsers[userId] = true;
+    }
+    
+    bootstrap.Modal.getInstance(document.getElementById('editModal')).hide();
+    filterUsers();
+    showToast('수정되었습니다. "변경사항 저장" 버튼을 눌러 저장하세요.', 'warning');
+}
+
+async function saveAllChanges() {
+    if (Object.keys(changedUsers).length === 0) {
+        showToast('변경된 내용이 없습니다.', 'info');
+        return;
+    }
+    
+    try {
+        // users.json 파일로 저장 (로컬)
+        const blob = new Blob([JSON.stringify(allUsers, null, 2)], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'users.json';
+        a.click();
+        URL.revokeObjectURL(url);
+        
+        changedUsers = {};
+        filterUsers();
+        showToast('users.json 파일이 다운로드되었습니다. dashboard 폴더에 덮어쓰기 해주세요.', 'success');
+    } catch (e) {
+        showToast('저장 실패: ' + e.message, 'danger');
+    }
+}
+
+function showToast(msg, type = 'success') {
+    const t = document.getElementById('toast');
+    t.className = `toast align-items-center text-bg-${type} border-0`;
+    document.getElementById('toastMsg').textContent = msg;
+    new bootstrap.Toast(t).show();
+}
+</script>
+</body>
+</html>

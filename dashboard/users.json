@@ -1,0 +1,2351 @@
+[
+  {
+    "id": "admin",
+    "password": "1234",
+    "name": "관리자",
+    "department": "전체",
+    "role": "admin",
+    "position": "관리자",
+    "email": "admin@sedaily.com"
+  },
+  {
+    "id": "10579",
+    "password": "1234",
+    "name": "이철균",
+    "department": "편집국",
+    "role": "manager",
+    "position": "편집국장",
+    "email": "fusioncj@sedaily.com",
+    "emp_id": "10579"
+  },
+  {
+    "id": "2095",
+    "password": "1234",
+    "name": "박태준",
+    "department": "편집국",
+    "role": "manager",
+    "position": "부국장대우(파견)",
+    "email": "june@sedaily.com",
+    "emp_id": "2095"
+  },
+  {
+    "id": "131160",
+    "password": "1234",
+    "name": "박진용",
+    "department": "편집국",
+    "role": "reporter",
+    "position": "",
+    "email": "yongs@sedaily.com",
+    "emp_id": "131160"
+  },
+  {
+    "id": "261001",
+    "password": "1234",
+    "name": "김지원",
+    "department": "편집국",
+    "role": "reporter",
+    "position": "견습기자",
+    "email": "one@sedaily.com",
+    "emp_id": "261001"
+  },
+  {
+    "id": "261002",
+    "password": "1234",
+    "name": "남소정",
+    "department": "편집국",
+    "role": "reporter",
+    "position": "견습기자",
+    "email": "nsj@sedaily.com",
+    "emp_id": "261002"
+  },
+  {
+    "id": "261003",
+    "password": "1234",
+    "name": "박지우",
+    "department": "편집국",
+    "role": "reporter",
+    "position": "견습기자",
+    "email": "jiu@sedaily.com",
+    "emp_id": "261003"
+  },
+  {
+    "id": "261004",
+    "password": "1234",
+    "name": "신지민",
+    "department": "편집국",
+    "role": "reporter",
+    "position": "견습기자",
+    "email": "jimnn@sedaily.com",
+    "emp_id": "261004"
+  },
+  {
+    "id": "261005",
+    "password": "1234",
+    "name": "이연수",
+    "department": "편집국",
+    "role": "reporter",
+    "position": "견습기자",
+    "email": "snake@sedaily.com",
+    "emp_id": "261005"
+  },
+  {
+    "id": "261006",
+    "password": "1234",
+    "name": "장현기",
+    "department": "편집국",
+    "role": "reporter",
+    "position": "견습기자",
+    "email": "lucky@sedaily.com",
+    "emp_id": "261006"
+  },
+  {
+    "id": "80486",
+    "password": "1234",
+    "name": "서일범",
+    "department": "경제부",
+    "role": "manager",
+    "position": "부장직대",
+    "email": "squiz@sedaily.com",
+    "emp_id": "80486"
+  },
+  {
+    "id": "90214",
+    "password": "1234",
+    "name": "서민우",
+    "department": "경제부",
+    "role": "reporter",
+    "position": "차장대우",
+    "email": "ingaghi@sedaily.com",
+    "emp_id": "90214"
+  },
+  {
+    "id": "100450",
+    "password": "1234",
+    "name": "한동훈",
+    "department": "경제부",
+    "role": "reporter",
+    "position": "차장대우",
+    "email": "hooni@sedaily.com",
+    "emp_id": "100450"
+  },
+  {
+    "id": "211010",
+    "password": "1234",
+    "name": "주재현",
+    "department": "경제부",
+    "role": "reporter",
+    "position": "",
+    "email": "joojh@sedaily.com",
+    "emp_id": "211010"
+  },
+  {
+    "id": "211069",
+    "password": "1234",
+    "name": "유현욱",
+    "department": "경제부",
+    "role": "reporter",
+    "position": "",
+    "email": "abc@sedaily.com",
+    "emp_id": "211069"
+  },
+  {
+    "id": "221005",
+    "password": "1234",
+    "name": "박신원",
+    "department": "경제부",
+    "role": "reporter",
+    "position": "",
+    "email": "shin@sedaily.com",
+    "emp_id": "221005"
+  },
+  {
+    "id": "221011",
+    "password": "1234",
+    "name": "조윤진",
+    "department": "경제부",
+    "role": "reporter",
+    "position": "",
+    "email": "jo@sedaily.com",
+    "emp_id": "221011"
+  },
+  {
+    "id": "241017",
+    "password": "1234",
+    "name": "김혜란",
+    "department": "경제부",
+    "role": "reporter",
+    "position": "",
+    "email": "khr@sedaily.com",
+    "emp_id": "241017"
+  },
+  {
+    "id": "60192",
+    "password": "1234",
+    "name": "윤홍우",
+    "department": "정치부",
+    "role": "manager",
+    "position": "부장직대",
+    "email": "seoulbird@sedaily.com",
+    "emp_id": "60192"
+  },
+  {
+    "id": "52032",
+    "password": "1234",
+    "name": "이현호",
+    "department": "정치부",
+    "role": "reporter",
+    "position": "차장",
+    "email": "hhlee@sedaily.com",
+    "emp_id": "52032"
+  },
+  {
+    "id": "80457",
+    "password": "1234",
+    "name": "유주희",
+    "department": "정치부",
+    "role": "reporter",
+    "position": "차장대우",
+    "email": "ginger@sedaily.com",
+    "emp_id": "80457"
+  },
+  {
+    "id": "151012",
+    "password": "1234",
+    "name": "송종호",
+    "department": "정치부",
+    "role": "reporter",
+    "position": "차장대우",
+    "email": "joist1894@sedaily.com",
+    "emp_id": "151012"
+  },
+  {
+    "id": "151010",
+    "password": "1234",
+    "name": "진동영",
+    "department": "정치부",
+    "role": "reporter",
+    "position": "차장대우",
+    "email": "jin@sedaily.com",
+    "emp_id": "151010"
+  },
+  {
+    "id": "191008",
+    "password": "1234",
+    "name": "전희윤",
+    "department": "정치부",
+    "role": "reporter",
+    "position": "",
+    "email": "heeyoun@sedaily.com",
+    "emp_id": "191008"
+  },
+  {
+    "id": "211028",
+    "password": "1234",
+    "name": "이진석",
+    "department": "정치부",
+    "role": "reporter",
+    "position": "",
+    "email": "ljs@sedaily.com",
+    "emp_id": "211028"
+  },
+  {
+    "id": "221001",
+    "password": "1234",
+    "name": "강도림",
+    "department": "정치부",
+    "role": "reporter",
+    "position": "",
+    "email": "dorimi@sedaily.com",
+    "emp_id": "221001"
+  },
+  {
+    "id": "221017",
+    "password": "1234",
+    "name": "정상훈",
+    "department": "정치부",
+    "role": "reporter",
+    "position": "",
+    "email": "sesang222@sedaily.com",
+    "emp_id": "221017"
+  },
+  {
+    "id": "231005",
+    "password": "1234",
+    "name": "이승령",
+    "department": "정치부",
+    "role": "reporter",
+    "position": "",
+    "email": "yigija94@sedaily.com",
+    "emp_id": "231005"
+  },
+  {
+    "id": "241001",
+    "password": "1234",
+    "name": "도혜원",
+    "department": "정치부",
+    "role": "reporter",
+    "position": "",
+    "email": "dohye1@sedaily.com",
+    "emp_id": "241001"
+  },
+  {
+    "id": "241016",
+    "password": "1234",
+    "name": "김병훈",
+    "department": "정치부",
+    "role": "reporter",
+    "position": "",
+    "email": "cos@sedaily.com",
+    "emp_id": "241016"
+  },
+  {
+    "id": "251002",
+    "password": "1234",
+    "name": "마가연",
+    "department": "정치부",
+    "role": "reporter",
+    "position": "",
+    "email": "magnetic@sedaily.com",
+    "emp_id": "251002"
+  },
+  {
+    "id": "251020",
+    "password": "1234",
+    "name": "김유승",
+    "department": "정치부",
+    "role": "reporter",
+    "position": "",
+    "email": "kys@sedaily.com",
+    "emp_id": "251020"
+  },
+  {
+    "id": "60147",
+    "password": "1234",
+    "name": "김영필",
+    "department": "금융부",
+    "role": "manager",
+    "position": "부장직대",
+    "email": "susopa@sedaily.com",
+    "emp_id": "60147"
+  },
+  {
+    "id": "70454",
+    "password": "1234",
+    "name": "김현상",
+    "department": "금융부",
+    "role": "reporter",
+    "position": "차장",
+    "email": "kim0123@sedaily.com",
+    "emp_id": "70454"
+  },
+  {
+    "id": "231002",
+    "password": "1234",
+    "name": "박민주",
+    "department": "금융부",
+    "role": "reporter",
+    "position": "차장대우",
+    "email": "parkmj@sedaily.com",
+    "emp_id": "231002"
+  },
+  {
+    "id": "171003",
+    "password": "1234",
+    "name": "김우보",
+    "department": "금융부",
+    "role": "reporter",
+    "position": "",
+    "email": "ubo@sedaily.com",
+    "emp_id": "171003"
+  },
+  {
+    "id": "181003",
+    "password": "1234",
+    "name": "심우일",
+    "department": "금융부",
+    "role": "reporter",
+    "position": "",
+    "email": "vita@sedaily.com",
+    "emp_id": "181003"
+  },
+  {
+    "id": "201006",
+    "password": "1234",
+    "name": "이승배",
+    "department": "금융부",
+    "role": "reporter",
+    "position": "",
+    "email": "bae@sedaily.com",
+    "emp_id": "201006"
+  },
+  {
+    "id": "221019",
+    "password": "1234",
+    "name": "신중섭",
+    "department": "금융부",
+    "role": "reporter",
+    "position": "",
+    "email": "jseop@sedaily.com",
+    "emp_id": "221019"
+  },
+  {
+    "id": "241015",
+    "password": "1234",
+    "name": "공준호",
+    "department": "금융부",
+    "role": "reporter",
+    "position": "",
+    "email": "zero@sedaily.com",
+    "emp_id": "241015"
+  },
+  {
+    "id": "251007",
+    "password": "1234",
+    "name": "김정우",
+    "department": "금융부",
+    "role": "reporter",
+    "position": "",
+    "email": "woo@sedaily.com",
+    "emp_id": "251007"
+  },
+  {
+    "id": "251008",
+    "password": "1234",
+    "name": "도예리",
+    "department": "금융부",
+    "role": "reporter",
+    "position": "",
+    "email": "yeri.do@sedaily.com",
+    "emp_id": "251008"
+  },
+  {
+    "id": "120757",
+    "password": "1234",
+    "name": "박성호",
+    "department": "사회부",
+    "role": "manager",
+    "position": "부장직대",
+    "email": "junpark@sedaily.com",
+    "emp_id": "120757"
+  },
+  {
+    "id": "973250",
+    "password": "1234",
+    "name": "박희윤",
+    "department": "사회부",
+    "role": "manager",
+    "position": "충청취재본부장(차장)",
+    "email": "hypark@sedaily.com",
+    "emp_id": "973250"
+  },
+  {
+    "id": "231016",
+    "password": "1234",
+    "name": "손대선",
+    "department": "사회부",
+    "role": "manager",
+    "position": "경기취재본부장(차장)",
+    "email": "sds1105@sedaily.com",
+    "emp_id": "231016"
+  },
+  {
+    "id": "51606",
+    "password": "1234",
+    "name": "손성락",
+    "department": "사회부",
+    "role": "manager",
+    "position": "대구경북취재본부장(차장대우)",
+    "email": "ssr@sedaily.com",
+    "emp_id": "51606"
+  },
+  {
+    "id": "100405",
+    "password": "1234",
+    "name": "양철민",
+    "department": "사회부",
+    "role": "reporter",
+    "position": "차장대우",
+    "email": "chopin@sedaily.com",
+    "emp_id": "100405"
+  },
+  {
+    "id": "102704",
+    "password": "1234",
+    "name": "안현덕",
+    "department": "사회부",
+    "role": "reporter",
+    "position": "전문기자(차장대우)",
+    "email": "always@sedaily.com",
+    "emp_id": "102704"
+  },
+  {
+    "id": "120715",
+    "password": "1234",
+    "name": "박성규",
+    "department": "사회부",
+    "role": "reporter",
+    "position": "차장대우",
+    "email": "exculpate2@sedaily.com",
+    "emp_id": "120715"
+  },
+  {
+    "id": "141003",
+    "password": "1234",
+    "name": "장지승",
+    "department": "사회부",
+    "role": "manager",
+    "position": "부울경취재본부장(차장대우)",
+    "email": "jjs@sedaily.com",
+    "emp_id": "141003"
+  },
+  {
+    "id": "141005",
+    "password": "1234",
+    "name": "조원진",
+    "department": "사회부",
+    "role": "reporter",
+    "position": "차장대우",
+    "email": "bscity@sedaily.com",
+    "emp_id": "141005"
+  },
+  {
+    "id": "161013",
+    "password": "1234",
+    "name": "박시진",
+    "department": "사회부",
+    "role": "reporter",
+    "position": "차장대우",
+    "email": "see1205@sedaily.com",
+    "emp_id": "161013"
+  },
+  {
+    "id": "191025",
+    "password": "1234",
+    "name": "양종곤",
+    "department": "사회부",
+    "role": "reporter",
+    "position": "전문기자(차장대우)",
+    "email": "ggm11@sedaily.com",
+    "emp_id": "191025"
+  },
+  {
+    "id": "221039",
+    "password": "1234",
+    "name": "박지훈",
+    "department": "사회부",
+    "role": "manager",
+    "position": "호남취재본부장(차장대우)",
+    "email": "jhp9900@sedaily.com",
+    "emp_id": "221039"
+  },
+  {
+    "id": "231010",
+    "password": "1234",
+    "name": "이경환",
+    "department": "사회부",
+    "role": "reporter",
+    "position": "차장대우",
+    "email": "lkh@sedaily.com",
+    "emp_id": "231010"
+  },
+  {
+    "id": "231031",
+    "password": "1234",
+    "name": "안재균",
+    "department": "사회부",
+    "role": "reporter",
+    "position": "차장대우",
+    "email": "ajk@sedaily.com",
+    "emp_id": "231031"
+  },
+  {
+    "id": "251009",
+    "password": "1234",
+    "name": "박창규",
+    "department": "사회부",
+    "role": "reporter",
+    "position": "차장대우",
+    "email": "kyu@sedaily.com",
+    "emp_id": "251009"
+  },
+  {
+    "id": "131173",
+    "password": "1234",
+    "name": "박호현",
+    "department": "사회부",
+    "role": "reporter",
+    "position": "",
+    "email": "greenlight@sedaily.com",
+    "emp_id": "131173"
+  },
+  {
+    "id": "221007",
+    "password": "1234",
+    "name": "성채윤",
+    "department": "사회부",
+    "role": "reporter",
+    "position": "",
+    "email": "chae@sedaily.com",
+    "emp_id": "221007"
+  },
+  {
+    "id": "221010",
+    "password": "1234",
+    "name": "장형임",
+    "department": "사회부",
+    "role": "reporter",
+    "position": "",
+    "email": "jang@sedaily.com",
+    "emp_id": "221010"
+  },
+  {
+    "id": "221021",
+    "password": "1234",
+    "name": "김선영",
+    "department": "사회부",
+    "role": "reporter",
+    "position": "",
+    "email": "earthgirl@sedaily.com",
+    "emp_id": "221021"
+  },
+  {
+    "id": "231002",
+    "password": "1234",
+    "name": "박민주",
+    "department": "사회부",
+    "role": "reporter",
+    "position": "",
+    "email": "parkmj@sedaily.com",
+    "emp_id": "231002"
+  },
+  {
+    "id": "231008",
+    "password": "1234",
+    "name": "황동건",
+    "department": "사회부",
+    "role": "reporter",
+    "position": "",
+    "email": "brassgun@sedaily.com",
+    "emp_id": "231008"
+  },
+  {
+    "id": "241003",
+    "password": "1234",
+    "name": "신서희",
+    "department": "사회부",
+    "role": "reporter",
+    "position": "",
+    "email": "shshin@sedaily.com",
+    "emp_id": "241003"
+  },
+  {
+    "id": "241006",
+    "password": "1234",
+    "name": "임종현",
+    "department": "사회부",
+    "role": "reporter",
+    "position": "",
+    "email": "s4our@sedaily.com",
+    "emp_id": "241006"
+  },
+  {
+    "id": "251005",
+    "password": "1234",
+    "name": "정유나",
+    "department": "사회부",
+    "role": "reporter",
+    "position": "",
+    "email": "me@sedaily.com",
+    "emp_id": "251005"
+  },
+  {
+    "id": "231029",
+    "password": "1234",
+    "name": "채민석",
+    "department": "사회부",
+    "role": "reporter",
+    "position": "",
+    "email": "vegemin@sedaily.com",
+    "emp_id": "231029"
+  },
+  {
+    "id": "231032",
+    "password": "1234",
+    "name": "박종완",
+    "department": "사회부",
+    "role": "reporter",
+    "position": "",
+    "email": "wan@sedaily.com",
+    "emp_id": "231032"
+  },
+  {
+    "id": "251023",
+    "password": "1234",
+    "name": "이유진",
+    "department": "사회부",
+    "role": "reporter",
+    "position": "",
+    "email": "heylee0122@sedaily.com",
+    "emp_id": "251023"
+  },
+  {
+    "id": "70425",
+    "password": "1234",
+    "name": "강동효",
+    "department": "여론독자부",
+    "role": "manager",
+    "position": "부장직대",
+    "email": "kdhyo@sedaily.com",
+    "emp_id": "70425"
+  },
+  {
+    "id": "962025",
+    "password": "1234",
+    "name": "고광본",
+    "department": "여론독자부",
+    "role": "reporter",
+    "position": "선임기자",
+    "email": "kbgo@sedaily.com",
+    "emp_id": "962025"
+  },
+  {
+    "id": "930154",
+    "password": "1234",
+    "name": "임석훈",
+    "department": "여론독자부",
+    "role": "reporter",
+    "position": "선임기자",
+    "email": "shim@sedaily.com",
+    "emp_id": "930154"
+  },
+  {
+    "id": "941101",
+    "password": "1234",
+    "name": "송영규",
+    "department": "여론독자부",
+    "role": "reporter",
+    "position": "선임기자",
+    "email": "skong@sedaily.com",
+    "emp_id": "941101"
+  },
+  {
+    "id": "941839",
+    "password": "1234",
+    "name": "박현욱",
+    "department": "여론독자부",
+    "role": "reporter",
+    "position": "차장",
+    "email": "hwpark@sedaily.com",
+    "emp_id": "941839"
+  },
+  {
+    "id": "161041",
+    "password": "1234",
+    "name": "김정욱",
+    "department": "여론독자부",
+    "role": "reporter",
+    "position": "차장대우",
+    "email": "mykj@sedaily.com",
+    "emp_id": "161041"
+  },
+  {
+    "id": "161040",
+    "password": "1234",
+    "name": "최성욱",
+    "department": "여론독자부",
+    "role": "reporter",
+    "position": "차장대우",
+    "email": "secret@sedaily.com",
+    "emp_id": "161040"
+  },
+  {
+    "id": "52029",
+    "password": "1234",
+    "name": "성행경",
+    "department": "건설부동산부",
+    "role": "manager",
+    "position": "부장직대",
+    "email": "saint@sedaily.com",
+    "emp_id": "52029"
+  },
+  {
+    "id": "113489",
+    "password": "1234",
+    "name": "박경훈",
+    "department": "건설부동산부",
+    "role": "reporter",
+    "position": "차장대우",
+    "email": "socool@sedaily.com",
+    "emp_id": "113489"
+  },
+  {
+    "id": "131186",
+    "password": "1234",
+    "name": "박형윤",
+    "department": "건설부동산부",
+    "role": "reporter",
+    "position": "",
+    "email": "manis@sedaily.com",
+    "emp_id": "131186"
+  },
+  {
+    "id": "151002",
+    "password": "1234",
+    "name": "백주연",
+    "department": "건설부동산부",
+    "role": "reporter",
+    "position": "",
+    "email": "nice89@sedaily.com",
+    "emp_id": "151002"
+  },
+  {
+    "id": "171008",
+    "password": "1234",
+    "name": "우영탁",
+    "department": "건설부동산부",
+    "role": "reporter",
+    "position": "",
+    "email": "tak@sedaily.com",
+    "emp_id": "171008"
+  },
+  {
+    "id": "211054",
+    "password": "1234",
+    "name": "천민아",
+    "department": "건설부동산부",
+    "role": "reporter",
+    "position": "",
+    "email": "mina@sedaily.com",
+    "emp_id": "211054"
+  },
+  {
+    "id": "211070",
+    "password": "1234",
+    "name": "신미진",
+    "department": "건설부동산부",
+    "role": "reporter",
+    "position": "",
+    "email": "mjshin@sedaily.com",
+    "emp_id": "211070"
+  },
+  {
+    "id": "201003",
+    "password": "1234",
+    "name": "김태영",
+    "department": "건설부동산부",
+    "role": "reporter",
+    "position": "",
+    "email": "youngkim@sedaily.com",
+    "emp_id": "201003"
+  },
+  {
+    "id": "20530",
+    "password": "1234",
+    "name": "손철",
+    "department": "산업부",
+    "role": "manager",
+    "position": "부장직대",
+    "email": "runiron@sedaily.com",
+    "emp_id": "20530"
+  },
+  {
+    "id": "113515",
+    "password": "1234",
+    "name": "구경우",
+    "department": "산업부",
+    "role": "reporter",
+    "position": "차장대우",
+    "email": "bluesquare@sedaily.com",
+    "emp_id": "113515"
+  },
+  {
+    "id": "241020",
+    "password": "1234",
+    "name": "유민환",
+    "department": "산업부",
+    "role": "reporter",
+    "position": "차장대우",
+    "email": "yoogiza@sedaily.com",
+    "emp_id": "241020"
+  },
+  {
+    "id": "181001",
+    "password": "1234",
+    "name": "서종갑",
+    "department": "산업부",
+    "role": "reporter",
+    "position": "",
+    "email": "gap@sedaily.com",
+    "emp_id": "181001"
+  },
+  {
+    "id": "191010",
+    "password": "1234",
+    "name": "허진",
+    "department": "산업부",
+    "role": "reporter",
+    "position": "",
+    "email": "hjin@sedaily.com",
+    "emp_id": "191010"
+  },
+  {
+    "id": "201005",
+    "password": "1234",
+    "name": "심기문",
+    "department": "산업부",
+    "role": "reporter",
+    "position": "",
+    "email": "door@sedaily.com",
+    "emp_id": "201005"
+  },
+  {
+    "id": "211071",
+    "password": "1234",
+    "name": "노해철",
+    "department": "산업부",
+    "role": "reporter",
+    "position": "",
+    "email": "sun@sedaily.com",
+    "emp_id": "211071"
+  },
+  {
+    "id": "221009",
+    "password": "1234",
+    "name": "이건율",
+    "department": "산업부",
+    "role": "reporter",
+    "position": "",
+    "email": "yul@sedaily.com",
+    "emp_id": "221009"
+  },
+  {
+    "id": "231011",
+    "password": "1234",
+    "name": "노우리",
+    "department": "산업부",
+    "role": "reporter",
+    "position": "",
+    "email": "we1228@sedaily.com",
+    "emp_id": "231011"
+  },
+  {
+    "id": "211009",
+    "password": "1234",
+    "name": "정혜진",
+    "department": "산업부",
+    "role": "reporter",
+    "position": "",
+    "email": "madein@sedaily.com",
+    "emp_id": "211009"
+  },
+  {
+    "id": "10524",
+    "password": "1234",
+    "name": "노희영",
+    "department": "생활산업부",
+    "role": "manager",
+    "position": "부장직대",
+    "email": "nevermind@sedaily.com",
+    "emp_id": "10524"
+  },
+  {
+    "id": "121468",
+    "password": "1234",
+    "name": "김연하",
+    "department": "생활산업부",
+    "role": "reporter",
+    "position": "차장대우",
+    "email": "yeona@sedaily.com",
+    "emp_id": "121468"
+  },
+  {
+    "id": "201022",
+    "password": "1234",
+    "name": "김지영",
+    "department": "생활산업부",
+    "role": "reporter",
+    "position": "",
+    "email": "jikim@sedaily.com",
+    "emp_id": "201022"
+  },
+  {
+    "id": "151004",
+    "password": "1234",
+    "name": "이경운",
+    "department": "생활산업부",
+    "role": "reporter",
+    "position": "",
+    "email": "cloud@sedaily.com",
+    "emp_id": "151004"
+  },
+  {
+    "id": "221002",
+    "password": "1234",
+    "name": "김경택",
+    "department": "생활산업부",
+    "role": "reporter",
+    "position": "",
+    "email": "taek@sedaily.com",
+    "emp_id": "221002"
+  },
+  {
+    "id": "221003",
+    "password": "1234",
+    "name": "김남명",
+    "department": "생활산업부",
+    "role": "reporter",
+    "position": "",
+    "email": "name@sedaily.com",
+    "emp_id": "221003"
+  },
+  {
+    "id": "251001",
+    "password": "1234",
+    "name": "노현영",
+    "department": "생활산업부",
+    "role": "reporter",
+    "position": "",
+    "email": "nonstop@sedaily.com",
+    "emp_id": "251001"
+  },
+  {
+    "id": "251027",
+    "password": "1234",
+    "name": "이용성",
+    "department": "생활산업부",
+    "role": "reporter",
+    "position": "",
+    "email": "utility@sedaily.com",
+    "emp_id": "251027"
+  },
+  {
+    "id": "60150",
+    "password": "1234",
+    "name": "황정원",
+    "department": "마켓시그널부",
+    "role": "manager",
+    "position": "부장직대",
+    "email": "garden@sedaily.com",
+    "emp_id": "60150"
+  },
+  {
+    "id": "211068",
+    "password": "1234",
+    "name": "윤지영",
+    "department": "마켓시그널부",
+    "role": "reporter",
+    "position": "차장대우",
+    "email": "yjy@sedaily.com",
+    "emp_id": "211068"
+  },
+  {
+    "id": "980146",
+    "password": "1234",
+    "name": "김현옥",
+    "department": "마켓시그널부",
+    "role": "reporter",
+    "position": "과장",
+    "email": "ok@sedaily.com",
+    "emp_id": "980146"
+  },
+  {
+    "id": "171005",
+    "password": "1234",
+    "name": "변수연",
+    "department": "마켓시그널부",
+    "role": "reporter",
+    "position": "",
+    "email": "diver@sedaily.com",
+    "emp_id": "171005"
+  },
+  {
+    "id": "201010",
+    "password": "1234",
+    "name": "조지원",
+    "department": "마켓시그널부",
+    "role": "reporter",
+    "position": "",
+    "email": "jw@sedaily.com",
+    "emp_id": "201010"
+  },
+  {
+    "id": "211001",
+    "password": "1234",
+    "name": "강동헌",
+    "department": "마켓시그널부",
+    "role": "reporter",
+    "position": "",
+    "email": "kaaangs10@sedaily.com",
+    "emp_id": "211001"
+  },
+  {
+    "id": "211004",
+    "password": "1234",
+    "name": "김남균",
+    "department": "마켓시그널부",
+    "role": "reporter",
+    "position": "",
+    "email": "south@sedaily.com",
+    "emp_id": "211004"
+  },
+  {
+    "id": "221004",
+    "password": "1234",
+    "name": "김병준",
+    "department": "마켓시그널부",
+    "role": "reporter",
+    "position": "",
+    "email": "econ_jun@sedaily.com",
+    "emp_id": "221004"
+  },
+  {
+    "id": "221036",
+    "password": "1234",
+    "name": "이충희",
+    "department": "마켓시그널부",
+    "role": "reporter",
+    "position": "",
+    "email": "midsun@sedaily.com",
+    "emp_id": "221036"
+  },
+  {
+    "id": "230004",
+    "password": "1234",
+    "name": "박정현",
+    "department": "마켓시그널부",
+    "role": "reporter",
+    "position": "",
+    "email": "kate@sedaily.com",
+    "emp_id": "230004"
+  },
+  {
+    "id": "231007",
+    "password": "1234",
+    "name": "정유민",
+    "department": "마켓시그널부",
+    "role": "reporter",
+    "position": "",
+    "email": "ymjeong@sedaily.com",
+    "emp_id": "231007"
+  },
+  {
+    "id": "231012",
+    "password": "1234",
+    "name": "박시은",
+    "department": "마켓시그널부",
+    "role": "reporter",
+    "position": "",
+    "email": "good4u@sedaily.com",
+    "emp_id": "231012"
+  },
+  {
+    "id": "241005",
+    "password": "1234",
+    "name": "이정훈",
+    "department": "마켓시그널부",
+    "role": "reporter",
+    "position": "",
+    "email": "enough@sedaily.com",
+    "emp_id": "241005"
+  },
+  {
+    "id": "251004",
+    "password": "1234",
+    "name": "장문항",
+    "department": "마켓시그널부",
+    "role": "reporter",
+    "position": "",
+    "email": "jmh@sedaily.com",
+    "emp_id": "251004"
+  },
+  {
+    "id": "102445",
+    "password": "1234",
+    "name": "박혜정",
+    "department": "마켓시그널부",
+    "role": "reporter",
+    "position": "",
+    "email": "hj3015@sedaily.com",
+    "emp_id": "102445"
+  },
+  {
+    "id": "251022",
+    "password": "1234",
+    "name": "이영호",
+    "department": "마켓시그널부",
+    "role": "reporter",
+    "position": "",
+    "email": "ylee@sedaily.com",
+    "emp_id": "251022"
+  },
+  {
+    "id": "211007",
+    "password": "1234",
+    "name": "이덕연",
+    "department": "마켓시그널부",
+    "role": "reporter",
+    "position": "",
+    "email": "gravity@sedaily.com",
+    "emp_id": "211007"
+  },
+  {
+    "id": "770",
+    "password": "1234",
+    "name": "정민정",
+    "department": "문화부",
+    "role": "manager",
+    "position": "부장",
+    "email": "jminj@sedaily.com",
+    "emp_id": "770"
+  },
+  {
+    "id": "945",
+    "password": "1234",
+    "name": "최수문",
+    "department": "문화부",
+    "role": "reporter",
+    "position": "선임기자",
+    "email": "chsm@sedaily.com",
+    "emp_id": "945"
+  },
+  {
+    "id": "10566",
+    "password": "1234",
+    "name": "이재용",
+    "department": "문화부",
+    "role": "reporter",
+    "position": "선임기자",
+    "email": "jylee@sedaily.com",
+    "emp_id": "10566"
+  },
+  {
+    "id": "201019",
+    "password": "1234",
+    "name": "이혜진",
+    "department": "문화부",
+    "role": "reporter",
+    "position": "선임기자",
+    "email": "hasim@sedaily.com",
+    "emp_id": "201019"
+  },
+  {
+    "id": "80509",
+    "password": "1234",
+    "name": "연승",
+    "department": "문화부",
+    "role": "reporter",
+    "position": "차장대우",
+    "email": "yeonvic@sedaily.com",
+    "emp_id": "80509"
+  },
+  {
+    "id": "90269",
+    "password": "1234",
+    "name": "김경미",
+    "department": "문화부",
+    "role": "reporter",
+    "position": "차장대우",
+    "email": "kmkim@sedaily.com",
+    "emp_id": "90269"
+  },
+  {
+    "id": "80460",
+    "password": "1234",
+    "name": "임세원",
+    "department": "국제부",
+    "role": "manager",
+    "position": "부장직대",
+    "email": "why@sedaily.com",
+    "emp_id": "80460"
+  },
+  {
+    "id": "51101",
+    "password": "1234",
+    "name": "김광수",
+    "department": "국제부",
+    "role": "reporter",
+    "position": "차장대우",
+    "email": "bright@sedaily.com",
+    "emp_id": "51101"
+  },
+  {
+    "id": "80415",
+    "password": "1234",
+    "name": "송주희",
+    "department": "국제부",
+    "role": "reporter",
+    "position": "차장대우",
+    "email": "ssong@sedaily.com",
+    "emp_id": "80415"
+  },
+  {
+    "id": "90227",
+    "password": "1234",
+    "name": "윤경환",
+    "department": "국제부",
+    "role": "reporter",
+    "position": "차장대우",
+    "email": "ykh22@sedaily.com",
+    "emp_id": "90227"
+  },
+  {
+    "id": "113528",
+    "password": "1234",
+    "name": "박윤선",
+    "department": "국제부",
+    "role": "reporter",
+    "position": "차장대우",
+    "email": "sepys@sedaily.com",
+    "emp_id": "113528"
+  },
+  {
+    "id": "113492",
+    "password": "1234",
+    "name": "이태규",
+    "department": "국제부",
+    "role": "reporter",
+    "position": "차장대우",
+    "email": "classic@sedaily.com",
+    "emp_id": "113492"
+  },
+  {
+    "id": "113476",
+    "password": "1234",
+    "name": "조양준",
+    "department": "국제부",
+    "role": "reporter",
+    "position": "차장대우",
+    "email": "mryesandno@sedaily.com",
+    "emp_id": "113476"
+  },
+  {
+    "id": "131102",
+    "password": "1234",
+    "name": "김창영",
+    "department": "국제부",
+    "role": "reporter",
+    "position": "",
+    "email": "kcy@sedaily.com",
+    "emp_id": "131102"
+  },
+  {
+    "id": "131131",
+    "password": "1234",
+    "name": "이완기",
+    "department": "국제부",
+    "role": "reporter",
+    "position": "",
+    "email": "kingear@sedaily.com",
+    "emp_id": "131131"
+  },
+  {
+    "id": "211011",
+    "password": "1234",
+    "name": "윤민혁",
+    "department": "국제부",
+    "role": "reporter",
+    "position": "",
+    "email": "beherenow@sedaily.com",
+    "emp_id": "211011"
+  },
+  {
+    "id": "211008",
+    "password": "1234",
+    "name": "정다은",
+    "department": "국제부",
+    "role": "reporter",
+    "position": "",
+    "email": "downright@sedaily.com",
+    "emp_id": "211008"
+  },
+  {
+    "id": "20514",
+    "password": "1234",
+    "name": "김상용",
+    "department": "바이오부",
+    "role": "manager",
+    "position": "부장직대",
+    "email": "kimi@sedaily.com",
+    "emp_id": "20514"
+  },
+  {
+    "id": "100447",
+    "password": "1234",
+    "name": "박준호",
+    "department": "바이오부",
+    "role": "reporter",
+    "position": "차장대우",
+    "email": "violator@sedaily.com",
+    "emp_id": "100447"
+  },
+  {
+    "id": "110424",
+    "password": "1234",
+    "name": "박홍용",
+    "department": "바이오부",
+    "role": "reporter",
+    "position": "차장대우",
+    "email": "prodigy@sedaily.com",
+    "emp_id": "110424"
+  },
+  {
+    "id": "211067",
+    "password": "1234",
+    "name": "안경진",
+    "department": "바이오부",
+    "role": "reporter",
+    "position": "전문기자(차장대우)",
+    "email": "realglasses@sedaily.com",
+    "emp_id": "211067"
+  },
+  {
+    "id": "161005",
+    "password": "1234",
+    "name": "박효정",
+    "department": "바이오부",
+    "role": "reporter",
+    "position": "",
+    "email": "jpark@sedaily.com",
+    "emp_id": "161005"
+  },
+  {
+    "id": "191009",
+    "password": "1234",
+    "name": "한민구",
+    "department": "바이오부",
+    "role": "reporter",
+    "position": "",
+    "email": "1min9@sedaily.com",
+    "emp_id": "191009"
+  },
+  {
+    "id": "243004",
+    "password": "1234",
+    "name": "이정민",
+    "department": "바이오부",
+    "role": "reporter",
+    "position": "",
+    "email": "ljm013@sedaily.com",
+    "emp_id": "243004"
+  },
+  {
+    "id": "241018",
+    "password": "1234",
+    "name": "박지수",
+    "department": "바이오부",
+    "role": "reporter",
+    "position": "",
+    "email": "syj@sedaily.com",
+    "emp_id": "241018"
+  },
+  {
+    "id": "20792",
+    "password": "1234",
+    "name": "이호재",
+    "department": "사진부",
+    "role": "manager",
+    "position": "부장직대",
+    "email": "s020792@sedaily.com",
+    "emp_id": "20792"
+  },
+  {
+    "id": "140012",
+    "password": "1234",
+    "name": "권욱",
+    "department": "사진부",
+    "role": "reporter",
+    "position": "차장대우",
+    "email": "ukkwon@sedaily.com",
+    "emp_id": "140012"
+  },
+  {
+    "id": "191013",
+    "password": "1234",
+    "name": "성형주",
+    "department": "사진부",
+    "role": "reporter",
+    "position": "차장대우",
+    "email": "foru82@sedaily.com",
+    "emp_id": "191013"
+  },
+  {
+    "id": "191014",
+    "password": "1234",
+    "name": "오승현",
+    "department": "사진부",
+    "role": "reporter",
+    "position": "",
+    "email": "story@sedaily.com",
+    "emp_id": "191014"
+  },
+  {
+    "id": "241023",
+    "password": "1234",
+    "name": "조태형",
+    "department": "사진부",
+    "role": "reporter",
+    "position": "",
+    "email": "phototom@sedaily.com",
+    "emp_id": "241023"
+  },
+  {
+    "id": "1478",
+    "password": "1234",
+    "name": "박문홍",
+    "department": "편집부",
+    "role": "manager",
+    "position": "종합편집부장",
+    "email": "ppmmhh68@sedaily.com",
+    "emp_id": "1478"
+  },
+  {
+    "id": "992493",
+    "password": "1234",
+    "name": "이강태",
+    "department": "편집부",
+    "role": "manager",
+    "position": "부장",
+    "email": "ktlee@sedaily.com",
+    "emp_id": "992493"
+  },
+  {
+    "id": "920193",
+    "password": "1234",
+    "name": "박선지",
+    "department": "편집부",
+    "role": "reporter",
+    "position": "선임기자",
+    "email": "sjpark@sedaily.com",
+    "emp_id": "920193"
+  },
+  {
+    "id": "1203",
+    "password": "1234",
+    "name": "최덕현",
+    "department": "편집부",
+    "role": "manager",
+    "position": "부장대우",
+    "email": "duhy71@sedaily.com",
+    "emp_id": "1203"
+  },
+  {
+    "id": "1423",
+    "password": "1234",
+    "name": "박정훈",
+    "department": "편집부",
+    "role": "reporter",
+    "position": "차장",
+    "email": "jhpark@sedaily.com",
+    "emp_id": "1423"
+  },
+  {
+    "id": "1737",
+    "password": "1234",
+    "name": "김덕호",
+    "department": "편집부",
+    "role": "reporter",
+    "position": "차장",
+    "email": "v1dhkim@sedaily.com",
+    "emp_id": "1737"
+  },
+  {
+    "id": "81171",
+    "password": "1234",
+    "name": "이수진",
+    "department": "편집부",
+    "role": "reporter",
+    "position": "차장대우",
+    "email": "ppo1981@sedaily.com",
+    "emp_id": "81171"
+  },
+  {
+    "id": "81388",
+    "password": "1234",
+    "name": "조교환",
+    "department": "편집부",
+    "role": "reporter",
+    "position": "차장대우",
+    "email": "change@sedaily.com",
+    "emp_id": "81388"
+  },
+  {
+    "id": "82536",
+    "password": "1234",
+    "name": "최성규",
+    "department": "편집부",
+    "role": "reporter",
+    "position": "차장대우",
+    "email": "loopang75@sedaily.com",
+    "emp_id": "82536"
+  },
+  {
+    "id": "90272",
+    "password": "1234",
+    "name": "탁시균",
+    "department": "편집부",
+    "role": "reporter",
+    "position": "차장대우",
+    "email": "csi@sedaily.com",
+    "emp_id": "90272"
+  },
+  {
+    "id": "120249",
+    "password": "1234",
+    "name": "김민혁",
+    "department": "편집부",
+    "role": "reporter",
+    "position": "차장대우",
+    "email": "minegi@sedaily.com",
+    "emp_id": "120249"
+  },
+  {
+    "id": "120252",
+    "password": "1234",
+    "name": "황원종",
+    "department": "편집부",
+    "role": "reporter",
+    "position": "차장대우",
+    "email": "wonjjangs@sedaily.com",
+    "emp_id": "120252"
+  },
+  {
+    "id": "130873",
+    "password": "1234",
+    "name": "문재필",
+    "department": "편집부",
+    "role": "reporter",
+    "position": "차장대우",
+    "email": "mjp@sedaily.com",
+    "emp_id": "130873"
+  },
+  {
+    "id": "130860",
+    "password": "1234",
+    "name": "오수경",
+    "department": "편집부",
+    "role": "reporter",
+    "position": "차장대우",
+    "email": "osk@sedaily.com",
+    "emp_id": "130860"
+  },
+  {
+    "id": "151016",
+    "password": "1234",
+    "name": "김태원",
+    "department": "편집부",
+    "role": "reporter",
+    "position": "차장대우",
+    "email": "revival@sedaily.com",
+    "emp_id": "151016"
+  },
+  {
+    "id": "221044",
+    "password": "1234",
+    "name": "장준석",
+    "department": "편집부",
+    "role": "reporter",
+    "position": "차장대우",
+    "email": "gbjjs@sedaily.com",
+    "emp_id": "221044"
+  },
+  {
+    "id": "243001",
+    "password": "1234",
+    "name": "김나영",
+    "department": "편집부",
+    "role": "reporter",
+    "position": "",
+    "email": "iluvny23@sedaily.com",
+    "emp_id": "243001"
+  },
+  {
+    "id": "211052",
+    "password": "1234",
+    "name": "신현승",
+    "department": "편집부",
+    "role": "reporter",
+    "position": "",
+    "email": "shs@sedaily.com",
+    "emp_id": "211052"
+  },
+  {
+    "id": "221030",
+    "password": "1234",
+    "name": "이은진",
+    "department": "편집부",
+    "role": "reporter",
+    "position": "",
+    "email": "connectjin@sedaily.com",
+    "emp_id": "221030"
+  },
+  {
+    "id": "221031",
+    "password": "1234",
+    "name": "강민서",
+    "department": "편집부",
+    "role": "reporter",
+    "position": "",
+    "email": "peacha@sedaily.com",
+    "emp_id": "221031"
+  },
+  {
+    "id": "151011",
+    "password": "1234",
+    "name": "김보리",
+    "department": "교열팀",
+    "role": "manager",
+    "position": "팀장",
+    "email": "sedcokr@sedaily.com",
+    "emp_id": "151011"
+  },
+  {
+    "id": "42039",
+    "password": "1234",
+    "name": "장혜경",
+    "department": "교열팀",
+    "role": "reporter",
+    "position": "",
+    "email": "zzang1220@sedaily.com",
+    "emp_id": "42039"
+  },
+  {
+    "id": "42026",
+    "password": "1234",
+    "name": "홍년희",
+    "department": "교열팀",
+    "role": "reporter",
+    "position": "",
+    "email": "hong82@sedaily.com",
+    "emp_id": "42026"
+  },
+  {
+    "id": "73176",
+    "password": "1234",
+    "name": "박진아",
+    "department": "교열팀",
+    "role": "reporter",
+    "position": "",
+    "email": "a4029@sedaily.com",
+    "emp_id": "73176"
+  },
+  {
+    "id": "201029",
+    "password": "1234",
+    "name": "김수진",
+    "department": "교열팀",
+    "role": "reporter",
+    "position": "",
+    "email": "sabijin@sedaily.com",
+    "emp_id": "201029"
+  },
+  {
+    "id": "102458",
+    "password": "1234",
+    "name": "이상아",
+    "department": "교열팀",
+    "role": "reporter",
+    "position": "",
+    "email": "sanga1001@sedaily.com",
+    "emp_id": "102458"
+  },
+  {
+    "id": "112008",
+    "password": "1234",
+    "name": "오유미",
+    "department": "교열팀",
+    "role": "reporter",
+    "position": "",
+    "email": "soyub7@sedaily.com",
+    "emp_id": "112008"
+  },
+  {
+    "id": "201015",
+    "password": "1234",
+    "name": "고은혜",
+    "department": "교열팀",
+    "role": "reporter",
+    "position": "",
+    "email": "grace@sedaily.com",
+    "emp_id": "201015"
+  },
+  {
+    "id": "201025",
+    "password": "1234",
+    "name": "김희수",
+    "department": "화상팀",
+    "role": "reporter",
+    "position": "",
+    "email": "hs1101@sedaily.com",
+    "emp_id": "201025"
+  },
+  {
+    "id": "211046",
+    "password": "1234",
+    "name": "진현정",
+    "department": "화상팀",
+    "role": "reporter",
+    "position": "",
+    "email": "really@sedaily.com",
+    "emp_id": "211046"
+  },
+  {
+    "id": "241014",
+    "password": "1234",
+    "name": "황재관",
+    "department": "화상팀",
+    "role": "reporter",
+    "position": "",
+    "email": "jk@sedaily.com",
+    "emp_id": "241014"
+  },
+  {
+    "id": "51444",
+    "password": "1234",
+    "name": "이동수",
+    "department": "디자인팀",
+    "role": "manager",
+    "position": "팀장",
+    "email": "vvg75@sedaily.com",
+    "emp_id": "51444"
+  },
+  {
+    "id": "973483",
+    "password": "1234",
+    "name": "이근길",
+    "department": "디자인팀",
+    "role": "reporter",
+    "position": "차장",
+    "email": "gglee@sedaily.com",
+    "emp_id": "973483"
+  },
+  {
+    "id": "592",
+    "password": "1234",
+    "name": "김병선",
+    "department": "디자인팀",
+    "role": "reporter",
+    "position": "차장대우",
+    "email": "kbssun71@sedaily.com",
+    "emp_id": "592"
+  },
+  {
+    "id": "20608",
+    "password": "1234",
+    "name": "박수열",
+    "department": "디자인팀",
+    "role": "reporter",
+    "position": "차장대우",
+    "email": "weber95@sedaily.com",
+    "emp_id": "20608"
+  },
+  {
+    "id": "151014",
+    "password": "1234",
+    "name": "구선아",
+    "department": "디자인팀",
+    "role": "reporter",
+    "position": "",
+    "email": "schatzsa@sedaily.com",
+    "emp_id": "151014"
+  },
+  {
+    "id": "221034",
+    "password": "1234",
+    "name": "황정우",
+    "department": "디자인팀",
+    "role": "reporter",
+    "position": "",
+    "email": "hwangjw@sedaily.com",
+    "emp_id": "221034"
+  },
+  {
+    "id": "10508",
+    "password": "1234",
+    "name": "김민형",
+    "department": "골프스포츠부",
+    "role": "manager",
+    "position": "부장",
+    "email": "kmh204@sedaily.com",
+    "emp_id": "10508"
+  },
+  {
+    "id": "11387",
+    "password": "1234",
+    "name": "박민영",
+    "department": "골프스포츠부",
+    "role": "reporter",
+    "position": "선임기자",
+    "email": "mypark@sedaily.com",
+    "emp_id": "11387"
+  },
+  {
+    "id": "112338",
+    "password": "1234",
+    "name": "양준호",
+    "department": "골프스포츠부",
+    "role": "reporter",
+    "position": "차장대우",
+    "email": "miguel@sedaily.com",
+    "emp_id": "112338"
+  },
+  {
+    "id": "211021",
+    "password": "1234",
+    "name": "김세영",
+    "department": "골프스포츠부",
+    "role": "reporter",
+    "position": "차장대우",
+    "email": "sygolf@sedaily.com",
+    "emp_id": "211021"
+  },
+  {
+    "id": "151034",
+    "password": "1234",
+    "name": "이종호",
+    "department": "골프스포츠부",
+    "role": "reporter",
+    "position": "",
+    "email": "phillies@sedaily.com",
+    "emp_id": "151034"
+  },
+  {
+    "id": "221025",
+    "password": "1234",
+    "name": "정문영",
+    "department": "골프스포츠부",
+    "role": "reporter",
+    "position": "",
+    "email": "my.jung@sedaily.com",
+    "emp_id": "221025"
+  },
+  {
+    "id": "241021",
+    "password": "1234",
+    "name": "오태식",
+    "department": "골프스포츠부",
+    "role": "reporter",
+    "position": "선임기자",
+    "email": "ots@sedaily.com",
+    "emp_id": "241021"
+  },
+  {
+    "id": "233017",
+    "password": "1234",
+    "name": "한예린",
+    "department": "골프스포츠부",
+    "role": "reporter",
+    "position": "(파견)",
+    "email": "sweetyr2@sedaily.com",
+    "emp_id": "233017"
+  },
+  {
+    "id": "20556",
+    "password": "1234",
+    "name": "정영현",
+    "department": "테크성장부",
+    "role": "manager",
+    "position": "부장직대",
+    "email": "yhchung@sedaily.com",
+    "emp_id": "20556"
+  },
+  {
+    "id": "70496",
+    "password": "1234",
+    "name": "임지훈",
+    "department": "테크성장부",
+    "role": "reporter",
+    "position": "차장대우",
+    "email": "jhlim@sedaily.com",
+    "emp_id": "70496"
+  },
+  {
+    "id": "80473",
+    "password": "1234",
+    "name": "김흥록",
+    "department": "테크성장부",
+    "role": "reporter",
+    "position": "차장대우",
+    "email": "rok@sedaily.com",
+    "emp_id": "80473"
+  },
+  {
+    "id": "112985",
+    "password": "1234",
+    "name": "노현섭",
+    "department": "테크성장부",
+    "role": "reporter",
+    "position": "차장대우",
+    "email": "hit8129@sedaily.com",
+    "emp_id": "112985"
+  },
+  {
+    "id": "161014",
+    "password": "1234",
+    "name": "서지혜",
+    "department": "테크성장부",
+    "role": "reporter",
+    "position": "차장대우",
+    "email": "wise@sedaily.com",
+    "emp_id": "161014"
+  },
+  {
+    "id": "211009",
+    "password": "1234",
+    "name": "정혜진",
+    "department": "테크성장부",
+    "role": "reporter",
+    "position": "",
+    "email": "madein@sedaily.com",
+    "emp_id": "211009"
+  },
+  {
+    "id": "161002",
+    "password": "1234",
+    "name": "박우인",
+    "department": "테크성장부",
+    "role": "reporter",
+    "position": "",
+    "email": "wipark@sedaily.com",
+    "emp_id": "161002"
+  },
+  {
+    "id": "171002",
+    "password": "1234",
+    "name": "김기혁",
+    "department": "테크성장부",
+    "role": "reporter",
+    "position": "",
+    "email": "coldmetal@sedaily.com",
+    "emp_id": "171002"
+  },
+  {
+    "id": "201002",
+    "password": "1234",
+    "name": "김성태",
+    "department": "테크성장부",
+    "role": "reporter",
+    "position": "",
+    "email": "kim@sedaily.com",
+    "emp_id": "201002"
+  },
+  {
+    "id": "211056",
+    "password": "1234",
+    "name": "류석",
+    "department": "테크성장부",
+    "role": "reporter",
+    "position": "",
+    "email": "ryupro@sedaily.com",
+    "emp_id": "211056"
+  },
+  {
+    "id": "221008",
+    "password": "1234",
+    "name": "양지혜",
+    "department": "테크성장부",
+    "role": "reporter",
+    "position": "",
+    "email": "hoje@sedaily.com",
+    "emp_id": "221008"
+  },
+  {
+    "id": "221037",
+    "password": "1234",
+    "name": "김윤수",
+    "department": "테크성장부",
+    "role": "reporter",
+    "position": "",
+    "email": "sookim@sedaily.com",
+    "emp_id": "221037"
+  },
+  {
+    "id": "231001",
+    "password": "1234",
+    "name": "김예솔",
+    "department": "테크성장부",
+    "role": "reporter",
+    "position": "",
+    "email": "losey27@sedaily.com",
+    "emp_id": "231001"
+  },
+  {
+    "id": "251021",
+    "password": "1234",
+    "name": "김태호",
+    "department": "테크성장부",
+    "role": "reporter",
+    "position": "",
+    "email": "teo@sedaily.com",
+    "emp_id": "251021"
+  },
+  {
+    "id": "161020",
+    "password": "1234",
+    "name": "김동호",
+    "department": "사진DB구축 TF팀",
+    "role": "manager",
+    "position": "팀장(파견)",
+    "email": "dongho@sedaily.com",
+    "emp_id": "161020"
+  },
+  {
+    "id": "161050",
+    "password": "1234",
+    "name": "소지영",
+    "department": "사진DB구축 TF팀",
+    "role": "manager",
+    "position": "부팀장(파견)",
+    "email": "sowsaw@sedaily.com",
+    "emp_id": "161050"
+  },
+  {
+    "id": "41470",
+    "password": "1234",
+    "name": "양정혜",
+    "department": "사진DB구축 TF팀",
+    "role": "reporter",
+    "position": "(파견)",
+    "email": "e041470@sedaily.com",
+    "emp_id": "41470"
+  },
+  {
+    "id": "10540",
+    "password": "1234",
+    "name": "이상훈",
+    "department": "AX콘텐츠랩",
+    "role": "manager",
+    "position": "랩장",
+    "email": "shlee@sedaily.com",
+    "emp_id": "10540"
+  },
+  {
+    "id": "151024",
+    "password": "1234",
+    "name": "김경훈",
+    "department": "디지털편집부",
+    "role": "manager",
+    "position": "부장직대",
+    "email": "styxx@sedaily.com",
+    "emp_id": "151024"
+  },
+  {
+    "id": "171024",
+    "password": "1234",
+    "name": "박동휘",
+    "department": "디지털편집부",
+    "role": "reporter",
+    "position": "차장대우",
+    "email": "slypdh@sedaily.com",
+    "emp_id": "171024"
+  },
+  {
+    "id": "161032",
+    "password": "1234",
+    "name": "강신우",
+    "department": "디지털편집부",
+    "role": "reporter",
+    "position": "(파견)",
+    "email": "seen@sedaily.com",
+    "emp_id": "161032"
+  },
+  {
+    "id": "211072",
+    "password": "1234",
+    "name": "현수아",
+    "department": "디지털편집부",
+    "role": "reporter",
+    "position": "",
+    "email": "sunshine@sedaily.com",
+    "emp_id": "211072"
+  },
+  {
+    "id": "243022",
+    "password": "1234",
+    "name": "김도연",
+    "department": "디지털편집부",
+    "role": "reporter",
+    "position": "",
+    "email": "doremi@sedaily.com",
+    "emp_id": "243022"
+  },
+  {
+    "id": "221023",
+    "password": "1234",
+    "name": "이인애",
+    "department": "디지털편집부",
+    "role": "reporter",
+    "position": "",
+    "email": "lia@sedaily.com",
+    "emp_id": "221023"
+  },
+  {
+    "id": "231027",
+    "password": "1234",
+    "name": "남윤정",
+    "department": "디지털편집부",
+    "role": "reporter",
+    "position": "",
+    "email": "yjnam@sedaily.com",
+    "emp_id": "231027"
+  },
+  {
+    "id": "231030",
+    "password": "1234",
+    "name": "김여진",
+    "department": "디지털편집부",
+    "role": "reporter",
+    "position": "",
+    "email": "aftershock@sedaily.com",
+    "emp_id": "231030"
+  },
+  {
+    "id": "241026",
+    "password": "1234",
+    "name": "임혜린",
+    "department": "디지털편집부",
+    "role": "reporter",
+    "position": "",
+    "email": "hihilinn@sedaily.com",
+    "emp_id": "241026"
+  },
+  {
+    "id": "241007",
+    "password": "1234",
+    "name": "김수호",
+    "department": "디지털편집부",
+    "role": "reporter",
+    "position": "",
+    "email": "suho@sedaily.com",
+    "emp_id": "241007"
+  },
+  {
+    "id": "241009",
+    "password": "1234",
+    "name": "문예빈",
+    "department": "디지털편집부",
+    "role": "reporter",
+    "position": "",
+    "email": "muu@sedaily.com",
+    "emp_id": "241009"
+  },
+  {
+    "id": "251025",
+    "password": "1234",
+    "name": "조수연",
+    "department": "디지털편집부",
+    "role": "reporter",
+    "position": "",
+    "email": "newsuyeon@sedaily.com",
+    "emp_id": "251025"
+  },
+  {
+    "id": "253018",
+    "password": "1234",
+    "name": "성예현",
+    "department": "디지털편집부",
+    "role": "reporter",
+    "position": "인턴",
+    "email": "jb15489@sedaily.com",
+    "emp_id": "253018"
+  },
+  {
+    "id": "263002",
+    "password": "1234",
+    "name": "이은서",
+    "department": "디지털편집부",
+    "role": "reporter",
+    "position": "인턴",
+    "email": "eunseo@sedaily.com",
+    "emp_id": "263002"
+  },
+  {
+    "id": "920177",
+    "password": "1234",
+    "name": "문성진",
+    "department": "논설위원실",
+    "role": "manager",
+    "position": "논설실장",
+    "email": "hnsj@sedaily.com",
+    "emp_id": "920177"
+  },
+  {
+    "id": "2532",
+    "password": "1234",
+    "name": "김현수",
+    "department": "논설위원실",
+    "role": "reporter",
+    "position": "논설위원",
+    "email": "hskim@sedaily.com",
+    "emp_id": "2532"
+  },
+  {
+    "id": "941842",
+    "password": "1234",
+    "name": "최형욱",
+    "department": "논설위원실",
+    "role": "reporter",
+    "position": "논설위원",
+    "email": "choihuk@sedaily.com",
+    "emp_id": "941842"
+  },
+  {
+    "id": "962342",
+    "password": "1234",
+    "name": "서정명",
+    "department": "논설위원실",
+    "role": "reporter",
+    "position": "논설위원",
+    "email": "vicsjm@sedaily.com",
+    "emp_id": "962342"
+  },
+  {
+    "id": "962368",
+    "password": "1234",
+    "name": "신경립",
+    "department": "논설위원실",
+    "role": "reporter",
+    "position": "논설위원",
+    "email": "klsin@sedaily.com",
+    "emp_id": "962368"
+  },
+  {
+    "id": "576",
+    "password": "1234",
+    "name": "한영일",
+    "department": "논설위원실",
+    "role": "reporter",
+    "position": "논설위원",
+    "email": "hanul@sedaily.com",
+    "emp_id": "576"
+  },
+  {
+    "id": "990916",
+    "password": "1234",
+    "name": "홍병문",
+    "department": "논설위원실",
+    "role": "reporter",
+    "position": "논설위원",
+    "email": "hbm@sedaily.com",
+    "emp_id": "990916"
+  },
+  {
+    "id": "1122",
+    "password": "1234",
+    "name": "김정곤",
+    "department": "논설위원실",
+    "role": "reporter",
+    "position": "논설위원",
+    "email": "mckids@sedaily.com",
+    "emp_id": "1122"
+  },
+  {
+    "id": "1106",
+    "password": "1234",
+    "name": "민병권",
+    "department": "논설위원실",
+    "role": "reporter",
+    "position": "논설위원",
+    "email": "newsroom@sedaily.com",
+    "emp_id": "1106"
+  }
+]

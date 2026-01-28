@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>기자 목록 - KPI 시스템</title>
+    <title>기자 목록 - KPI</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
     <style>
@@ -22,6 +22,7 @@
         .nav-menu { background: white; border-radius: 12px; padding: 1rem; margin-bottom: 1.5rem; box-shadow: 0 2px 12px rgba(0,0,0,0.08); }
         .nav-menu a { color: #1a5f7a; text-decoration: none; padding: 0.5rem 1rem; border-radius: 8px; margin-right: 0.5rem; }
         .nav-menu a:hover, .nav-menu a.active { background: #1a5f7a; color: white; }
+        .dept-badge { background: #e8f4f8; color: #1a5f7a; padding: 0.25rem 0.75rem; border-radius: 20px; font-size: 0.85rem; }
     </style>
 </head>
 <body>
@@ -41,8 +42,8 @@
 <div class="header">
     <div class="d-flex justify-content-between align-items-center">
         <div>
-            <h1 style="font-size:1.8rem; margin-bottom:0.25rem;"><i class="bi bi-bar-chart-fill me-2"></i>기자 정량평가 시스템</h1>
-            <div style="opacity:0.9;">서울경제신문 KPI 관리</div>
+            <h1 style="font-size:1.8rem; margin-bottom:0.25rem;"><i class="bi bi-bar-chart-fill me-2"></i>KPI</h1>
+            <div style="opacity:0.9;">기자 지면 정보 정량평가 시스템</div>
         </div>
         <div class="text-end">
             <small id="userInfo" class="me-2"></small>
@@ -52,9 +53,23 @@
 </div>
 
 <!-- 네비게이션 -->
-<div class="nav-menu">
-    <a href="home.html"><i class="bi bi-house-door me-1"></i>대시보드</a>
+<div class="nav-menu" id="navMenu">
+    <a href="home.html" id="navHome"><i class="bi bi-house-door me-1"></i>대시보드</a>
     <a href="list.html" class="active"><i class="bi bi-people me-1"></i>기자 목록</a>
+    <a href="admin.html" id="navAdmin"><i class="bi bi-gear me-1"></i>사원 관리</a>
+</div>
+
+<!-- 부서 필터 (admin만 표시) -->
+<div class="card mb-4" id="deptFilterCard" style="display:none;">
+    <div class="card-body">
+        <div class="d-flex align-items-center gap-2 flex-wrap">
+            <label class="fw-bold text-nowrap me-2">부서 선택</label>
+            <select class="form-select" id="deptSelect" style="width:200px;" onchange="filterByDept()">
+                <option value="">전체 부서</option>
+            </select>
+            <span class="dept-badge" id="currentDept">전체</span>
+        </div>
+    </div>
 </div>
 
 <!-- 기간 선택 & 동기화 -->
@@ -73,7 +88,7 @@
                     <div id="periodNav" class="d-flex align-items-center gap-2 ms-3" style="display:none;"></div>
                 </div>
             </div>
-            <div class="col-md-4 text-end">
+            <div class="col-md-4 text-end" id="syncBtnArea">
                 <button class="btn btn-outline-success" id="syncBtn" onclick="syncData()">
                     <i class="bi bi-cloud-download me-1"></i>데이터 동기화
                 </button>
@@ -120,7 +135,7 @@
 <!-- 기자 목록 -->
 <div class="card">
     <div class="card-header d-flex justify-content-between align-items-center">
-        <span><i class="bi bi-people-fill me-2"></i>기자 목록</span>
+        <span><i class="bi bi-people-fill me-2"></i>기자 목록 <span id="deptTitle"></span></span>
         <div class="d-flex gap-2 align-items-center">
             <input type="text" class="form-control form-control-sm search-box" id="searchInput" placeholder="기자명 검색...">
             <span class="badge bg-light text-dark" id="reporterCount">0명</span>
@@ -132,15 +147,16 @@
                 <thead class="table-light">
                     <tr>
                         <th style="width:5%">#</th>
-                        <th style="width:20%">기자명</th>
-                        <th style="width:15%">기사 수</th>
-                        <th style="width:20%">총 글자수</th>
-                        <th style="width:20%">평균 글자수</th>
-                        <th style="width:20%">상세</th>
+                        <th style="width:15%">기자명</th>
+                        <th style="width:15%" id="deptCol">부서</th>
+                        <th style="width:12%">기사 수</th>
+                        <th style="width:15%">총 글자수</th>
+                        <th style="width:15%">평균 글자수</th>
+                        <th style="width:13%">상세</th>
                     </tr>
                 </thead>
                 <tbody id="reporterList">
-                    <tr><td colspan="6" class="text-center py-4 text-muted">데이터 로딩중...</td></tr>
+                    <tr><td colspan="7" class="text-center py-4 text-muted">데이터 로딩중...</td></tr>
                 </tbody>
             </table>
         </div>
@@ -155,11 +171,6 @@
     </button>
 </div>
 
-<!-- 하단 정보 -->
-<div class="text-center text-muted small mt-4">
-    <p>데이터 출처: 서울경제신문 XML</p>
-</div>
-
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
@@ -167,10 +178,23 @@
 <script>
 // 로그인 체크
 const session = JSON.parse(localStorage.getItem('kpi_session') || 'null');
-if (!session || session.role !== 'admin') {
+if (!session) {
     location.href = 'login.html';
 }
-document.getElementById('userInfo').textContent = session ? session.name + '님' : '';
+
+// 권한 체크: admin 또는 manager만 접근 가능
+if (session.role !== 'admin' && session.role !== 'manager') {
+    alert('접근 권한이 없습니다.');
+    location.href = 'login.html';
+}
+
+document.getElementById('userInfo').textContent = session ? `${session.name}님 (${session.role === 'admin' ? '관리자' : session.department})` : '';
+
+// manager는 대시보드, 사원관리 링크 숨김
+if (session.role === 'manager') {
+    document.getElementById('navHome').style.display = 'none';
+    document.getElementById('navAdmin').style.display = 'none';
+}
 
 function logout() {
     localStorage.removeItem('kpi_session');
@@ -178,11 +202,68 @@ function logout() {
 }
 
 let allData = null;
+let usersData = [];
 let currentPeriod = 'all';
 let selectedDate = new Date();
+let selectedDept = '';
+
+// URL에서 부서 파라미터 확인
+const urlParams = new URLSearchParams(window.location.search);
+const deptParam = urlParams.get('dept');
 
 // 초기 로드
-document.addEventListener('DOMContentLoaded', loadData);
+document.addEventListener('DOMContentLoaded', async () => {
+    // 사용자 데이터 로드
+    try {
+        const usersRes = await fetch('users.json?t=' + Date.now());
+        usersData = await usersRes.json();
+    } catch (e) {
+        console.log('사용자 데이터 로드 실패');
+    }
+    
+    // admin이면 부서 필터 표시
+    if (session.role === 'admin') {
+        document.getElementById('deptFilterCard').style.display = 'block';
+        populateDeptSelect();
+    } else if (session.role === 'manager') {
+        // manager는 자기 부서만
+        selectedDept = session.department;
+        document.getElementById('currentDept').textContent = selectedDept;
+        document.getElementById('deptTitle').textContent = `- ${selectedDept}`;
+        document.getElementById('syncBtnArea').style.display = 'none'; // 동기화 버튼 숨김
+    }
+    
+    // URL 파라미터로 부서 지정된 경우
+    if (deptParam) {
+        selectedDept = deptParam;
+        document.getElementById('deptSelect').value = deptParam;
+        document.getElementById('currentDept').textContent = deptParam;
+        document.getElementById('deptTitle').textContent = `- ${deptParam}`;
+    }
+    
+    loadData();
+});
+
+// 부서 선택 옵션 채우기
+function populateDeptSelect() {
+    const depts = [...new Set(usersData.map(u => u.department).filter(d => d && d !== '전체'))];
+    depts.sort();
+    const select = document.getElementById('deptSelect');
+    depts.forEach(d => {
+        const opt = document.createElement('option');
+        opt.value = d;
+        opt.textContent = d;
+        select.appendChild(opt);
+    });
+}
+
+// 부서 필터
+function filterByDept() {
+    selectedDept = document.getElementById('deptSelect').value;
+    document.getElementById('currentDept').textContent = selectedDept || '전체';
+    document.getElementById('deptTitle').textContent = selectedDept ? `- ${selectedDept}` : '';
+    updateView(null);
+}
 
 // 데이터 로드
 async function loadData() {
@@ -190,22 +271,18 @@ async function loadData() {
         const res = await fetch('data.json?t=' + Date.now());
         allData = await res.json();
         
-        // 기간 정보
         document.getElementById('dataRange').textContent = `${allData.period_start} ~ ${allData.period_end}`;
         document.getElementById('lastSyncTime').textContent = allData.last_sync;
         
-        // 선택 날짜를 오늘로 설정
         selectedDate = new Date();
-        
         updateView();
         
-        // 검색 (이벤트 중복 방지)
         const searchInput = document.getElementById('searchInput');
         searchInput.removeEventListener('input', handleSearch);
         searchInput.addEventListener('input', handleSearch);
     } catch (err) {
         console.error(err);
-        document.getElementById('reporterList').innerHTML = '<tr><td colspan="6" class="text-center py-4 text-danger">데이터 로드 실패</td></tr>';
+        document.getElementById('reporterList').innerHTML = '<tr><td colspan="7" class="text-center py-4 text-danger">데이터 로드 실패</td></tr>';
     }
 }
 
@@ -230,7 +307,7 @@ function updatePeriodNav() {
     if (currentPeriod === 'daily') {
         nav.innerHTML = `
             <button class="btn btn-sm btn-outline-secondary" onclick="moveDate(-1)"><i class="bi bi-chevron-left"></i></button>
-            <input type="date" class="form-control form-control-sm" value="${formatDate(selectedDate)}" style="width:150px;" onchange="selectedDate=new Date(this.value);updateView()">
+            <input type="date" class="form-control form-control-sm" value="${formatDate(selectedDate)}" style="width:150px;" onchange="setDateFromInput(this.value)">
             <button class="btn btn-sm btn-outline-secondary" onclick="moveDate(1)"><i class="bi bi-chevron-right"></i></button>
             <span class="ms-2 fw-bold">${formatDateKR(selectedDate)}</span>
         `;
@@ -251,21 +328,31 @@ function updatePeriodNav() {
     }
 }
 
+// 날짜 입력 유효성 검사
+function setDateFromInput(value) {
+    if (!value) return;
+    const newDate = new Date(value);
+    if (isNaN(newDate.getTime())) {
+        alert('유효하지 않은 날짜입니다.');
+        return;
+    }
+    selectedDate = newDate;
+    updatePeriodNav();
+    updateView(null);
+}
+
 // 뷰 업데이트
 function updateView(searchKeyword = null) {
-    // 검색어가 null이면 현재 입력값 사용
     if (searchKeyword === null) {
         searchKeyword = document.getElementById('searchInput').value;
     }
     const filtered = getFilteredData(searchKeyword);
     
-    // 통계
     const totalArticles = filtered.reduce((s, r) => s + r.article_count, 0);
     document.getElementById('stat-articles').textContent = totalArticles;
     document.getElementById('stat-reporters').textContent = filtered.length;
     document.getElementById('reporterCount').textContent = filtered.length + '명';
     
-    // 기간 표시
     let periodText = `${allData.period_start.slice(5)} ~ ${allData.period_end.slice(5)}`;
     if (currentPeriod === 'daily') periodText = formatDate(selectedDate).slice(5);
     else if (currentPeriod === 'weekly') {
@@ -275,7 +362,6 @@ function updateView(searchKeyword = null) {
     } else if (currentPeriod === 'monthly') periodText = `${selectedDate.getMonth()+1}월`;
     document.getElementById('stat-period').textContent = periodText;
     
-    // 테이블
     renderTable(filtered);
 }
 
@@ -283,7 +369,6 @@ function updateView(searchKeyword = null) {
 function getFilteredData(searchKeyword = '') {
     if (!allData) return [];
     
-    // 모든 기사 합치기
     let articles = allData.reporters.flatMap(r => r.articles || []);
     
     // 기간 필터
@@ -311,12 +396,22 @@ function getFilteredData(searchKeyword = '') {
         map[n].total_chars += a.char_count || 0;
     });
     
-    let result = Object.values(map).map(r => ({
-        name: r.name,
-        article_count: r.articles.length,
-        total_chars: r.total_chars,
-        avg_chars: r.articles.length > 0 ? Math.round(r.total_chars / r.articles.length) : 0
-    }));
+    let result = Object.values(map).map(r => {
+        // 사용자 데이터에서 부서 찾기
+        const userInfo = usersData.find(u => u.name === r.name);
+        return {
+            name: r.name,
+            department: userInfo ? userInfo.department : '-',
+            article_count: r.articles.length,
+            total_chars: r.total_chars,
+            avg_chars: r.articles.length > 0 ? Math.round(r.total_chars / r.articles.length) : 0
+        };
+    });
+    
+    // 부서 필터
+    if (selectedDept) {
+        result = result.filter(r => r.department === selectedDept);
+    }
     
     // 검색
     if (searchKeyword) {
@@ -331,13 +426,14 @@ function getFilteredData(searchKeyword = '') {
 function renderTable(reporters) {
     const tbody = document.getElementById('reporterList');
     if (reporters.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="6" class="text-center py-4 text-muted">해당 기간에 기사가 없습니다</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="7" class="text-center py-4 text-muted">해당 기간에 기사가 없습니다</td></tr>';
         return;
     }
     tbody.innerHTML = reporters.map((r, i) => `
         <tr class="reporter-row" onclick="location.href='reporter.html?name=${encodeURIComponent(r.name)}'">
             <td>${i + 1}</td>
             <td><strong>${escapeHtml(r.name)}</strong></td>
+            <td><span class="dept-badge">${escapeHtml(r.department)}</span></td>
             <td>${r.article_count}</td>
             <td>${r.total_chars.toLocaleString()}</td>
             <td>${r.avg_chars.toLocaleString()}</td>
@@ -405,7 +501,6 @@ function showToast(msg, type = 'success') {
     new bootstrap.Toast(t).show();
 }
 
-// 검색 핸들러
 function handleSearch() {
     updateView(this.value);
 }
@@ -418,16 +513,15 @@ function exportExcel() {
         return;
     }
     
-    // 기자 목록 데이터
     const reporterData = reporters.map((r, i) => ({
         '순위': i + 1,
         '기자명': r.name,
+        '부서': r.department,
         '기사수': r.article_count,
         '총글자수': r.total_chars,
         '평균글자수': r.avg_chars
     }));
     
-    // 기간 텍스트
     let periodText = `${allData.period_start} ~ ${allData.period_end}`;
     if (currentPeriod === 'daily') periodText = formatDate(selectedDate);
     else if (currentPeriod === 'weekly') {
@@ -436,38 +530,12 @@ function exportExcel() {
         periodText = `${formatDate(ws)} ~ ${formatDate(we)}`;
     } else if (currentPeriod === 'monthly') periodText = `${selectedDate.getFullYear()}년 ${selectedDate.getMonth()+1}월`;
     
-    // 워크북 생성
     const wb = XLSX.utils.book_new();
-    
-    // 기자 목록 시트
     const ws = XLSX.utils.json_to_sheet(reporterData);
-    ws['!cols'] = [
-        { wch: 6 },   // 순위
-        { wch: 15 },  // 기자명
-        { wch: 10 },  // 기사수
-        { wch: 12 },  // 총글자수
-        { wch: 12 }   // 평균글자수
-    ];
+    ws['!cols'] = [{ wch: 6 }, { wch: 15 }, { wch: 15 }, { wch: 10 }, { wch: 12 }, { wch: 12 }];
     XLSX.utils.book_append_sheet(wb, ws, '기자목록');
     
-    // 요약 시트
-    const totalArticles = reporters.reduce((s, r) => s + r.article_count, 0);
-    const totalChars = reporters.reduce((s, r) => s + r.total_chars, 0);
-    const summaryData = [
-        { '항목': '조회기간', '값': periodText },
-        { '항목': '기자수', '값': reporters.length },
-        { '항목': '총기사수', '값': totalArticles },
-        { '항목': '총글자수', '값': totalChars },
-        { '항목': '기자당평균기사', '값': reporters.length > 0 ? Math.round(totalArticles / reporters.length) : 0 }
-    ];
-    const ws2 = XLSX.utils.json_to_sheet(summaryData);
-    ws2['!cols'] = [{ wch: 15 }, { wch: 25 }];
-    XLSX.utils.book_append_sheet(wb, ws2, '요약');
-    
-    // 파일명
-    const fileName = `기자목록_${periodText.replace(/[~\s]/g, '_')}.xlsx`;
-    
-    // 다운로드
+    const fileName = `기자목록_${selectedDept || '전체'}_${periodText.replace(/[~\s]/g, '_')}.xlsx`;
     XLSX.writeFile(wb, fileName);
     showToast('엑셀 파일이 다운로드되었습니다', 'success');
 }

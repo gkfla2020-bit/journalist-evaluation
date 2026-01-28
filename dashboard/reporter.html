@@ -127,10 +127,13 @@ if (!session) {
     location.href = 'login.html';
 }
 const isAdmin = session && session.role === 'admin';
-const isOwnPage = session && session.role === 'reporter';
+const isManager = session && session.role === 'manager';
+const isReporter = session && session.role === 'reporter';
+// admin과 manager는 평가 가능
+const canEvaluate = isAdmin || isManager;
 
 // 기자 본인이면 네비게이션 숨기기 (대시보드/기자목록 접근 불가)
-if (isOwnPage) {
+if (isReporter) {
     document.getElementById('navMenu').innerHTML = `
         <span class="text-muted"><i class="bi bi-person-circle me-1"></i>내 실적 조회</span>
         <span class="float-end">
@@ -144,6 +147,18 @@ if (isOwnPage) {
     // 하단 기자목록 버튼 숨기기
     const backBtn = document.getElementById('backToListBtn');
     if (backBtn) backBtn.style.display = 'none';
+} else if (isManager) {
+    // manager는 대시보드 링크 숨기고 부서 기자목록으로 연결
+    document.getElementById('navMenu').innerHTML = `
+        <a href="list.html?dept=${encodeURIComponent(session.department)}"><i class="bi bi-people me-1"></i>기자 목록</a>
+        <span class="float-end">
+            <small class="me-2 text-muted">${session.name}님 (${session.department})</small>
+            <button class="btn btn-sm btn-outline-secondary" onclick="logout()"><i class="bi bi-box-arrow-right"></i> 로그아웃</button>
+        </span>
+    `;
+    // 하단 버튼도 부서 목록으로
+    const backBtn = document.getElementById('backToListBtn');
+    if (backBtn) backBtn.href = 'list.html?dept=' + encodeURIComponent(session.department);
 } else {
     document.getElementById('userInfo').textContent = session ? session.name + '님' : '';
 }
@@ -158,7 +173,7 @@ const urlParams = new URLSearchParams(window.location.search);
 const reporterName = urlParams.get('name') || '';
 
 // 기자 본인은 자기 페이지만 접근 가능
-if (isOwnPage && reporterName !== session.name) {
+if (isReporter && reporterName !== session.name) {
     location.href = 'reporter.html?name=' + encodeURIComponent(session.name);
 }
 
@@ -629,8 +644,8 @@ function renderArticleTable(articles) {
         return '<div class="p-4 text-muted text-center">기사가 없습니다</div>';
     }
     
-    // 기자 본인은 평가 컬럼 숨김
-    const showEvalCols = isAdmin;
+    // 기자 본인은 평가 컬럼 숨김, admin/manager만 평가 가능
+    const showEvalCols = canEvaluate;
     
     let html = `
         <table class="table table-hover mb-0" style="font-size:0.85rem;">

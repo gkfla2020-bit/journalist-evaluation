@@ -35,8 +35,8 @@
 <div class="header">
     <div class="d-flex justify-content-between align-items-center">
         <div>
-            <h1 style="font-size:1.8rem; margin-bottom:0.25rem;"><i class="bi bi-speedometer2 me-2"></i>기자 정량평가 대시보드</h1>
-            <div style="opacity:0.9;">서울경제신문 KPI 관리 시스템</div>
+            <h1 style="font-size:1.8rem; margin-bottom:0.25rem;"><i class="bi bi-speedometer2 me-2"></i>KPI 대시보드</h1>
+            <div style="opacity:0.9;">기자 지면 정보 정량평가 시스템</div>
         </div>
         <div class="text-end">
             <span class="badge bg-light text-dark fs-6" id="periodBadge">-</span>
@@ -52,6 +52,7 @@
 <div class="nav-menu">
     <a href="home.html" class="active"><i class="bi bi-house-door me-1"></i>대시보드</a>
     <a href="list.html"><i class="bi bi-people me-1"></i>기자 목록</a>
+    <a href="admin.html"><i class="bi bi-gear me-1"></i>사원 관리</a>
 </div>
 
 <!-- 요약 통계 -->
@@ -136,10 +137,17 @@
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script>
-// 로그인 체크
+// 로그인 체크 - admin만 대시보드 접근 가능
 const session = JSON.parse(localStorage.getItem('kpi_session') || 'null');
 if (!session || session.role !== 'admin') {
-    location.href = 'login.html';
+    // admin이 아니면 적절한 페이지로 리다이렉트
+    if (session && session.role === 'manager') {
+        location.href = 'list.html?dept=' + encodeURIComponent(session.department);
+    } else if (session && session.role === 'reporter') {
+        location.href = 'reporter.html?name=' + encodeURIComponent(session.name);
+    } else {
+        location.href = 'login.html';
+    }
 }
 document.getElementById('userInfo').textContent = session ? session.name + '님' : '';
 
