@@ -11,8 +11,10 @@ from collections import defaultdict
 from datetime import datetime, timezone, timedelta
 
 s3 = boto3.client('s3')
+cloudfront = boto3.client('cloudfront')
 XML_BUCKET = 'sedaily-news-xml-storage'
 WEB_BUCKET = 'kpi.sedaily.ai'
+CLOUDFRONT_DIST_ID = 'E1DJQD9MHS4VRO'
 KST = timezone(timedelta(hours=9))
 
 def clean_content(content_str):
@@ -281,6 +283,22 @@ def lambda_handler(event, context):
         ContentType='application/json; charset=utf-8',
         CacheControl='no-cache, no-store, must-revalidate'
     )
+    
+    # CloudFront 캐시 무효화
+    try:
+        cloudfront.create_invalidation(
+            DistributionId=CLOUDFRONT_DIST_ID,
+            InvalidationBatch={
+                'Paths': {
+                    'Quantity': 1,
+                    'Items': ['/data.json']
+                },
+                'CallerReference': f'sync-{datetime.now(KST).strftime("%Y%m%d%H%M%S")}'
+            }
+        )
+        print('CloudFront cache invalidated')
+    except Exception as e:
+        print(f'CloudFront invalidation failed: {e}')
     
     return {
         'statusCode': 200,
