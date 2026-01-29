@@ -407,31 +407,165 @@
     
     <p>KPI 시스템은 AWS 서버리스 아키텍처를 기반으로 구축되어 있습니다. 별도의 서버 관리 없이 자동으로 확장되며, 비용 효율적으로 운영됩니다.</p>
     
-    <div class="arch-diagram">
-        <div class="arch-flow">
-            <div class="arch-box source">
-                <i class="bi bi-file-earmark-code"></i>
-                <h6>XML 원본</h6>
-                <small>sedaily-news-xml-storage</small>
+    <!-- 상세 아키텍처 다이어그램 -->
+    <div style="background:#f5f5f5; border-radius:16px; padding:1.5rem; margin:1.5rem 0; overflow-x:auto;">
+        <div style="display:flex; justify-content:flex-end; gap:1.5rem; margin-bottom:0.75rem; font-size:0.75rem;">
+            <div style="display:flex; align-items:center; gap:0.4rem;"><div style="width:12px; height:12px; border-radius:3px; background:#4CAF50;"></div><span>자동 처리</span></div>
+            <div style="display:flex; align-items:center; gap:0.4rem;"><div style="width:12px; height:12px; border-radius:3px; background:#FF9800;"></div><span>수동 입력</span></div>
+        </div>
+        
+        <div style="display:grid; grid-template-columns:200px auto 280px auto 280px auto 380px; gap:0.5rem; align-items:start; min-width:1400px;">
+            
+            <!-- 데이터 소스 -->
+            <div style="background:#e3f2fd; border:2px solid #90caf9; border-radius:12px; padding:0.75rem; position:relative;">
+                <span style="position:absolute; top:-10px; left:50%; transform:translateX(-50%); padding:3px 12px; border-radius:16px; font-size:0.7rem; font-weight:600; color:white; background:#2196F3; white-space:nowrap;">데이터 소스</span>
+                <div style="background:white; border-radius:10px; padding:0.75rem; text-align:center; margin-bottom:0.5rem; box-shadow:0 2px 8px rgba(0,0,0,0.06);">
+                    <i class="bi bi-cloud-fill" style="font-size:2rem; color:#FFC107; display:block; margin-bottom:0.3rem;"></i>
+                    <div style="font-weight:700; font-size:0.85rem; color:#333;">S3 XML Storage</div>
+                    <div style="font-size:0.7rem; color:#666;">sedaily-news-xml-storage</div>
+                    <div style="display:inline-block; padding:2px 8px; border-radius:10px; font-size:0.65rem; font-weight:600; margin-top:0.4rem; background:#2196F3; color:white;">기존 시스템</div>
+                </div>
+                <div style="text-align:center; color:#90a4ae; font-size:1.2rem; margin:0.4rem 0;">↓</div>
+                <div style="background:white; border-radius:10px; padding:0.75rem; text-align:center; box-shadow:0 2px 8px rgba(0,0,0,0.06);">
+                    <i class="bi bi-bucket-fill" style="font-size:2rem; color:#FF9800; display:block; margin-bottom:0.3rem;"></i>
+                    <div style="font-weight:700; font-size:0.85rem; color:#333;">Amazon S3</div>
+                    <div style="font-size:0.7rem; color:#666;">XML 원본 저장</div>
+                    <div style="display:inline-block; padding:2px 8px; border-radius:10px; font-size:0.65rem; font-weight:600; margin-top:0.4rem; background:#4CAF50; color:white;">자동</div>
+                </div>
             </div>
-            <div class="arch-arrow">→</div>
-            <div class="arch-box process">
-                <i class="bi bi-lightning-charge"></i>
-                <h6>Lambda 파싱</h6>
-                <small>kpi-sync-data</small>
+            
+            <!-- 화살표 1 -->
+            <div style="display:flex; align-items:center; justify-content:center; color:#2196F3; font-size:1.5rem; height:100%; min-height:150px;">→</div>
+            
+            <!-- 데이터 처리 + 저장 -->
+            <div style="display:flex; flex-direction:column; gap:1rem;">
+                <div style="background:#fff8e1; border:2px solid #ffcc80; border-radius:12px; padding:0.75rem; position:relative;">
+                    <span style="position:absolute; top:-10px; left:50%; transform:translateX(-50%); padding:3px 12px; border-radius:16px; font-size:0.7rem; font-weight:600; color:white; background:#FF9800; white-space:nowrap;">데이터 처리</span>
+                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.4rem;">
+                        <div style="background:white; border-radius:6px; padding:0.6rem; text-align:center; box-shadow:0 1px 4px rgba(0,0,0,0.05);">
+                            <i class="bi bi-lightning-charge-fill" style="font-size:1.2rem; color:#FF9800; display:block; margin-bottom:0.2rem;"></i>
+                            <div style="font-size:0.7rem; font-weight:600; color:#333;">kpi-sync-data</div>
+                            <div style="font-size:0.65rem; color:#888;">XML 파싱</div>
+                        </div>
+                        <div style="background:white; border-radius:6px; padding:0.6rem; text-align:center; box-shadow:0 1px 4px rgba(0,0,0,0.05);">
+                            <i class="bi bi-calculator" style="font-size:1.2rem; color:#FF9800; display:block; margin-bottom:0.2rem;"></i>
+                            <div style="font-size:0.7rem; font-weight:600; color:#333;">kpi-evaluation-api</div>
+                            <div style="font-size:0.65rem; color:#888;">평가 저장</div>
+                        </div>
+                    </div>
+                    <div style="margin-top:0.5rem;">
+                        <div style="background:white; border-radius:6px; padding:0.6rem; text-align:center; box-shadow:0 1px 4px rgba(0,0,0,0.05);">
+                            <i class="bi bi-people-fill" style="font-size:1.2rem; color:#dc3545; display:block; margin-bottom:0.2rem;"></i>
+                            <div style="font-size:0.7rem; font-weight:600; color:#333;">kpi-users-api</div>
+                            <div style="font-size:0.65rem; color:#888;">사원 관리</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div style="background:#e8f5e9; border:2px solid #a5d6a7; border-radius:12px; padding:0.75rem; position:relative;">
+                    <span style="position:absolute; top:-10px; left:50%; transform:translateX(-50%); padding:3px 12px; border-radius:16px; font-size:0.7rem; font-weight:600; color:white; background:#4CAF50; white-space:nowrap;">데이터 저장</span>
+                    <div style="background:white; border-radius:10px; padding:0.75rem; text-align:center; margin-bottom:0.5rem; box-shadow:0 2px 8px rgba(0,0,0,0.06);">
+                        <i class="bi bi-filetype-json" style="font-size:2rem; color:#4CAF50; display:block; margin-bottom:0.3rem;"></i>
+                        <div style="font-weight:700; font-size:0.85rem; color:#333;">data.json</div>
+                        <div style="font-size:0.7rem; color:#666;">S3 정적 파일</div>
+                    </div>
+                    <div style="text-align:center; color:#90a4ae; font-size:1rem; margin:0.3rem 0;">↓</div>
+                    <div style="background:white; border-radius:10px; padding:0.75rem; text-align:center; margin-bottom:0.5rem; box-shadow:0 2px 8px rgba(0,0,0,0.06); border:2px solid #FF9800;">
+                        <i class="bi bi-cloud-upload" style="font-size:1.5rem; color:#FF9800; display:block; margin-bottom:0.3rem;"></i>
+                        <div style="font-weight:700; font-size:0.8rem; color:#333;">evaluations.json</div>
+                        <div style="font-size:0.65rem; color:#666;">평가 데이터</div>
+                    </div>
+                    <div style="text-align:center; color:#90a4ae; font-size:1rem; margin:0.3rem 0;">↓</div>
+                    <div style="background:white; border-radius:10px; padding:0.75rem; text-align:center; box-shadow:0 2px 8px rgba(0,0,0,0.06); border:2px solid #dc3545;">
+                        <i class="bi bi-people-fill" style="font-size:1.5rem; color:#E91E63; display:block; margin-bottom:0.3rem;"></i>
+                        <div style="font-weight:700; font-size:0.8rem; color:#333;">users.json</div>
+                        <div style="font-size:0.65rem; color:#666;">235명 계정</div>
+                    </div>
+                </div>
             </div>
-            <div class="arch-arrow">→</div>
-            <div class="arch-box storage">
-                <i class="bi bi-database"></i>
-                <h6>data.json</h6>
-                <small>S3 정적 파일</small>
+            
+            <!-- 화살표 2 -->
+            <div style="display:flex; align-items:center; justify-content:center; color:#2196F3; font-size:1.5rem; height:100%; min-height:150px;">→</div>
+            
+            <!-- 서비스 & 인증 -->
+            <div style="background:#fce4ec; border:2px solid #f8bbd9; border-radius:12px; padding:0.75rem; position:relative;">
+                <span style="position:absolute; top:-10px; left:50%; transform:translateX(-50%); padding:3px 12px; border-radius:16px; font-size:0.7rem; font-weight:600; color:white; background:#E91E63; white-space:nowrap;">서비스 & 인증</span>
+                <div style="background:white; border-radius:10px; padding:0.5rem; text-align:center; margin-bottom:0.4rem; box-shadow:0 2px 8px rgba(0,0,0,0.06);">
+                    <i class="bi bi-globe2" style="font-size:1.5rem; color:#2196F3; display:block; margin-bottom:0.2rem;"></i>
+                    <div style="font-weight:700; font-size:0.75rem; color:#333;">Route 53</div>
+                    <div style="font-size:0.65rem; color:#666;">kpi.sedaily.ai</div>
+                </div>
+                <div style="text-align:center; color:#90a4ae; font-size:1rem; margin:0.2rem 0;">↓</div>
+                <div style="background:white; border-radius:10px; padding:0.5rem; text-align:center; margin-bottom:0.4rem; box-shadow:0 2px 8px rgba(0,0,0,0.06);">
+                    <i class="bi bi-speedometer2" style="font-size:1.5rem; color:#2196F3; display:block; margin-bottom:0.2rem;"></i>
+                    <div style="font-weight:700; font-size:0.75rem; color:#333;">CloudFront</div>
+                    <div style="font-size:0.65rem; color:#666;">CDN</div>
+                </div>
+                <div style="text-align:center; color:#90a4ae; font-size:1rem; margin:0.2rem 0;">↓</div>
+                <div style="background:white; border-radius:10px; padding:0.5rem; text-align:center; margin-bottom:0.4rem; box-shadow:0 2px 8px rgba(0,0,0,0.06); border:2px solid #2196F3;">
+                    <i class="bi bi-shield-lock-fill" style="font-size:1.5rem; color:#2196F3; display:block; margin-bottom:0.2rem;"></i>
+                    <div style="font-weight:700; font-size:0.75rem; color:#333;">로그인 시스템</div>
+                    <div style="font-size:0.65rem; color:#666;">권한 기반</div>
+                </div>
+                <div style="display:flex; justify-content:center; gap:0.3rem; margin-top:0.3rem;">
+                    <div style="background:#dc3545; color:white; font-weight:600; font-size:0.6rem; padding:2px 6px; border-radius:4px;">admin 1</div>
+                    <div style="background:#0d6efd; color:white; font-weight:600; font-size:0.6rem; padding:2px 6px; border-radius:4px;">manager 32</div>
+                    <div style="background:#198754; color:white; font-weight:600; font-size:0.6rem; padding:2px 6px; border-radius:4px;">reporter 202</div>
+                </div>
             </div>
-            <div class="arch-arrow">→</div>
-            <div class="arch-box service">
-                <i class="bi bi-display"></i>
-                <h6>웹 대시보드</h6>
-                <small>kpi.sedaily.ai</small>
+            
+            <!-- 화살표 3 -->
+            <div style="display:flex; align-items:center; justify-content:center; color:#2196F3; font-size:1.5rem; height:100%; min-height:150px;">→</div>
+            
+            <!-- 권한별 기능 -->
+            <div style="background:#fce4ec; border:2px solid #f8bbd9; border-radius:12px; padding:0.75rem; position:relative;">
+                <span style="position:absolute; top:-10px; left:50%; transform:translateX(-50%); padding:3px 12px; border-radius:16px; font-size:0.7rem; font-weight:600; color:white; background:#E91E63; white-space:nowrap;">권한별 기능</span>
+                
+                <!-- Admin 전용 -->
+                <div style="background:#fff5f5; border:2px solid #dc3545; border-radius:10px; padding:0.6rem; margin-bottom:0.6rem;">
+                    <div style="text-align:center; margin-bottom:0.4rem;">
+                        <i class="bi bi-shield-fill" style="color:#dc3545; font-size:1.2rem; display:block; margin-bottom:0.2rem;"></i>
+                        <div style="font-weight:700; font-size:0.75rem; color:#dc3545;">Admin 전용</div>
+                    </div>
+                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.3rem;">
+                        <div style="background:white; border-radius:6px; padding:0.4rem; text-align:center; box-shadow:0 1px 3px rgba(0,0,0,0.05);">
+                            <i class="bi bi-house-door-fill" style="color:#dc3545; font-size:1rem; display:block;"></i>
+                            <div style="font-size:0.65rem; font-weight:600; color:#333;">대시보드</div>
+                        </div>
+                        <div style="background:white; border-radius:6px; padding:0.4rem; text-align:center; box-shadow:0 1px 3px rgba(0,0,0,0.05);">
+                            <i class="bi bi-gear-fill" style="color:#dc3545; font-size:1rem; display:block;"></i>
+                            <div style="font-size:0.65rem; font-weight:600; color:#333;">사원 관리</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 공통 기능 -->
+                <div style="background:#f0f7ff; border:2px solid #0d6efd; border-radius:10px; padding:0.6rem; margin-bottom:0.6rem;">
+                    <div style="text-align:center; margin-bottom:0.4rem;">
+                        <i class="bi bi-people-fill" style="color:#0d6efd; font-size:1.2rem; display:block; margin-bottom:0.2rem;"></i>
+                        <div style="font-weight:700; font-size:0.75rem; color:#0d6efd;">공통 기능</div>
+                    </div>
+                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.3rem;">
+                        <div style="background:white; border-radius:6px; padding:0.4rem; text-align:center; box-shadow:0 1px 3px rgba(0,0,0,0.05);">
+                            <i class="bi bi-list-ul" style="color:#0d6efd; font-size:1rem; display:block;"></i>
+                            <div style="font-size:0.65rem; font-weight:600; color:#333;">기자 목록</div>
+                        </div>
+                        <div style="background:white; border-radius:6px; padding:0.4rem; text-align:center; box-shadow:0 1px 3px rgba(0,0,0,0.05);">
+                            <i class="bi bi-person-badge-fill" style="color:#198754; font-size:1rem; display:block;"></i>
+                            <div style="font-size:0.65rem; font-weight:600; color:#333;">기자 상세</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 정성평가 -->
+                <div style="background:white; border-radius:10px; padding:0.6rem; text-align:center; box-shadow:0 2px 8px rgba(0,0,0,0.06); border:2px solid #FF9800;">
+                    <i class="bi bi-pencil-square" style="font-size:1.5rem; color:#E91E63; display:block; margin-bottom:0.2rem;"></i>
+                    <div style="font-weight:700; font-size:0.8rem; color:#333;">정성평가 입력</div>
+                    <div style="font-size:0.65rem; color:#666;">admin/manager만</div>
+                    <div style="display:inline-block; padding:2px 8px; border-radius:10px; font-size:0.6rem; font-weight:600; margin-top:0.3rem; background:#FF9800; color:white;"><i class="bi bi-pencil"></i> 수동 입력</div>
+                </div>
             </div>
+            
         </div>
     </div>
     
