@@ -4,6 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>사원 관리 - KPI</title>
+    <!-- Preconnect & Preload for faster loading -->
+    <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+    <link rel="preload" href="users.json" as="fetch" crossorigin>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
     <style>
@@ -20,6 +23,8 @@
         .role-admin { background: #dc3545; color: white; }
         .role-manager { background: #0d6efd; color: white; }
         .role-reporter { background: #6c757d; color: white; }
+        @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+        .spin { display: inline-block; animation: spin 1s linear infinite; }
     </style>
 </head>
 <body>
@@ -177,6 +182,19 @@
 <script>
 // 로그인 체크 - admin만 접근 가능
 const session = JSON.parse(localStorage.getItem('kpi_session') || 'null');
+
+// 세션 만료 체크 (24시간)
+if (session && session.loginTime) {
+    const loginTime = new Date(session.loginTime);
+    const now = new Date();
+    const hoursDiff = (now - loginTime) / (1000 * 60 * 60);
+    if (hoursDiff > 24) {
+        localStorage.removeItem('kpi_session');
+        alert('세션이 만료되었습니다. 다시 로그인해주세요.');
+        location.href = 'login.html';
+    }
+}
+
 if (!session || session.role !== 'admin') {
     location.href = 'login.html';
 }
@@ -302,22 +320,32 @@ async function saveAllChanges() {
         return;
     }
     
+    const btn = document.querySelector('[onclick="saveAllChanges()"]');
+    btn.disabled = true;
+    btn.innerHTML = '<i class="bi bi-arrow-repeat spin me-1"></i>저장 중...';
+    
     try {
-        // users.json 파일로 저장 (로컬)
-        const blob = new Blob([JSON.stringify(allUsers, null, 2)], { type: 'application/json' });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = 'users.json';
-        a.click();
-        URL.revokeObjectURL(url);
+        // Lambda API로 S3에 직접 저장
+        const res = await fetch('https://aesyomxdaohdy3tykjsbzo6nr40zfnap.lambda-url.us-east-1.on.aws/', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ users: allUsers })
+        });
+        const result = await res.json();
         
-        changedUsers = {};
-        filterUsers();
-        showToast('users.json 파일이 다운로드되었습니다. dashboard 폴더에 덮어쓰기 해주세요.', 'success');
+        if (result.success) {
+            changedUsers = {};
+            filterUsers();
+            showToast(result.message + ' (캐시 갱신까지 약 10초 소요)', 'success');
+        } else {
+            showToast('저장 실패: ' + result.error, 'danger');
+        }
     } catch (e) {
         showToast('저장 실패: ' + e.message, 'danger');
     }
+    
+    btn.disabled = false;
+    btn.innerHTML = '<i class="bi bi-save me-1"></i>변경사항 저장';
 }
 
 function showToast(msg, type = 'success') {

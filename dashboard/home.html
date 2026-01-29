@@ -4,9 +4,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>대시보드 - KPI 시스템</title>
+    <!-- Preconnect & Preload for faster loading -->
+    <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+    <link rel="preload" href="data.json" as="fetch" crossorigin>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js" defer></script>
     <style>
         body { background: #f5f5f5; font-family: 'Pretendard', -apple-system, sans-serif; }
         .container-main { max-width: 1400px; margin: 0 auto; padding: 1.5rem; }
@@ -26,6 +29,8 @@
         .nav-menu { background: white; border-radius: 12px; padding: 1rem; margin-bottom: 1.5rem; box-shadow: 0 2px 12px rgba(0,0,0,0.08); }
         .nav-menu a { color: #1a5f7a; text-decoration: none; padding: 0.5rem 1rem; border-radius: 8px; margin-right: 0.5rem; }
         .nav-menu a:hover, .nav-menu a.active { background: #1a5f7a; color: white; }
+        @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+        .spin { display: inline-block; animation: spin 1s linear infinite; }
     </style>
 </head>
 <body>
@@ -49,10 +54,10 @@
 </div>
 
 <!-- 네비게이션 -->
-<div class="nav-menu">
+<div class="nav-menu" id="navMenu">
     <a href="home.html" class="active"><i class="bi bi-house-door me-1"></i>대시보드</a>
     <a href="list.html"><i class="bi bi-people me-1"></i>기자 목록</a>
-    <a href="admin.html"><i class="bi bi-gear me-1"></i>사원 관리</a>
+    <a href="admin.html" id="navAdmin"><i class="bi bi-gear me-1"></i>사원 관리</a>
 </div>
 
 <!-- 요약 통계 -->
@@ -139,6 +144,19 @@
 <script>
 // 로그인 체크 - admin만 대시보드 접근 가능
 const session = JSON.parse(localStorage.getItem('kpi_session') || 'null');
+
+// 세션 만료 체크 (24시간)
+if (session && session.loginTime) {
+    const loginTime = new Date(session.loginTime);
+    const now = new Date();
+    const hoursDiff = (now - loginTime) / (1000 * 60 * 60);
+    if (hoursDiff > 24) {
+        localStorage.removeItem('kpi_session');
+        alert('세션이 만료되었습니다. 다시 로그인해주세요.');
+        location.href = 'login.html';
+    }
+}
+
 if (!session || session.role !== 'admin') {
     // admin이 아니면 적절한 페이지로 리다이렉트
     if (session && session.role === 'manager') {

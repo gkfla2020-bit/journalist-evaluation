@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KPI 시스템 인수인계 문서</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body { background: #f8f9fa; font-family: 'Pretendard', -apple-system, sans-serif; }
+        .container { max-width: 900px; margin: 2rem auto; }
+        .card { border: none; border-radius: 12px; box-shadow: 0 2px 12px rgba(0,0,0,0.08); margin-bottom: 1.5rem; }
+        .card-header { background: #1a5f7a; color: white; font-weight: 600; border-radius: 12px 12px 0 0 !important; }
+        .badge-new { background: #dc3545; }
+        .badge-update { background: #0d6efd; }
+        .file-path { background: #e9ecef; padding: 2px 8px; border-radius: 4px; font-family: monospace; font-size: 0.85rem; }
+        h1 { color: #1a5f7a; }
+        .section-title { border-left: 4px solid #1a5f7a; padding-left: 1rem; margin: 1.5rem 0 1rem; }
+        table { font-size: 0.9rem; }
+        .highlight { background: #fff3cd; padding: 1rem; border-radius: 8px; }
+    </style>
+</head>
+<body>
+<div class="container">
+
+<h1 class="mb-4">📋 KPI 시스템 인수인계 문서</h1>
+<p class="text-muted">작성일: 2026년 1월 29일</p>
+
+<!-- 개요 -->
+<div class="card">
+    <div class="card-header">🎯 시스템 개요</div>
+    <div class="card-body">
+        <table class="table table-borderless mb-0">
+            <tr><th width="150">시스템명</th><td>KPI - 기자 지면 정보 정량평가 시스템</td></tr>
+            <tr><th>URL</th><td><a href="https://kpi.sedaily.ai" target="_blank">https://kpi.sedaily.ai</a></td></tr>
+            <tr><th>GitHub (Private)</th><td><a href="https://github.com/gkfla2020-bit/kpi-system" target="_blank">github.com/gkfla2020-bit/kpi-system</a></td></tr>
+            <tr><th>GitHub (Public)</th><td><a href="https://github.com/gkfla2020-bit/journalist-evaluation" target="_blank">github.com/gkfla2020-bit/journalist-evaluation</a> (민감정보 제외)</td></tr>
+        </table>
+    </div>
+</div>
+
+<!-- 2026-01-29 추가 사항 -->
+<div class="card">
+    <div class="card-header">🆕 2026-01-29 추가/수정 사항</div>
+    <div class="card-body">
+        
+        <h5 class="section-title">1. 권한 기반 로그인 시스템 <span class="badge badge-new">NEW</span></h5>
+        <table class="table table-bordered">
+            <thead class="table-light">
+                <tr><th>권한</th><th>접근 범위</th><th>기능</th></tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><span class="badge bg-danger">admin</span></td>
+                    <td>전체 대시보드</td>
+                    <td>모든 부서/기자 조회, 평가, 사원 관리</td>
+                </tr>
+                <tr>
+                    <td><span class="badge bg-primary">manager</span></td>
+                    <td>소속 부서만</td>
+                    <td>부서 내 기자 목록 조회 및 평가</td>
+                </tr>
+                <tr>
+                    <td><span class="badge bg-secondary">reporter</span></td>
+                    <td>본인 페이지만</td>
+                    <td>본인 실적 조회 (평가 영역 숨김)</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h5 class="section-title">2. 사용자 계정 <span class="badge badge-new">NEW</span></h5>
+        <ul>
+            <li>총 <strong>235명</strong> 계정 생성 (admin 1명, manager 32명, reporter 202명)</li>
+            <li>아이디: <strong>사번</strong> (예: 10579, 80486)</li>
+            <li>비밀번호: 모두 <strong>1234</strong></li>
+            <li>계정 데이터: <span class="file-path">dashboard/users.json</span></li>
+            <li>계정 목록 엑셀: <span class="file-path">KPI_계정목록.xlsx</span></li>
+        </ul>
+
+        <h5 class="section-title">3. 사원 관리 페이지 <span class="badge badge-new">NEW</span></h5>
+        <ul>
+            <li>파일: <span class="file-path">dashboard/admin.html</span></li>
+            <li>admin 권한만 접근 가능</li>
+            <li>기능: 부서/권한 필터링, 검색, 부서/직급/권한 변경</li>
+            <li>저장 방식: Lambda API (kpi-users-api)를 통해 S3에 직접 저장 + CloudFront 캐시 자동 무효화</li>
+            <li>Lambda URL: <code>https://aesyomxdaohdy3tykjsbzo6nr40zfnap.lambda-url.us-east-1.on.aws/</code></li>
+        </ul>
+
+        <h5 class="section-title">4. 12월 XML 데이터 동기화 <span class="badge badge-update">UPDATE</span></h5>
+        <ul>
+            <li>2025년 12월 XML 28개 파일 S3 업로드 완료</li>
+            <li>데이터 기간: 2025-12-01 ~ 2026-01-28</li>
+            <li>총 기사 수: 2,946건</li>
+        </ul>
+
+        <h5 class="section-title">5. 시스템 이름 변경 <span class="badge badge-update">UPDATE</span></h5>
+        <ul>
+            <li>S-CORE → <strong>KPI</strong> (기자 지면 정보 정량평가 시스템)</li>
+        </ul>
+    </div>
+</div>
+
+<!-- 파일 구조 -->
+<div class="card">
+    <div class="card-header">📁 주요 파일 구조</div>
+    <div class="card-body">
+        <table class="table table-bordered">
+            <thead class="table-light">
+                <tr><th>파일</th><th>설명</th><th>상태</th></tr>
+            </thead>
+            <tbody>
+                <tr><td><span class="file-path">dashboard/login.html</span></td><td>로그인 페이지</td><td><span class="badge badge-update">수정</span></td></tr>
+                <tr><td><span class="file-path">dashboard/home.html</span></td><td>대시보드 (admin용)</td><td><span class="badge badge-update">수정</span></td></tr>
+                <tr><td><span class="file-path">dashboard/list.html</span></td><td>기자 목록</td><td><span class="badge badge-update">수정</span></td></tr>
+                <tr><td><span class="file-path">dashboard/reporter.html</span></td><td>기자 상세</td><td><span class="badge badge-update">수정</span></td></tr>
+                <tr><td><span class="file-path">dashboard/admin.html</span></td><td>사원 관리</td><td><span class="badge badge-new">신규</span></td></tr>
+                <tr><td><span class="file-path">dashboard/users.json</span></td><td>사용자 데이터 (235명)</td><td><span class="badge badge-new">신규</span></td></tr>
+                <tr><td><span class="file-path">dashboard/data.json</span></td><td>기사 데이터</td><td>동기화로 자동 갱신</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- 테스트 계정 -->
+<div class="card">
+    <div class="card-header">🔑 테스트 계정</div>
+    <div class="card-body">
+        <table class="table table-bordered">
+            <thead class="table-light">
+                <tr><th>권한</th><th>사번</th><th>이름</th><th>부서</th><th>비밀번호</th></tr>
+            </thead>
+            <tbody>
+                <tr><td><span class="badge bg-danger">admin</span></td><td>admin</td><td>관리자</td><td>전체</td><td>1234</td></tr>
+                <tr><td><span class="badge bg-primary">manager</span></td><td>10579</td><td>이철균</td><td>편집국</td><td>1234</td></tr>
+                <tr><td><span class="badge bg-primary">manager</span></td><td>80486</td><td>서일범</td><td>경제부</td><td>1234</td></tr>
+                <tr><td><span class="badge bg-secondary">reporter</span></td><td>211010</td><td>주재현</td><td>경제부</td><td>1234</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- AWS 리소스 -->
+<div class="card">
+    <div class="card-header">☁️ AWS 리소스</div>
+    <div class="card-body">
+        <table class="table table-bordered">
+            <thead class="table-light">
+                <tr><th>서비스</th><th>리소스명</th><th>용도</th></tr>
+            </thead>
+            <tbody>
+                <tr><td>S3</td><td>sedaily-news-xml-storage</td><td>XML 원본 저장 (daily-xml/)</td></tr>
+                <tr><td>S3</td><td>kpi.sedaily.ai</td><td>웹 호스팅</td></tr>
+                <tr><td>Lambda</td><td>kpi-sync-data</td><td>XML 파싱 및 동기화</td></tr>
+                <tr><td>Lambda</td><td>kpi-evaluation-api</td><td>평가 저장/불러오기</td></tr>
+                <tr><td>Lambda</td><td>kpi-users-api</td><td>사원 정보 저장 (S3 + 캐시 무효화)</td></tr>
+                <tr><td>CloudFront</td><td>E1DJQD9MHS4VRO</td><td>CDN 배포</td></tr>
+                <tr><td>Route 53</td><td>kpi.sedaily.ai</td><td>DNS</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- 배포 방법 -->
+<div class="card">
+    <div class="card-header">🚀 배포 방법</div>
+    <div class="card-body">
+        <h6>S3 배포 (HTML 파일)</h6>
+        <pre class="bg-dark text-light p-3 rounded"><code>aws s3 cp dashboard/login.html s3://kpi.sedaily.ai/login.html --content-type "text/html; charset=utf-8"
+aws s3 cp dashboard/admin.html s3://kpi.sedaily.ai/admin.html --content-type "text/html; charset=utf-8"
+aws s3 cp dashboard/users.json s3://kpi.sedaily.ai/users.json --content-type "application/json; charset=utf-8"</code></pre>
+
+        <h6 class="mt-3">CloudFront 캐시 무효화</h6>
+        <pre class="bg-dark text-light p-3 rounded"><code>aws cloudfront create-invalidation --distribution-id E1DJQD9MHS4VRO --paths "/*"</code></pre>
+
+        <h6 class="mt-3">로컬 테스트</h6>
+        <pre class="bg-dark text-light p-3 rounded"><code>cd dashboard
+python -m http.server 8080
+# http://localhost:8080/login.html 접속</code></pre>
+    </div>
+</div>
+
+<!-- 주의사항 -->
+<div class="card">
+    <div class="card-header">⚠️ 주의사항</div>
+    <div class="card-body">
+        <div class="highlight">
+            <ul class="mb-0">
+                <li><strong>users.json</strong>에 실제 사원 정보가 포함되어 있으므로 Public GitHub에 올리지 않도록 주의</li>
+                <li>사원 정보 변경은 admin.html에서 수정 후 "변경사항 저장" 버튼 클릭 (Lambda API가 S3에 직접 저장)</li>
+                <li>데이터 동기화는 Lambda (kpi-sync-data)가 처리하며, 동기화 버튼 클릭 또는 매일 오전 6시 자동 실행</li>
+                <li>일요일은 신문이 없으므로 기사 0건이 정상</li>
+            </ul>
+        </div>
+    </div>
+</div>
+
+<!-- 향후 작업 -->
+<div class="card">
+    <div class="card-header">📌 향후 작업 (TODO)</div>
+    <div class="card-body">
+        <ul>
+            <li>⏳ S3 배포 필요 (오늘 수정한 파일들 아직 미배포)</li>
+            <li>⏳ 비밀번호 변경 기능</li>
+            <li>⏳ 평가 데이터 백업/복원 기능</li>
+        </ul>
+    </div>
+</div>
+
+<div class="text-center text-muted py-4">
+    <small>KPI 시스템 인수인계 문서 | 2026-01-29</small>
+</div>
+
+</div>
+</body>
+</html>

@@ -4,9 +4,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>기자 상세 - KPI 시스템</title>
+    <!-- Preconnect & Preload for faster loading -->
+    <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+    <link rel="preload" href="data.json" as="fetch" crossorigin>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js" defer></script>
     <style>
         body { background: #f5f5f5; font-family: 'Pretendard', -apple-system, sans-serif; }
         .container-main { max-width: 1200px; margin: 0 auto; padding: 1.5rem; }
@@ -37,6 +40,8 @@
         .nav-menu a { color: #1a5f7a; text-decoration: none; padding: 0.5rem 1rem; border-radius: 8px; margin-right: 0.5rem; }
         .nav-menu a:hover { background: #1a5f7a; color: white; }
         .chart-container { position: relative; height: 200px; }
+        @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+        .spin { display: inline-block; animation: spin 1s linear infinite; }
     </style>
 </head>
 <body>
@@ -126,6 +131,19 @@ const session = JSON.parse(localStorage.getItem('kpi_session') || 'null');
 if (!session) {
     location.href = 'login.html';
 }
+
+// 세션 만료 체크 (24시간)
+if (session && session.loginTime) {
+    const loginTime = new Date(session.loginTime);
+    const now = new Date();
+    const hoursDiff = (now - loginTime) / (1000 * 60 * 60);
+    if (hoursDiff > 24) {
+        localStorage.removeItem('kpi_session');
+        alert('세션이 만료되었습니다. 다시 로그인해주세요.');
+        location.href = 'login.html';
+    }
+}
+
 const isAdmin = session && session.role === 'admin';
 const isManager = session && session.role === 'manager';
 const isReporter = session && session.role === 'reporter';
@@ -176,6 +194,9 @@ const reporterName = urlParams.get('name') || '';
 if (isReporter && reporterName !== session.name) {
     location.href = 'reporter.html?name=' + encodeURIComponent(session.name);
 }
+
+// manager는 자기 부서 기자만 접근 가능 (데이터 로드 후 체크)
+let managerDeptCheck = false;
 
 let currentPeriod = 'daily';
 let allData = null;
@@ -241,7 +262,7 @@ function updateNavText() {
 
 // 데이터 로드
 async function loadData() {
-    document.getElementById('mainContent').innerHTML = '<div class="loading"><i class="bi bi-arrow-repeat"></i> 로딩중...</div>';
+    document.getElementById('mainContent').innerHTML = '<div class="loading"><i class="bi bi-arrow-repeat spin"></i> 데이터 로딩중...</div>';
     
     try {
         const res = await fetch('data.json?t=' + Date.now());
@@ -253,6 +274,23 @@ async function loadData() {
         if (!reporterData) {
             document.getElementById('mainContent').innerHTML = '<div class="p-4 text-danger text-center">해당 기자를 찾을 수 없습니다. <a href="list.html">기자 목록</a>에서 선택해주세요.</div>';
             return;
+        }
+        
+        // manager는 자기 부서 기자만 접근 가능
+        if (isManager && !managerDeptCheck) {
+            try {
+                const usersRes = await fetch('users.json?t=' + Date.now());
+                const users = await usersRes.json();
+                const targetUser = users.find(u => u.name === reporterName);
+                if (targetUser && targetUser.department !== session.department) {
+                    alert('다른 부서 기자의 정보는 조회할 수 없습니다.');
+                    location.href = 'list.html?dept=' + encodeURIComponent(session.department);
+                    return;
+                }
+                managerDeptCheck = true;
+            } catch (e) {
+                console.error('부서 체크 실패:', e);
+            }
         }
         
         // localStorage에서 저장된 평가 데이터 불러오기
@@ -269,35 +307,21 @@ async function loadData() {
 
 // 서버에서 평가 데이터 불러오기
 async function loadSavedEvaluations() {
-    console.log('평가 데이터 로드 시작...');
     try {
-        // 서버에서 먼저 불러오기 (캐시 방지)
-        const url = EVAL_API_URL + '?t=' + Date.now();
-        console.log('API 호출:', url);
-        const res = await fetch(url);
-        console.log('API 응답 상태:', res.status);
+        const res = await fetch(EVAL_API_URL + '?t=' + Date.now());
         if (res.ok) {
             const serverData = await res.json();
-            console.log('서버 데이터:', serverData);
-            // localStorage에도 동기화
             localStorage.setItem(STORAGE_KEY, JSON.stringify(serverData));
-            // 기사에 적용
-            let appliedCount = 0;
             reporterData.articles.forEach(article => {
                 if (serverData[article.nsid]) {
                     Object.assign(article, serverData[article.nsid]);
-                    appliedCount++;
                 }
             });
-            console.log('적용된 평가 수:', appliedCount);
             return;
         }
-    } catch (e) {
-        console.error('서버 데이터 로드 실패:', e);
-    }
+    } catch (e) { /* 서버 실패 시 localStorage 사용 */ }
     
     // 서버 실패시 localStorage 사용
-    console.log('localStorage에서 로드...');
     const saved = localStorage.getItem(STORAGE_KEY);
     if (saved) {
         const evaluations = JSON.parse(saved);
@@ -385,15 +409,20 @@ function renderContent() {
         }
     });
     
+    // 기자 로그인 시 4개, admin/manager는 6개 통계 표시
+    const colClass = canEvaluate ? 'col-md-2' : 'col-md-3';
+    
     let html = `
         <!-- KPI 요약 -->
         <div class="row g-3 mb-4">
-            <div class="col-md-2"><div class="stat-box"><div class="value">${stats.article_count}</div><div class="label">기사건수</div></div></div>
-            <div class="col-md-2"><div class="stat-box"><div class="value">${stats.total_chars.toLocaleString()}</div><div class="label">글자수</div></div></div>
-            <div class="col-md-2"><div class="stat-box"><div class="value" style="color:#dc3545;">${stats.scoop_count}</div><div class="label">특종</div></div></div>
-            <div class="col-md-2"><div class="stat-box"><div class="value" style="color:#fd7e14;">${stats.exclusive_count}</div><div class="label">단독</div></div></div>
-            <div class="col-md-2"><div class="stat-box"><div class="value" style="color:#dc3545; font-weight:700;">${stats.s_grade}</div><div class="label">S등급</div></div></div>
-            <div class="col-md-2"><div class="stat-box"><div class="value" style="color:#fd7e14;">${stats.a_grade}</div><div class="label">A등급</div></div></div>
+            <div class="${colClass}"><div class="stat-box"><div class="value">${stats.article_count}</div><div class="label">기사건수</div></div></div>
+            <div class="${colClass}"><div class="stat-box"><div class="value">${stats.total_chars.toLocaleString()}</div><div class="label">글자수</div></div></div>
+            <div class="${colClass}"><div class="stat-box"><div class="value" style="color:#dc3545;">${stats.scoop_count}</div><div class="label">특종</div></div></div>
+            <div class="${colClass}"><div class="stat-box"><div class="value" style="color:#fd7e14;">${stats.exclusive_count}</div><div class="label">단독</div></div></div>
+            ${canEvaluate ? `
+            <div class="${colClass}"><div class="stat-box"><div class="value" style="color:#dc3545; font-weight:700;">${stats.s_grade}</div><div class="label">S등급</div></div></div>
+            <div class="${colClass}"><div class="stat-box"><div class="value" style="color:#fd7e14;">${stats.a_grade}</div><div class="label">A등급</div></div></div>
+            ` : ''}
         </div>
         
         <!-- 일별 기사수 추이 -->
@@ -686,7 +715,7 @@ function renderArticleTable(articles) {
                         <option value="톱" ${!article.is_auto_top && article.position === '톱' ? 'selected' : ''}>톱</option>
                         <option value="사이드(좌)" ${article.position === '사이드(좌)' ? 'selected' : ''}>사이드(좌)</option>
                         <option value="사이드(우)" ${article.position === '사이드(우)' ? 'selected' : ''}>사이드(우)</option>
-                        <option value="하단" ${article.position === '하단' ? 'selected' : ''}>하단</option>
+                        <option value="하단" ${article.position === '하단' ? 'selected' : ''}>하단</option>>
                         <option value="기타" ${article.position === '기타' ? 'selected' : ''}>기타</option>
                     </select>
                 </td>

@@ -4,6 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>기자 목록 - KPI</title>
+    <!-- Preconnect & Preload for faster loading -->
+    <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+    <link rel="preload" href="data.json" as="fetch" crossorigin>
+    <link rel="preload" href="users.json" as="fetch" crossorigin>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
     <style>
@@ -23,6 +27,8 @@
         .nav-menu a { color: #1a5f7a; text-decoration: none; padding: 0.5rem 1rem; border-radius: 8px; margin-right: 0.5rem; }
         .nav-menu a:hover, .nav-menu a.active { background: #1a5f7a; color: white; }
         .dept-badge { background: #e8f4f8; color: #1a5f7a; padding: 0.25rem 0.75rem; border-radius: 20px; font-size: 0.85rem; }
+        @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+        .spin { display: inline-block; animation: spin 1s linear infinite; }
     </style>
 </head>
 <body>
@@ -182,6 +188,18 @@ if (!session) {
     location.href = 'login.html';
 }
 
+// 세션 만료 체크 (24시간)
+if (session && session.loginTime) {
+    const loginTime = new Date(session.loginTime);
+    const now = new Date();
+    const hoursDiff = (now - loginTime) / (1000 * 60 * 60);
+    if (hoursDiff > 24) {
+        localStorage.removeItem('kpi_session');
+        alert('세션이 만료되었습니다. 다시 로그인해주세요.');
+        location.href = 'login.html';
+    }
+}
+
 // 권한 체크: admin 또는 manager만 접근 가능
 if (session.role !== 'admin' && session.role !== 'manager') {
     alert('접근 권한이 없습니다.');
@@ -203,23 +221,27 @@ function logout() {
 
 let allData = null;
 let usersData = [];
+let evaluationsData = {};
 let currentPeriod = 'all';
 let selectedDate = new Date();
 let selectedDept = '';
+
+const EVAL_API_URL = 'https://yyffk7tpfey7s2kv7hoitskxb40aljqw.lambda-url.us-east-1.on.aws/';
 
 // URL에서 부서 파라미터 확인
 const urlParams = new URLSearchParams(window.location.search);
 const deptParam = urlParams.get('dept');
 
-// 초기 로드
+// 초기 로드 - 병렬 로딩으로 속도 개선
 document.addEventListener('DOMContentLoaded', async () => {
-    // 사용자 데이터 로드
-    try {
-        const usersRes = await fetch('users.json?t=' + Date.now());
-        usersData = await usersRes.json();
-    } catch (e) {
-        console.log('사용자 데이터 로드 실패');
-    }
+    // 병렬로 데이터 로드 (Promise.allSettled로 하나 실패해도 계속 진행)
+    const [usersResult, evalResult] = await Promise.allSettled([
+        fetch('users.json?t=' + Date.now()).then(r => r.json()),
+        fetch(EVAL_API_URL + '?t=' + Date.now()).then(r => r.ok ? r.json() : {})
+    ]);
+    
+    if (usersResult.status === 'fulfilled') usersData = usersResult.value;
+    if (evalResult.status === 'fulfilled') evaluationsData = evalResult.value;
     
     // admin이면 부서 필터 표시
     if (session.role === 'admin') {
@@ -352,6 +374,12 @@ function updateView(searchKeyword = null) {
     document.getElementById('stat-articles').textContent = totalArticles;
     document.getElementById('stat-reporters').textContent = filtered.length;
     document.getElementById('reporterCount').textContent = filtered.length + '명';
+    
+    // 평가 완료 수 계산
+    const evaluatedCount = Object.keys(evaluationsData).filter(nsid => 
+        evaluationsData[nsid] && evaluationsData[nsid].impact_grade
+    ).length;
+    document.getElementById('stat-evaluated').textContent = evaluatedCount;
     
     let periodText = `${allData.period_start.slice(5)} ~ ${allData.period_end.slice(5)}`;
     if (currentPeriod === 'daily') periodText = formatDate(selectedDate).slice(5);
