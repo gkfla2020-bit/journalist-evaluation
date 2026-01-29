@@ -1,0 +1,1609 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KPI 시스템 사용 설명서</title>
+    <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #1a5f7a;
+            --primary-light: #4487a1;
+            --secondary: #159895;
+            --accent: #FF9800;
+            --success: #4CAF50;
+            --danger: #dc3545;
+        }
+        * { scroll-behavior: smooth; }
+        body { 
+            font-family: 'Pretendard', -apple-system, 'Malgun Gothic', sans-serif;
+            background: #f8f9fa;
+            line-height: 1.7;
+        }
+        /* 사이드바 */
+        .sidebar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 280px;
+            height: 100vh;
+            background: linear-gradient(180deg, var(--primary) 0%, var(--primary-light) 100%);
+            padding: 1.5rem;
+            overflow-y: auto;
+            z-index: 1000;
+        }
+        .sidebar-logo {
+            color: white;
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .sidebar-subtitle {
+            color: rgba(255,255,255,0.7);
+            font-size: 0.85rem;
+            margin-bottom: 2rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid rgba(255,255,255,0.2);
+        }
+        .nav-section {
+            color: rgba(255,255,255,0.5);
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin: 1.5rem 0 0.75rem;
+        }
+        .nav-link {
+            color: rgba(255,255,255,0.85);
+            padding: 0.5rem 0.75rem;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            text-decoration: none;
+            font-size: 0.9rem;
+            transition: all 0.2s;
+            margin-bottom: 0.25rem;
+        }
+        .nav-link:hover, .nav-link.active {
+            background: rgba(255,255,255,0.15);
+            color: white;
+        }
+        .nav-link i { width: 20px; text-align: center; }
+        /* 메인 콘텐츠 */
+        .main-content {
+            margin-left: 280px;
+            padding: 2rem 3rem;
+            max-width: 1200px;
+        }
+        .page-header {
+            background: white;
+            border-radius: 16px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+        }
+        .page-header h1 {
+            color: var(--primary);
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+        .page-header p { color: #6c757d; margin: 0; }
+        /* 섹션 */
+        .section {
+            background: white;
+            border-radius: 16px;
+            padding: 2rem;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+        }
+        .section-title {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 1.5rem;
+            padding-bottom: 0.75rem;
+            border-bottom: 2px solid #e9ecef;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .section-title i { color: var(--accent); }
+        /* 카드 그리드 */
+        .card-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1rem;
+        }
+        .info-card {
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 1.25rem;
+            border-left: 4px solid var(--primary);
+        }
+        .info-card.orange { border-left-color: var(--accent); }
+        .info-card.green { border-left-color: var(--success); }
+        .info-card.red { border-left-color: var(--danger); }
+        .info-card h5 {
+            font-size: 1rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: #333;
+        }
+        .info-card p { font-size: 0.9rem; color: #666; margin: 0; }
+        /* 테이블 */
+        .custom-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.9rem;
+        }
+        .custom-table th {
+            background: var(--primary);
+            color: white;
+            padding: 0.75rem 1rem;
+            text-align: left;
+            font-weight: 600;
+        }
+        .custom-table th:first-child { border-radius: 8px 0 0 0; }
+        .custom-table th:last-child { border-radius: 0 8px 0 0; }
+        .custom-table td {
+            padding: 0.75rem 1rem;
+            border-bottom: 1px solid #e9ecef;
+        }
+        .custom-table tr:hover { background: #f8f9fa; }
+        /* 배지 */
+        .badge-role {
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+        .badge-admin { background: #dc3545; color: white; }
+        .badge-manager { background: #0d6efd; color: white; }
+        .badge-reporter { background: #6c757d; color: white; }
+        /* 코드 블록 */
+        .code-block {
+            background: #1e1e1e;
+            color: #d4d4d4;
+            padding: 1rem 1.25rem;
+            border-radius: 8px;
+            font-family: 'Consolas', 'Monaco', monospace;
+            font-size: 0.85rem;
+            overflow-x: auto;
+            margin: 1rem 0;
+        }
+        .code-block .comment { color: #6a9955; }
+        .code-block .command { color: #dcdcaa; }
+        .code-block .string { color: #ce9178; }
+        /* 아키텍처 다이어그램 */
+        .arch-diagram {
+            background: linear-gradient(135deg, #f5f7fa 0%, #e4e8ec 100%);
+            border-radius: 16px;
+            padding: 2rem;
+            margin: 1.5rem 0;
+        }
+        .arch-flow {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+        .arch-box {
+            background: white;
+            border-radius: 12px;
+            padding: 1.25rem;
+            text-align: center;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+            min-width: 140px;
+            flex: 1;
+        }
+        .arch-box i { font-size: 2rem; margin-bottom: 0.5rem; display: block; }
+        .arch-box.source i { color: #FF9800; }
+        .arch-box.process i { color: #4CAF50; }
+        .arch-box.storage i { color: #2196F3; }
+        .arch-box.service i { color: #E91E63; }
+        .arch-box h6 { font-weight: 700; margin-bottom: 0.25rem; font-size: 0.9rem; }
+        .arch-box small { color: #888; font-size: 0.75rem; }
+        .arch-arrow {
+            color: var(--primary);
+            font-size: 1.5rem;
+            flex-shrink: 0;
+        }
+        /* 스텝 가이드 */
+        .step-list { counter-reset: step; }
+        .step-item {
+            position: relative;
+            padding-left: 3rem;
+            padding-bottom: 1.5rem;
+            border-left: 2px solid #e9ecef;
+            margin-left: 1rem;
+        }
+        .step-item:last-child { border-left: none; padding-bottom: 0; }
+        .step-item::before {
+            counter-increment: step;
+            content: counter(step);
+            position: absolute;
+            left: -1rem;
+            top: 0;
+            width: 2rem;
+            height: 2rem;
+            background: var(--primary);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 0.85rem;
+        }
+        .step-item h6 { font-weight: 600; margin-bottom: 0.5rem; }
+        .step-item p { color: #666; margin: 0; font-size: 0.9rem; }
+        /* 알림 박스 */
+        .alert-box {
+            padding: 1rem 1.25rem;
+            border-radius: 8px;
+            margin: 1rem 0;
+            display: flex;
+            align-items: flex-start;
+            gap: 0.75rem;
+        }
+        .alert-box i { font-size: 1.25rem; flex-shrink: 0; margin-top: 2px; }
+        .alert-box.info { background: #e3f2fd; color: #1565c0; }
+        .alert-box.warning { background: #fff3e0; color: #e65100; }
+        .alert-box.success { background: #e8f5e9; color: #2e7d32; }
+        .alert-box.danger { background: #ffebee; color: #c62828; }
+        /* 탭 */
+        .tab-nav {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+            border-bottom: 2px solid #e9ecef;
+            padding-bottom: 0.5rem;
+        }
+        .tab-btn {
+            padding: 0.5rem 1rem;
+            border: none;
+            background: none;
+            color: #666;
+            font-weight: 500;
+            cursor: pointer;
+            border-radius: 8px 8px 0 0;
+            transition: all 0.2s;
+        }
+        .tab-btn:hover { color: var(--primary); }
+        .tab-btn.active {
+            background: var(--primary);
+            color: white;
+        }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+        /* 스크린샷 플레이스홀더 */
+        .screenshot {
+            background: #e9ecef;
+            border-radius: 8px;
+            padding: 3rem;
+            text-align: center;
+            color: #888;
+            margin: 1rem 0;
+        }
+        /* 반응형 */
+        @media (max-width: 992px) {
+            .sidebar { width: 240px; }
+            .main-content { margin-left: 240px; padding: 1.5rem; }
+        }
+        @media (max-width: 768px) {
+            .sidebar {
+                position: relative;
+                width: 100%;
+                height: auto;
+            }
+            .main-content { margin-left: 0; }
+            .arch-flow { flex-direction: column; }
+            .arch-arrow { transform: rotate(90deg); }
+        }
+    </style>
+</head>
+<body>
+
+<!-- 사이드바 네비게이션 -->
+<nav class="sidebar">
+    <div class="sidebar-logo">
+        <i class="bi bi-speedometer2"></i> KPI
+    </div>
+    <div class="sidebar-subtitle">기자 지면 정보 정량평가 시스템<br>사용 설명서 v1.0</div>
+    
+    <div class="nav-section">시작하기</div>
+    <a href="#overview" class="nav-link"><i class="bi bi-house"></i> 시스템 개요</a>
+    <a href="#architecture" class="nav-link"><i class="bi bi-diagram-3"></i> 시스템 아키텍처</a>
+    <a href="#login" class="nav-link"><i class="bi bi-box-arrow-in-right"></i> 로그인</a>
+    
+    <div class="nav-section">사용자 가이드</div>
+    <a href="#role-admin" class="nav-link"><i class="bi bi-shield-check"></i> 관리자 (Admin)</a>
+    <a href="#role-manager" class="nav-link"><i class="bi bi-person-badge"></i> 부장 (Manager)</a>
+    <a href="#role-reporter" class="nav-link"><i class="bi bi-person"></i> 기자 (Reporter)</a>
+    
+    <div class="nav-section">기능 설명</div>
+    <a href="#dashboard" class="nav-link"><i class="bi bi-graph-up"></i> 대시보드</a>
+    <a href="#reporter-list" class="nav-link"><i class="bi bi-list-ul"></i> 기자 목록</a>
+    <a href="#reporter-detail" class="nav-link"><i class="bi bi-file-person"></i> 기자 상세</a>
+    <a href="#evaluation" class="nav-link"><i class="bi bi-star"></i> 평가 입력</a>
+    <a href="#user-management" class="nav-link"><i class="bi bi-people"></i> 사원 관리</a>
+    
+    <div class="nav-section">기술 문서</div>
+    <a href="#data-flow" class="nav-link"><i class="bi bi-arrow-repeat"></i> 데이터 흐름</a>
+    <a href="#aws-resources" class="nav-link"><i class="bi bi-cloud"></i> AWS 리소스</a>
+    <a href="#deployment" class="nav-link"><i class="bi bi-rocket"></i> 배포 방법</a>
+    <a href="#troubleshooting" class="nav-link"><i class="bi bi-wrench"></i> 문제 해결</a>
+    
+    <div class="nav-section">부록</div>
+    <a href="#accounts" class="nav-link"><i class="bi bi-key"></i> 계정 정보</a>
+    <a href="#roadmap" class="nav-link"><i class="bi bi-map"></i> 개발 로드맵</a>
+    <a href="#changelog" class="nav-link"><i class="bi bi-clock-history"></i> 변경 이력</a>
+    <a href="#contact" class="nav-link"><i class="bi bi-envelope"></i> 문의</a>
+</nav>
+
+
+<!-- 메인 콘텐츠 -->
+<main class="main-content">
+
+<!-- 페이지 헤더 -->
+<div class="page-header">
+    <h1><i class="bi bi-book me-2"></i>KPI 시스템 사용 설명서</h1>
+    <p>서울경제신문 기자 지면 정보 정량평가 시스템 완벽 가이드</p>
+</div>
+
+<!-- ==================== 시스템 개요 ==================== -->
+<section id="overview" class="section">
+    <h2 class="section-title"><i class="bi bi-info-circle"></i> 시스템 개요</h2>
+    
+    <p>KPI(기자 지면 정보 정량평가 시스템)는 서울경제신문 기자들의 기사 실적을 자동으로 집계하고, 정량/정성 평가를 지원하는 웹 기반 시스템입니다.</p>
+    
+    <div class="card-grid">
+        <div class="info-card">
+            <h5><i class="bi bi-globe me-2"></i>접속 URL</h5>
+            <p><a href="https://kpi.sedaily.ai" target="_blank">https://kpi.sedaily.ai</a></p>
+        </div>
+        <div class="info-card orange">
+            <h5><i class="bi bi-calendar-check me-2"></i>데이터 기간</h5>
+            <p>2025년 12월 ~ 현재 (매일 자동 동기화)</p>
+        </div>
+        <div class="info-card green">
+            <h5><i class="bi bi-people me-2"></i>등록 사용자</h5>
+            <p>235명 (관리자 1, 부장 32, 기자 202)</p>
+        </div>
+    </div>
+    
+    <h4 class="mt-4 mb-3">주요 기능</h4>
+    <div class="row">
+        <div class="col-md-6">
+            <h6><i class="bi bi-robot text-success me-2"></i>자동 처리 (정량)</h6>
+            <ul>
+                <li>지면 기사 자동 필터링 (paperNumber ≥ 1)</li>
+                <li>톱기사 자동 분류 (XML paragraph=TOP)</li>
+                <li>기자별 통계 자동 계산 (기사수, 글자수, 면별 분포)</li>
+                <li>공동 취재 기사 각 기자별 분리 집계</li>
+            </ul>
+        </div>
+        <div class="col-md-6">
+            <h6><i class="bi bi-pencil text-warning me-2"></i>수동 입력 (정성)</h6>
+            <ul>
+                <li>위치: 톱, 사이드(좌/우), 하단, 기타</li>
+                <li>취재유형: 특종, 단독, 기획발굴, 현장취재 등</li>
+                <li>기사성격: 탐사심층, 해설분석, 인터뷰 등</li>
+                <li>임팩트 등급: S, A, B, C, D</li>
+            </ul>
+        </div>
+    </div>
+</section>
+
+<!-- ==================== 시스템 아키텍처 ==================== -->
+<section id="architecture" class="section">
+    <h2 class="section-title"><i class="bi bi-diagram-3"></i> 시스템 아키텍처</h2>
+    
+    <p>KPI 시스템은 AWS 서버리스 아키텍처를 기반으로 구축되어 있습니다. 별도의 서버 관리 없이 자동으로 확장되며, 비용 효율적으로 운영됩니다.</p>
+    
+    <div class="arch-diagram">
+        <div class="arch-flow">
+            <div class="arch-box source">
+                <i class="bi bi-file-earmark-code"></i>
+                <h6>XML 원본</h6>
+                <small>sedaily-news-xml-storage</small>
+            </div>
+            <div class="arch-arrow">→</div>
+            <div class="arch-box process">
+                <i class="bi bi-lightning-charge"></i>
+                <h6>Lambda 파싱</h6>
+                <small>kpi-sync-data</small>
+            </div>
+            <div class="arch-arrow">→</div>
+            <div class="arch-box storage">
+                <i class="bi bi-database"></i>
+                <h6>data.json</h6>
+                <small>S3 정적 파일</small>
+            </div>
+            <div class="arch-arrow">→</div>
+            <div class="arch-box service">
+                <i class="bi bi-display"></i>
+                <h6>웹 대시보드</h6>
+                <small>kpi.sedaily.ai</small>
+            </div>
+        </div>
+    </div>
+    
+    <h4 class="mt-4 mb-3">구성 요소 상세</h4>
+    <table class="custom-table">
+        <thead>
+            <tr><th>구성 요소</th><th>AWS 서비스</th><th>역할</th><th>자동/수동</th></tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><strong>XML 저장소</strong></td>
+                <td>S3 (sedaily-news-xml-storage)</td>
+                <td>기존 시스템에서 생성된 XML 원본 저장</td>
+                <td><span class="badge bg-secondary">기존 시스템</span></td>
+            </tr>
+            <tr>
+                <td><strong>데이터 동기화</strong></td>
+                <td>Lambda (kpi-sync-data)</td>
+                <td>XML 파싱 → 정량 점수 계산 → data.json 생성</td>
+                <td><span class="badge bg-success">자동 (매일 6시)</span></td>
+            </tr>
+            <tr>
+                <td><strong>평가 저장</strong></td>
+                <td>Lambda (kpi-evaluation-api)</td>
+                <td>정성평가 데이터 저장/조회</td>
+                <td><span class="badge bg-warning text-dark">수동 입력</span></td>
+            </tr>
+            <tr>
+                <td><strong>사원 관리</strong></td>
+                <td>Lambda (kpi-users-api)</td>
+                <td>사원 정보 변경 → S3 저장 + 캐시 무효화</td>
+                <td><span class="badge bg-warning text-dark">수동 입력</span></td>
+            </tr>
+            <tr>
+                <td><strong>웹 호스팅</strong></td>
+                <td>S3 + CloudFront</td>
+                <td>정적 웹사이트 호스팅 및 CDN 배포</td>
+                <td><span class="badge bg-success">자동</span></td>
+            </tr>
+            <tr>
+                <td><strong>DNS</strong></td>
+                <td>Route 53</td>
+                <td>kpi.sedaily.ai 도메인 관리</td>
+                <td><span class="badge bg-success">자동</span></td>
+            </tr>
+        </tbody>
+    </table>
+    
+    <div class="alert-box info mt-4">
+        <i class="bi bi-info-circle"></i>
+        <div>
+            <strong>서버리스 아키텍처의 장점</strong><br>
+            서버 관리 불필요, 사용량 기반 과금, 자동 확장, 고가용성 보장
+        </div>
+    </div>
+</section>
+
+
+<!-- ==================== 로그인 ==================== -->
+<section id="login" class="section">
+    <h2 class="section-title"><i class="bi bi-box-arrow-in-right"></i> 로그인</h2>
+    
+    <p>KPI 시스템은 권한 기반 접근 제어를 사용합니다. 사번과 비밀번호로 로그인하면 권한에 따라 적절한 페이지로 이동합니다.</p>
+    
+    <div class="row">
+        <div class="col-md-6">
+            <h5 class="mb-3">로그인 방법</h5>
+            <div class="step-list">
+                <div class="step-item">
+                    <h6>접속</h6>
+                    <p><a href="https://kpi.sedaily.ai" target="_blank">https://kpi.sedaily.ai</a> 접속</p>
+                </div>
+                <div class="step-item">
+                    <h6>아이디 입력</h6>
+                    <p>본인의 <strong>사번</strong>을 입력 (예: 80486)</p>
+                </div>
+                <div class="step-item">
+                    <h6>비밀번호 입력</h6>
+                    <p>초기 비밀번호: <strong>1234</strong></p>
+                </div>
+                <div class="step-item">
+                    <h6>로그인 완료</h6>
+                    <p>권한에 따라 자동으로 해당 페이지로 이동</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <h5 class="mb-3">권한별 접근 범위</h5>
+            <table class="custom-table">
+                <thead>
+                    <tr><th>권한</th><th>로그인 후 이동</th><th>접근 가능</th></tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><span class="badge-role badge-admin">관리자</span></td>
+                        <td>대시보드 (home.html)</td>
+                        <td>전체 기능</td>
+                    </tr>
+                    <tr>
+                        <td><span class="badge-role badge-manager">부장</span></td>
+                        <td>기자 목록 (list.html)</td>
+                        <td>소속 부서만</td>
+                    </tr>
+                    <tr>
+                        <td><span class="badge-role badge-reporter">기자</span></td>
+                        <td>본인 상세 (reporter.html)</td>
+                        <td>본인만</td>
+                    </tr>
+                </tbody>
+            </table>
+            
+            <div class="alert-box warning mt-3">
+                <i class="bi bi-exclamation-triangle"></i>
+                <div>
+                    <strong>세션 만료</strong><br>
+                    로그인 후 24시간이 지나면 자동 로그아웃됩니다.
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ==================== 관리자 가이드 ==================== -->
+<section id="role-admin" class="section">
+    <h2 class="section-title"><i class="bi bi-shield-check"></i> 관리자 (Admin) 가이드</h2>
+    
+    <p>관리자는 시스템의 모든 기능에 접근할 수 있습니다. 전체 대시보드 조회, 모든 부서/기자 평가, 사원 관리가 가능합니다.</p>
+    
+    <h5 class="mt-4 mb-3">관리자 전용 기능</h5>
+    <div class="card-grid">
+        <div class="info-card">
+            <h5><i class="bi bi-graph-up-arrow me-2"></i>전체 대시보드</h5>
+            <p>전체 기자 통계, 부서별 현황, 기간별 추이 확인</p>
+        </div>
+        <div class="info-card orange">
+            <h5><i class="bi bi-people me-2"></i>사원 관리</h5>
+            <p>부서/직급/권한 변경, 신규 사원 추가</p>
+        </div>
+        <div class="info-card green">
+            <h5><i class="bi bi-arrow-repeat me-2"></i>데이터 동기화</h5>
+            <p>수동 동기화 실행, 동기화 상태 확인</p>
+        </div>
+        <div class="info-card red">
+            <h5><i class="bi bi-star me-2"></i>전체 평가</h5>
+            <p>모든 부서 기자의 정성평가 입력/수정</p>
+        </div>
+    </div>
+    
+    <h5 class="mt-4 mb-3">관리자 메뉴 구성</h5>
+    <table class="custom-table">
+        <thead>
+            <tr><th>메뉴</th><th>파일</th><th>설명</th></tr>
+        </thead>
+        <tbody>
+            <tr><td>대시보드</td><td>home.html</td><td>전체 통계 및 현황 요약</td></tr>
+            <tr><td>기자 목록</td><td>list.html</td><td>전체 기자 목록 및 필터링</td></tr>
+            <tr><td>기자 상세</td><td>reporter.html</td><td>개별 기자 실적 및 평가</td></tr>
+            <tr><td>사원 관리</td><td>admin.html</td><td>사원 정보 관리 (관리자 전용)</td></tr>
+            <tr><td>시스템 구조</td><td>architecture.html</td><td>아키텍처 다이어그램</td></tr>
+            <tr><td>인수인계</td><td>handover.html</td><td>시스템 문서</td></tr>
+        </tbody>
+    </table>
+</section>
+
+<!-- ==================== 부장 가이드 ==================== -->
+<section id="role-manager" class="section">
+    <h2 class="section-title"><i class="bi bi-person-badge"></i> 부장 (Manager) 가이드</h2>
+    
+    <p>부장은 소속 부서의 기자들만 조회하고 평가할 수 있습니다. 다른 부서 기자 페이지에는 접근할 수 없습니다.</p>
+    
+    <h5 class="mt-4 mb-3">부장 업무 흐름</h5>
+    <div class="step-list">
+        <div class="step-item">
+            <h6>로그인</h6>
+            <p>사번으로 로그인하면 자동으로 소속 부서 기자 목록 페이지로 이동</p>
+        </div>
+        <div class="step-item">
+            <h6>기자 목록 확인</h6>
+            <p>소속 부서 기자들의 기사수, 글자수, 평가 완료 현황 확인</p>
+        </div>
+        <div class="step-item">
+            <h6>기자 선택</h6>
+            <p>평가할 기자 이름 클릭하여 상세 페이지로 이동</p>
+        </div>
+        <div class="step-item">
+            <h6>정성평가 입력</h6>
+            <p>각 기사별로 위치, 취재유형, 기사성격, 임팩트 등급 입력</p>
+        </div>
+        <div class="step-item">
+            <h6>저장</h6>
+            <p>"평가 저장" 버튼 클릭하여 서버에 저장</p>
+        </div>
+    </div>
+    
+    <div class="alert-box info mt-4">
+        <i class="bi bi-info-circle"></i>
+        <div>
+            <strong>부서 제한</strong><br>
+            부장 계정은 본인 소속 부서의 기자만 조회/평가할 수 있습니다. 다른 부서 기자 페이지 접근 시 "접근 권한이 없습니다" 메시지가 표시됩니다.
+        </div>
+    </div>
+</section>
+
+<!-- ==================== 기자 가이드 ==================== -->
+<section id="role-reporter" class="section">
+    <h2 class="section-title"><i class="bi bi-person"></i> 기자 (Reporter) 가이드</h2>
+    
+    <p>기자는 본인의 실적만 조회할 수 있습니다. 평가 입력 영역은 표시되지 않으며, 부장이 입력한 평가 결과만 확인 가능합니다.</p>
+    
+    <h5 class="mt-4 mb-3">기자 화면 구성</h5>
+    <div class="row">
+        <div class="col-md-6">
+            <h6><i class="bi bi-eye text-primary me-2"></i>조회 가능 항목</h6>
+            <ul>
+                <li>본인 기사 목록 (제목, 날짜, 면, 글자수)</li>
+                <li>기간별 통계 (기사수, 총 글자수)</li>
+                <li>면별 기사 분포 차트</li>
+                <li>부장이 입력한 평가 결과 (읽기 전용)</li>
+            </ul>
+        </div>
+        <div class="col-md-6">
+            <h6><i class="bi bi-eye-slash text-danger me-2"></i>숨김 항목</h6>
+            <ul>
+                <li>평가 입력 드롭다운 (위치, 취재유형 등)</li>
+                <li>평가 저장 버튼</li>
+                <li>다른 기자 페이지 접근</li>
+            </ul>
+        </div>
+    </div>
+    
+    <div class="alert-box success mt-4">
+        <i class="bi bi-check-circle"></i>
+        <div>
+            <strong>본인 실적 확인</strong><br>
+            로그인하면 자동으로 본인 상세 페이지로 이동합니다. 기간 필터를 변경하여 일별/주별/월별 실적을 확인할 수 있습니다.
+        </div>
+    </div>
+</section>
+
+
+<!-- ==================== 대시보드 ==================== -->
+<section id="dashboard" class="section">
+    <h2 class="section-title"><i class="bi bi-graph-up"></i> 대시보드 (home.html)</h2>
+    
+    <p>대시보드는 관리자 전용 페이지로, 전체 시스템 현황을 한눈에 파악할 수 있습니다.</p>
+    
+    <h5 class="mt-4 mb-3">대시보드 구성 요소</h5>
+    <div class="card-grid">
+        <div class="info-card">
+            <h5><i class="bi bi-card-text me-2"></i>요약 카드</h5>
+            <p>전체 기자수, 총 기사수, 평균 기사수, 데이터 기간</p>
+        </div>
+        <div class="info-card orange">
+            <h5><i class="bi bi-bar-chart me-2"></i>부서별 통계</h5>
+            <p>부서별 기자수, 기사수, 평균 기사수 비교</p>
+        </div>
+        <div class="info-card green">
+            <h5><i class="bi bi-trophy me-2"></i>상위 기자</h5>
+            <p>기사수/글자수 기준 상위 10명</p>
+        </div>
+        <div class="info-card">
+            <h5><i class="bi bi-calendar3 me-2"></i>기간별 추이</h5>
+            <p>일별/주별/월별 기사 발행 추이 차트</p>
+        </div>
+    </div>
+    
+    <h5 class="mt-4 mb-3">네비게이션 메뉴</h5>
+    <table class="custom-table">
+        <thead>
+            <tr><th>메뉴</th><th>아이콘</th><th>설명</th><th>권한</th></tr>
+        </thead>
+        <tbody>
+            <tr><td>대시보드</td><td><i class="bi bi-house"></i></td><td>전체 현황 요약</td><td>관리자</td></tr>
+            <tr><td>기자 목록</td><td><i class="bi bi-people"></i></td><td>기자별 실적 목록</td><td>관리자/부장</td></tr>
+            <tr><td>사원 관리</td><td><i class="bi bi-person-gear"></i></td><td>사원 정보 관리</td><td>관리자</td></tr>
+            <tr><td>시스템 구조</td><td><i class="bi bi-diagram-3"></i></td><td>아키텍처 문서</td><td>관리자</td></tr>
+            <tr><td>인수인계</td><td><i class="bi bi-file-text"></i></td><td>시스템 문서</td><td>관리자</td></tr>
+            <tr><td>로그아웃</td><td><i class="bi bi-box-arrow-right"></i></td><td>세션 종료</td><td>전체</td></tr>
+        </tbody>
+    </table>
+</section>
+
+<!-- ==================== 기자 목록 ==================== -->
+<section id="reporter-list" class="section">
+    <h2 class="section-title"><i class="bi bi-list-ul"></i> 기자 목록 (list.html)</h2>
+    
+    <p>기자 목록 페이지에서는 기자별 실적을 한눈에 비교하고, 평가가 필요한 기자를 빠르게 찾을 수 있습니다.</p>
+    
+    <h5 class="mt-4 mb-3">기능 설명</h5>
+    <div class="row">
+        <div class="col-md-6">
+            <h6><i class="bi bi-funnel me-2"></i>필터링</h6>
+            <ul>
+                <li><strong>부서 필터</strong>: 특정 부서 기자만 표시</li>
+                <li><strong>기간 필터</strong>: 일별/주별/월별/분기별/반기별</li>
+                <li><strong>검색</strong>: 기자 이름으로 검색</li>
+            </ul>
+        </div>
+        <div class="col-md-6">
+            <h6><i class="bi bi-sort-down me-2"></i>정렬</h6>
+            <ul>
+                <li><strong>기사수</strong>: 기사 많은 순/적은 순</li>
+                <li><strong>글자수</strong>: 글자수 많은 순/적은 순</li>
+                <li><strong>이름</strong>: 가나다 순</li>
+            </ul>
+        </div>
+    </div>
+    
+    <h5 class="mt-4 mb-3">목록 컬럼 설명</h5>
+    <table class="custom-table">
+        <thead>
+            <tr><th>컬럼</th><th>설명</th><th>계산 방식</th></tr>
+        </thead>
+        <tbody>
+            <tr><td>기자명</td><td>기자 이름 (클릭 시 상세 페이지)</td><td>-</td></tr>
+            <tr><td>부서</td><td>소속 부서</td><td>users.json 기준</td></tr>
+            <tr><td>기사수</td><td>선택 기간 내 기사 수</td><td>지면 기사만 (paperNumber ≥ 1)</td></tr>
+            <tr><td>글자수</td><td>선택 기간 내 총 글자수</td><td>기사 본문 글자수 합계</td></tr>
+            <tr><td>평가 완료</td><td>평가 입력된 기사 수</td><td>evaluations.json 기준</td></tr>
+        </tbody>
+    </table>
+    
+    <div class="alert-box info mt-4">
+        <i class="bi bi-info-circle"></i>
+        <div>
+            <strong>데이터 동기화</strong><br>
+            "데이터 동기화" 버튼을 클릭하면 최신 XML 데이터를 파싱하여 data.json을 갱신합니다. 동기화는 매일 오전 6시에 자동 실행됩니다.
+        </div>
+    </div>
+</section>
+
+<!-- ==================== 기자 상세 ==================== -->
+<section id="reporter-detail" class="section">
+    <h2 class="section-title"><i class="bi bi-file-person"></i> 기자 상세 (reporter.html)</h2>
+    
+    <p>기자 상세 페이지에서는 개별 기자의 상세 실적과 기사별 평가를 확인/입력할 수 있습니다.</p>
+    
+    <h5 class="mt-4 mb-3">페이지 구성</h5>
+    <div class="card-grid">
+        <div class="info-card">
+            <h5><i class="bi bi-person-circle me-2"></i>기자 정보</h5>
+            <p>이름, 부서, 직급, 사번</p>
+        </div>
+        <div class="info-card orange">
+            <h5><i class="bi bi-speedometer2 me-2"></i>KPI 요약</h5>
+            <p>기사수, 글자수, 특종, 단독, S/A등급 수</p>
+        </div>
+        <div class="info-card green">
+            <h5><i class="bi bi-pie-chart me-2"></i>면별 분포</h5>
+            <p>1~32면 기사 분포 차트</p>
+        </div>
+        <div class="info-card">
+            <h5><i class="bi bi-table me-2"></i>기사 목록</h5>
+            <p>기사별 상세 정보 및 평가 입력</p>
+        </div>
+    </div>
+    
+    <h5 class="mt-4 mb-3">기사 목록 컬럼</h5>
+    <table class="custom-table">
+        <thead>
+            <tr><th>컬럼</th><th>설명</th><th>입력 방식</th></tr>
+        </thead>
+        <tbody>
+            <tr><td>날짜</td><td>기사 발행일</td><td>자동 (XML)</td></tr>
+            <tr><td>제목</td><td>기사 제목 (클릭 시 원문 링크)</td><td>자동 (XML)</td></tr>
+            <tr><td>면</td><td>지면 번호</td><td>자동 (XML)</td></tr>
+            <tr><td>글자수</td><td>기사 본문 글자수</td><td>자동 (XML)</td></tr>
+            <tr><td>톱</td><td>톱기사 여부 (★ 표시)</td><td>자동 (XML paragraph=TOP)</td></tr>
+            <tr><td>위치</td><td>톱/사이드/하단/기타</td><td><span class="badge bg-warning text-dark">수동</span></td></tr>
+            <tr><td>취재유형</td><td>특종/단독/기획발굴 등</td><td><span class="badge bg-warning text-dark">수동</span></td></tr>
+            <tr><td>기사성격</td><td>탐사심층/해설분석 등</td><td><span class="badge bg-warning text-dark">수동</span></td></tr>
+            <tr><td>임팩트</td><td>S/A/B/C/D 등급</td><td><span class="badge bg-warning text-dark">수동</span></td></tr>
+        </tbody>
+    </table>
+</section>
+
+<!-- ==================== 평가 입력 ==================== -->
+<section id="evaluation" class="section">
+    <h2 class="section-title"><i class="bi bi-star"></i> 평가 입력 가이드</h2>
+    
+    <p>정성평가는 부장 이상 권한을 가진 사용자만 입력할 수 있습니다. 각 항목의 의미와 입력 기준을 안내합니다.</p>
+    
+    <div class="tab-nav">
+        <button class="tab-btn active" onclick="showTab('tab-position')">위치</button>
+        <button class="tab-btn" onclick="showTab('tab-type')">취재유형</button>
+        <button class="tab-btn" onclick="showTab('tab-nature')">기사성격</button>
+        <button class="tab-btn" onclick="showTab('tab-impact')">임팩트</button>
+    </div>
+    
+    <div id="tab-position" class="tab-content active">
+        <h5>위치 (Position)</h5>
+        <p>기사가 지면에서 배치된 위치를 선택합니다.</p>
+        <table class="custom-table">
+            <thead><tr><th>옵션</th><th>설명</th></tr></thead>
+            <tbody>
+                <tr><td><strong>톱</strong></td><td>해당 면의 메인 기사 (가장 큰 제목)</td></tr>
+                <tr><td><strong>사이드(좌)</strong></td><td>톱 기사 왼쪽에 배치된 기사</td></tr>
+                <tr><td><strong>사이드(우)</strong></td><td>톱 기사 오른쪽에 배치된 기사</td></tr>
+                <tr><td><strong>하단</strong></td><td>면 하단에 배치된 기사</td></tr>
+                <tr><td><strong>기타</strong></td><td>위 분류에 해당하지 않는 경우</td></tr>
+            </tbody>
+        </table>
+    </div>
+    
+    <div id="tab-type" class="tab-content">
+        <h5>취재유형 (Coverage Type)</h5>
+        <p>기사의 취재 방식과 독창성을 평가합니다.</p>
+        <table class="custom-table">
+            <thead><tr><th>옵션</th><th>설명</th><th>가중치</th></tr></thead>
+            <tbody>
+                <tr><td><strong>특종</strong></td><td>타 매체보다 먼저 보도한 중요 뉴스</td><td>최고</td></tr>
+                <tr><td><strong>단독</strong></td><td>독자적으로 취재한 기사</td><td>높음</td></tr>
+                <tr><td><strong>기획발굴</strong></td><td>기자가 직접 기획하고 발굴한 기사</td><td>높음</td></tr>
+                <tr><td><strong>현장취재</strong></td><td>현장에서 직접 취재한 기사</td><td>중간</td></tr>
+                <tr><td><strong>단순발생</strong></td><td>발생한 사건을 보도한 기사</td><td>기본</td></tr>
+                <tr><td><strong>보도자료</strong></td><td>보도자료 기반 기사</td><td>기본</td></tr>
+                <tr><td><strong>인용외신</strong></td><td>외신을 인용한 기사</td><td>기본</td></tr>
+            </tbody>
+        </table>
+    </div>
+    
+    <div id="tab-nature" class="tab-content">
+        <h5>기사성격 (Article Nature)</h5>
+        <p>기사의 형식과 깊이를 평가합니다.</p>
+        <table class="custom-table">
+            <thead><tr><th>옵션</th><th>설명</th></tr></thead>
+            <tbody>
+                <tr><td><strong>탐사심층</strong></td><td>장기간 심층 취재한 탐사보도</td></tr>
+                <tr><td><strong>해설분석</strong></td><td>이슈를 분석하고 해설한 기사</td></tr>
+                <tr><td><strong>인터뷰</strong></td><td>인물 인터뷰 기사</td></tr>
+                <tr><td><strong>르포스케치</strong></td><td>현장 르포 또는 스케치 기사</td></tr>
+                <tr><td><strong>스트레이트</strong></td><td>사실 전달 중심의 기본 기사</td></tr>
+                <tr><td><strong>가십미담</strong></td><td>가벼운 화제성 기사</td></tr>
+            </tbody>
+        </table>
+    </div>
+    
+    <div id="tab-impact" class="tab-content">
+        <h5>임팩트 등급 (Impact Grade)</h5>
+        <p>기사의 영향력과 중요도를 종합 평가합니다.</p>
+        <table class="custom-table">
+            <thead><tr><th>등급</th><th>설명</th><th>기준</th></tr></thead>
+            <tbody>
+                <tr><td><span class="badge bg-danger">S</span></td><td>최우수</td><td>특종, 사회적 파급력 큰 기사</td></tr>
+                <tr><td><span class="badge bg-warning text-dark">A</span></td><td>우수</td><td>단독, 기획발굴 등 독창적 기사</td></tr>
+                <tr><td><span class="badge bg-primary">B</span></td><td>양호</td><td>현장취재, 심층분석 기사</td></tr>
+                <tr><td><span class="badge bg-secondary">C</span></td><td>보통</td><td>일반적인 기사</td></tr>
+                <tr><td><span class="badge bg-dark">D</span></td><td>기본</td><td>보도자료, 인용외신 기반 기사</td></tr>
+            </tbody>
+        </table>
+    </div>
+    
+    <div class="alert-box success mt-4">
+        <i class="bi bi-check-circle"></i>
+        <div>
+            <strong>평가 저장</strong><br>
+            평가 입력 후 "평가 저장" 버튼을 클릭하면 Lambda API를 통해 서버에 저장됩니다. 저장된 평가는 모든 사용자가 공유합니다.
+        </div>
+    </div>
+</section>
+
+
+<!-- ==================== 사원 관리 ==================== -->
+<section id="user-management" class="section">
+    <h2 class="section-title"><i class="bi bi-people"></i> 사원 관리 (admin.html)</h2>
+    
+    <p>사원 관리 페이지는 관리자 전용입니다. 사원의 부서, 직급, 권한을 변경할 수 있습니다.</p>
+    
+    <h5 class="mt-4 mb-3">사원 관리 기능</h5>
+    <div class="card-grid">
+        <div class="info-card">
+            <h5><i class="bi bi-search me-2"></i>검색/필터</h5>
+            <p>이름/사번 검색, 부서/권한별 필터링</p>
+        </div>
+        <div class="info-card orange">
+            <h5><i class="bi bi-building me-2"></i>부서 변경</h5>
+            <p>사원의 소속 부서 변경</p>
+        </div>
+        <div class="info-card green">
+            <h5><i class="bi bi-person-badge me-2"></i>직급 변경</h5>
+            <p>사원의 직급 변경</p>
+        </div>
+        <div class="info-card red">
+            <h5><i class="bi bi-shield me-2"></i>권한 변경</h5>
+            <p>admin/manager/reporter 권한 변경</p>
+        </div>
+    </div>
+    
+    <h5 class="mt-4 mb-3">사원 정보 변경 절차</h5>
+    <div class="step-list">
+        <div class="step-item">
+            <h6>사원 검색</h6>
+            <p>이름 또는 사번으로 검색하거나, 부서/권한 필터로 찾기</p>
+        </div>
+        <div class="step-item">
+            <h6>정보 수정</h6>
+            <p>해당 사원의 부서/직급/권한 드롭다운에서 새 값 선택</p>
+        </div>
+        <div class="step-item">
+            <h6>변경사항 저장</h6>
+            <p>"변경사항 저장" 버튼 클릭</p>
+        </div>
+        <div class="step-item">
+            <h6>캐시 갱신 대기</h6>
+            <p>CloudFront 캐시 무효화로 약 10초 후 반영</p>
+        </div>
+    </div>
+    
+    <div class="alert-box warning mt-4">
+        <i class="bi bi-exclamation-triangle"></i>
+        <div>
+            <strong>부서 변경 시 주의</strong><br>
+            부장(manager)의 부서를 변경하면, 해당 부장이 관리하는 기자 목록도 변경됩니다. 부장 계정은 본인 소속 부서의 기자만 조회/평가할 수 있습니다.
+        </div>
+    </div>
+</section>
+
+<!-- ==================== 데이터 흐름 ==================== -->
+<section id="data-flow" class="section">
+    <h2 class="section-title"><i class="bi bi-arrow-repeat"></i> 데이터 흐름</h2>
+    
+    <p>KPI 시스템의 데이터는 다음과 같은 흐름으로 처리됩니다.</p>
+    
+    <h5 class="mt-4 mb-3">1. 기사 데이터 흐름</h5>
+    <div class="arch-diagram">
+        <div class="arch-flow">
+            <div class="arch-box source">
+                <i class="bi bi-newspaper"></i>
+                <h6>기존 시스템</h6>
+                <small>XML 생성</small>
+            </div>
+            <div class="arch-arrow">→</div>
+            <div class="arch-box storage">
+                <i class="bi bi-cloud-upload"></i>
+                <h6>S3 업로드</h6>
+                <small>daily-xml/</small>
+            </div>
+            <div class="arch-arrow">→</div>
+            <div class="arch-box process">
+                <i class="bi bi-gear"></i>
+                <h6>Lambda 파싱</h6>
+                <small>kpi-sync-data</small>
+            </div>
+            <div class="arch-arrow">→</div>
+            <div class="arch-box storage">
+                <i class="bi bi-file-earmark-code"></i>
+                <h6>data.json</h6>
+                <small>정량 데이터</small>
+            </div>
+            <div class="arch-arrow">→</div>
+            <div class="arch-box service">
+                <i class="bi bi-display"></i>
+                <h6>웹 표시</h6>
+                <small>대시보드</small>
+            </div>
+        </div>
+    </div>
+    
+    <h5 class="mt-4 mb-3">2. 평가 데이터 흐름</h5>
+    <div class="arch-diagram">
+        <div class="arch-flow">
+            <div class="arch-box service">
+                <i class="bi bi-pencil"></i>
+                <h6>평가 입력</h6>
+                <small>부장/관리자</small>
+            </div>
+            <div class="arch-arrow">→</div>
+            <div class="arch-box process">
+                <i class="bi bi-lightning"></i>
+                <h6>Lambda API</h6>
+                <small>kpi-evaluation-api</small>
+            </div>
+            <div class="arch-arrow">→</div>
+            <div class="arch-box storage">
+                <i class="bi bi-file-earmark-code"></i>
+                <h6>evaluations.json</h6>
+                <small>평가 데이터</small>
+            </div>
+            <div class="arch-arrow">→</div>
+            <div class="arch-box service">
+                <i class="bi bi-eye"></i>
+                <h6>웹 표시</h6>
+                <small>전체 공유</small>
+            </div>
+        </div>
+    </div>
+    
+    <h5 class="mt-4 mb-3">3. 사원 데이터 흐름</h5>
+    <div class="arch-diagram">
+        <div class="arch-flow">
+            <div class="arch-box service">
+                <i class="bi bi-person-gear"></i>
+                <h6>사원 관리</h6>
+                <small>admin.html</small>
+            </div>
+            <div class="arch-arrow">→</div>
+            <div class="arch-box process">
+                <i class="bi bi-lightning"></i>
+                <h6>Lambda API</h6>
+                <small>kpi-users-api</small>
+            </div>
+            <div class="arch-arrow">→</div>
+            <div class="arch-box storage">
+                <i class="bi bi-file-earmark-code"></i>
+                <h6>users.json</h6>
+                <small>사원 데이터</small>
+            </div>
+            <div class="arch-arrow">→</div>
+            <div class="arch-box process">
+                <i class="bi bi-arrow-clockwise"></i>
+                <h6>캐시 무효화</h6>
+                <small>CloudFront</small>
+            </div>
+        </div>
+    </div>
+    
+    <h5 class="mt-4 mb-3">자동 동기화 스케줄</h5>
+    <table class="custom-table">
+        <thead>
+            <tr><th>시간 (KST)</th><th>작업</th><th>목적</th></tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><strong>오전 6시</strong></td>
+                <td>kpi-sync-data Lambda 실행</td>
+                <td>전날 밤 업로드된 지면 기사 반영</td>
+            </tr>
+        </tbody>
+    </table>
+</section>
+
+<!-- ==================== AWS 리소스 ==================== -->
+<section id="aws-resources" class="section">
+    <h2 class="section-title"><i class="bi bi-cloud"></i> AWS 리소스</h2>
+    
+    <p>KPI 시스템에서 사용하는 AWS 리소스 목록입니다.</p>
+    
+    <table class="custom-table">
+        <thead>
+            <tr><th>서비스</th><th>리소스명</th><th>용도</th><th>리전</th></tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><i class="bi bi-bucket text-warning me-2"></i>S3</td>
+                <td>sedaily-news-xml-storage</td>
+                <td>XML 원본 저장 (daily-xml/)</td>
+                <td>us-east-1</td>
+            </tr>
+            <tr>
+                <td><i class="bi bi-bucket text-warning me-2"></i>S3</td>
+                <td>kpi.sedaily.ai</td>
+                <td>웹 호스팅 (HTML, JSON)</td>
+                <td>us-east-1</td>
+            </tr>
+            <tr>
+                <td><i class="bi bi-lightning text-success me-2"></i>Lambda</td>
+                <td>kpi-sync-data</td>
+                <td>XML 파싱 및 data.json 생성</td>
+                <td>us-east-1</td>
+            </tr>
+            <tr>
+                <td><i class="bi bi-lightning text-success me-2"></i>Lambda</td>
+                <td>kpi-evaluation-api</td>
+                <td>평가 데이터 저장/조회</td>
+                <td>us-east-1</td>
+            </tr>
+            <tr>
+                <td><i class="bi bi-lightning text-success me-2"></i>Lambda</td>
+                <td>kpi-users-api</td>
+                <td>사원 정보 저장 + 캐시 무효화</td>
+                <td>us-east-1</td>
+            </tr>
+            <tr>
+                <td><i class="bi bi-globe text-primary me-2"></i>CloudFront</td>
+                <td>E1DJQD9MHS4VRO</td>
+                <td>CDN 배포</td>
+                <td>Global</td>
+            </tr>
+            <tr>
+                <td><i class="bi bi-signpost text-info me-2"></i>Route 53</td>
+                <td>kpi.sedaily.ai</td>
+                <td>DNS 관리</td>
+                <td>Global</td>
+            </tr>
+            <tr>
+                <td><i class="bi bi-clock text-secondary me-2"></i>EventBridge</td>
+                <td>kpi-sync-morning</td>
+                <td>오전 6시 자동 동기화</td>
+                <td>us-east-1</td>
+            </tr>
+        </tbody>
+    </table>
+    
+    <h5 class="mt-4 mb-3">Lambda Function URLs</h5>
+    <table class="custom-table">
+        <thead>
+            <tr><th>Lambda</th><th>URL</th></tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>kpi-sync-data</td>
+                <td><code style="font-size:0.8rem;">https://3pxmyosj2eunachemenbx4b6ay0dzqvd.lambda-url.us-east-1.on.aws/</code></td>
+            </tr>
+            <tr>
+                <td>kpi-evaluation-api</td>
+                <td><code style="font-size:0.8rem;">https://yyffk7tpfey7s2kv7hoitskxb40aljqw.lambda-url.us-east-1.on.aws/</code></td>
+            </tr>
+            <tr>
+                <td>kpi-users-api</td>
+                <td><code style="font-size:0.8rem;">https://aesyomxdaohdy3tykjsbzo6nr40zfnap.lambda-url.us-east-1.on.aws/</code></td>
+            </tr>
+        </tbody>
+    </table>
+</section>
+
+
+<!-- ==================== 배포 방법 ==================== -->
+<section id="deployment" class="section">
+    <h2 class="section-title"><i class="bi bi-rocket"></i> 배포 방법</h2>
+    
+    <p>KPI 시스템의 파일을 수정한 후 S3에 배포하는 방법입니다.</p>
+    
+    <h5 class="mt-4 mb-3">1. 개별 파일 배포</h5>
+    <div class="code-block">
+<span class="comment"># HTML 파일 배포</span>
+<span class="command">aws s3 cp</span> dashboard/login.html s3://kpi.sedaily.ai/login.html <span class="string">--content-type "text/html; charset=utf-8"</span>
+<span class="command">aws s3 cp</span> dashboard/home.html s3://kpi.sedaily.ai/home.html <span class="string">--content-type "text/html; charset=utf-8"</span>
+<span class="command">aws s3 cp</span> dashboard/list.html s3://kpi.sedaily.ai/list.html <span class="string">--content-type "text/html; charset=utf-8"</span>
+
+<span class="comment"># JSON 파일 배포</span>
+<span class="command">aws s3 cp</span> dashboard/users.json s3://kpi.sedaily.ai/users.json <span class="string">--content-type "application/json; charset=utf-8"</span>
+    </div>
+    
+    <h5 class="mt-4 mb-3">2. 전체 폴더 동기화</h5>
+    <div class="code-block">
+<span class="comment"># dashboard 폴더 전체 동기화 (JSON 제외)</span>
+<span class="command">aws s3 sync</span> dashboard/ s3://kpi.sedaily.ai/ --exclude "*.json" <span class="string">--content-type "text/html; charset=utf-8"</span>
+
+<span class="comment"># JSON 파일 별도 업로드</span>
+<span class="command">aws s3 cp</span> dashboard/data.json s3://kpi.sedaily.ai/data.json <span class="string">--content-type "application/json; charset=utf-8"</span>
+<span class="command">aws s3 cp</span> dashboard/users.json s3://kpi.sedaily.ai/users.json <span class="string">--content-type "application/json; charset=utf-8"</span>
+    </div>
+    
+    <h5 class="mt-4 mb-3">3. CloudFront 캐시 무효화</h5>
+    <div class="code-block">
+<span class="comment"># 전체 캐시 무효화</span>
+<span class="command">aws cloudfront create-invalidation</span> --distribution-id E1DJQD9MHS4VRO --paths "/*"
+
+<span class="comment"># 특정 파일만 무효화</span>
+<span class="command">aws cloudfront create-invalidation</span> --distribution-id E1DJQD9MHS4VRO --paths "/login.html" "/home.html"
+    </div>
+    
+    <h5 class="mt-4 mb-3">4. 로컬 테스트</h5>
+    <div class="code-block">
+<span class="comment"># dashboard 폴더에서 로컬 서버 실행</span>
+<span class="command">cd</span> dashboard
+<span class="command">python -m http.server</span> 8080
+
+<span class="comment"># 브라우저에서 접속</span>
+http://localhost:8080/login.html
+    </div>
+    
+    <div class="alert-box info mt-4">
+        <i class="bi bi-info-circle"></i>
+        <div>
+            <strong>캐시 무효화 소요 시간</strong><br>
+            CloudFront 캐시 무효화는 보통 30초~1분 정도 소요됩니다. 무효화 완료 전까지는 이전 버전이 표시될 수 있습니다.
+        </div>
+    </div>
+</section>
+
+<!-- ==================== 문제 해결 ==================== -->
+<section id="troubleshooting" class="section">
+    <h2 class="section-title"><i class="bi bi-wrench"></i> 문제 해결</h2>
+    
+    <p>자주 발생하는 문제와 해결 방법입니다.</p>
+    
+    <div class="accordion" id="troubleshootingAccordion">
+        
+        <div class="info-card mb-3">
+            <h5><i class="bi bi-question-circle text-danger me-2"></i>로그인이 안 됩니다</h5>
+            <p><strong>원인:</strong> 사번 또는 비밀번호 오류, users.json 로드 실패</p>
+            <p><strong>해결:</strong></p>
+            <ul class="mb-0">
+                <li>사번을 정확히 입력했는지 확인 (예: 80486)</li>
+                <li>초기 비밀번호는 1234</li>
+                <li>브라우저 개발자 도구(F12) → Network 탭에서 users.json 로드 확인</li>
+                <li>캐시 문제일 경우 Ctrl+Shift+R로 강력 새로고침</li>
+            </ul>
+        </div>
+        
+        <div class="info-card orange mb-3">
+            <h5><i class="bi bi-question-circle text-warning me-2"></i>데이터가 갱신되지 않습니다</h5>
+            <p><strong>원인:</strong> CloudFront 캐시, 동기화 미실행</p>
+            <p><strong>해결:</strong></p>
+            <ul class="mb-0">
+                <li>기자 목록 페이지에서 "데이터 동기화" 버튼 클릭</li>
+                <li>CloudFront 캐시 무효화 실행</li>
+                <li>브라우저 캐시 삭제 후 새로고침</li>
+                <li>data.json URL에 ?t=시간 파라미터 추가하여 직접 확인</li>
+            </ul>
+        </div>
+        
+        <div class="info-card green mb-3">
+            <h5><i class="bi bi-question-circle text-success me-2"></i>평가가 저장되지 않습니다</h5>
+            <p><strong>원인:</strong> Lambda API 오류, 네트워크 문제</p>
+            <p><strong>해결:</strong></p>
+            <ul class="mb-0">
+                <li>브라우저 개발자 도구(F12) → Console 탭에서 오류 메시지 확인</li>
+                <li>Network 탭에서 API 호출 상태 확인 (200 OK 여부)</li>
+                <li>Lambda 함수 로그 확인 (AWS CloudWatch)</li>
+                <li>CORS 오류일 경우 Lambda 응답 헤더 확인</li>
+            </ul>
+        </div>
+        
+        <div class="info-card mb-3">
+            <h5><i class="bi bi-question-circle text-primary me-2"></i>부장이 다른 부서 기자를 볼 수 없습니다</h5>
+            <p><strong>원인:</strong> 정상 동작 (권한 제한)</p>
+            <p><strong>해결:</strong></p>
+            <ul class="mb-0">
+                <li>부장(manager) 권한은 소속 부서 기자만 조회 가능</li>
+                <li>다른 부서 기자 조회가 필요하면 관리자에게 권한 변경 요청</li>
+                <li>또는 admin 계정으로 로그인</li>
+            </ul>
+        </div>
+        
+        <div class="info-card red mb-3">
+            <h5><i class="bi bi-question-circle text-danger me-2"></i>사원 정보 변경이 반영되지 않습니다</h5>
+            <p><strong>원인:</strong> CloudFront 캐시</p>
+            <p><strong>해결:</strong></p>
+            <ul class="mb-0">
+                <li>사원 관리에서 저장 후 약 10초 대기 (캐시 무효화 시간)</li>
+                <li>부장 계정으로 새로고침하여 확인</li>
+                <li>문제 지속 시 수동으로 CloudFront 캐시 무효화 실행</li>
+            </ul>
+        </div>
+        
+        <div class="info-card orange mb-3">
+            <h5><i class="bi bi-question-circle text-warning me-2"></i>일요일 데이터가 없습니다</h5>
+            <p><strong>원인:</strong> 정상 (일요일은 신문 미발행)</p>
+            <p><strong>해결:</strong></p>
+            <ul class="mb-0">
+                <li>일요일은 신문이 발행되지 않아 기사 0건이 정상</li>
+                <li>주별/월별 필터로 조회하면 일요일 제외하고 집계됨</li>
+            </ul>
+        </div>
+    </div>
+</section>
+
+<!-- ==================== 계정 정보 ==================== -->
+<section id="accounts" class="section">
+    <h2 class="section-title"><i class="bi bi-key"></i> 계정 정보</h2>
+    
+    <p>테스트 및 관리용 계정 정보입니다.</p>
+    
+    <h5 class="mt-4 mb-3">테스트 계정</h5>
+    <table class="custom-table">
+        <thead>
+            <tr><th>권한</th><th>사번</th><th>이름</th><th>부서</th><th>비밀번호</th></tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><span class="badge-role badge-admin">관리자</span></td>
+                <td>admin</td>
+                <td>관리자</td>
+                <td>전체</td>
+                <td>1234</td>
+            </tr>
+            <tr>
+                <td><span class="badge-role badge-manager">부장</span></td>
+                <td>80486</td>
+                <td>서일범</td>
+                <td>경제부</td>
+                <td>1234</td>
+            </tr>
+            <tr>
+                <td><span class="badge-role badge-reporter">기자</span></td>
+                <td>211010</td>
+                <td>주재현</td>
+                <td>경제부</td>
+                <td>1234</td>
+            </tr>
+        </tbody>
+    </table>
+    
+    <h5 class="mt-4 mb-3">계정 통계</h5>
+    <div class="card-grid">
+        <div class="info-card">
+            <h5>전체 계정</h5>
+            <p style="font-size:2rem; font-weight:700; color:var(--primary);">235명</p>
+        </div>
+        <div class="info-card red">
+            <h5>관리자 (admin)</h5>
+            <p style="font-size:2rem; font-weight:700; color:#dc3545;">1명</p>
+        </div>
+        <div class="info-card orange">
+            <h5>부장 (manager)</h5>
+            <p style="font-size:2rem; font-weight:700; color:#0d6efd;">32명</p>
+        </div>
+        <div class="info-card green">
+            <h5>기자 (reporter)</h5>
+            <p style="font-size:2rem; font-weight:700; color:#6c757d;">202명</p>
+        </div>
+    </div>
+    
+    <div class="alert-box danger mt-4">
+        <i class="bi bi-exclamation-octagon"></i>
+        <div>
+            <strong>보안 주의사항</strong><br>
+            현재 모든 계정의 비밀번호가 1234로 설정되어 있습니다. 실서비스 전 비밀번호 변경 기능 구현 및 개별 비밀번호 설정이 필요합니다.
+        </div>
+    </div>
+</section>
+
+<!-- ==================== 개발 로드맵 ==================== -->
+<section id="roadmap" class="section">
+    <h2 class="section-title"><i class="bi bi-map"></i> 개발 로드맵</h2>
+    
+    <p>KPI 시스템의 개발 과정과 완료된 기능, 향후 계획입니다.</p>
+    
+    <h5 class="mt-4 mb-3"><i class="bi bi-check-circle-fill text-success me-2"></i>기능 업데이트 (완료)</h5>
+    <div class="card-grid">
+        <div class="info-card green">
+            <h5>평가 데이터 서버 저장</h5>
+            <p>Lambda API를 통한 평가 데이터 저장/조회 기능</p>
+        </div>
+        <div class="info-card green">
+            <h5>저장 버튼 동작</h5>
+            <p>평가 입력 후 서버 저장 버튼 구현</p>
+        </div>
+        <div class="info-card green">
+            <h5>로그인/관리자 페이지 구분</h5>
+            <p>권한 기반 접근 제어 (admin/manager/reporter)</p>
+        </div>
+        <div class="info-card green">
+            <h5>톱(자동) 토글화</h5>
+            <p>XML paragraph=TOP 자동 감지 및 수정 가능</p>
+        </div>
+        <div class="info-card green">
+            <h5>자동 동기화 스케줄</h5>
+            <p>매일 오전 6시 자동 동기화 (EventBridge)</p>
+        </div>
+        <div class="info-card green">
+            <h5>날짜 네비게이션</h5>
+            <p>일별/주별/월별/분기별/반기별 필터링</p>
+        </div>
+        <div class="info-card green">
+            <h5>데이터 확장</h5>
+            <p>12월 XML 데이터 동기화 완료</p>
+        </div>
+        <div class="info-card green">
+            <h5>엑셀 내보내기</h5>
+            <p>기자 목록 엑셀 다운로드 버튼</p>
+        </div>
+        <div class="info-card green">
+            <h5>대시보드 홈 페이지</h5>
+            <p>전체 통계 요약 대시보드 (home.html)</p>
+        </div>
+        <div class="info-card green">
+            <h5>로딩 속도 개선</h5>
+            <p>Preconnect, Preload, 병렬 로딩 적용</p>
+        </div>
+        <div class="info-card green">
+            <h5>로그인 시스템</h5>
+            <p>235명 사용자 계정 생성 및 권한 관리</p>
+        </div>
+        <div class="info-card green">
+            <h5>HTTPS 적용</h5>
+            <p>CloudFront + ACM 인증서로 보안 연결</p>
+        </div>
+        <div class="info-card green">
+            <h5>사원 관리 페이지</h5>
+            <p>admin.html - 부서/직급/권한 변경</p>
+        </div>
+    </div>
+    
+    <h5 class="mt-4 mb-3"><i class="bi bi-bug-fill text-danger me-2"></i>디버그 (해결됨)</h5>
+    <table class="custom-table">
+        <thead>
+            <tr><th>이슈</th><th>해결 방법</th><th>상태</th></tr>
+        </thead>
+        <tbody>
+            <tr><td>CORS 중복 헤더</td><td>Lambda 응답 헤더 정리</td><td><span class="badge bg-success">완료</span></td></tr>
+            <tr><td>브라우저 캐시 문제</td><td>?t=Date.now() 캐시 버스팅 적용</td><td><span class="badge bg-success">완료</span></td></tr>
+            <tr><td>하드코딩 제거</td><td>설정값 변수화</td><td><span class="badge bg-success">완료</span></td></tr>
+            <tr><td>중복 기사 제거</td><td>newsId 기준 중복 체크</td><td><span class="badge bg-success">완료</span></td></tr>
+            <tr><td>공동 기자 파싱 개선</td><td>byline 분리 로직 개선</td><td><span class="badge bg-success">완료</span></td></tr>
+            <tr><td>기자명 파싱 로직 개선</td><td>정규식 패턴 수정</td><td><span class="badge bg-success">완료</span></td></tr>
+            <tr><td>대시보드 일별 기사수</td><td>날짜 필터 로직 수정 (2026-01-21)</td><td><span class="badge bg-success">완료</span></td></tr>
+            <tr><td>reporter.html 태그 오류</td><td>&lt;/option&gt; 태그 닫힘 수정</td><td><span class="badge bg-success">완료</span></td></tr>
+            <tr><td>평가 완료 카운트</td><td>실제 평가 데이터 반영</td><td><span class="badge bg-success">완료</span></td></tr>
+        </tbody>
+    </table>
+    
+    <h5 class="mt-4 mb-3"><i class="bi bi-pencil-fill text-warning me-2"></i>기능 변경</h5>
+    <table class="custom-table">
+        <thead>
+            <tr><th>항목</th><th>변경 내용</th><th>상태</th></tr>
+        </thead>
+        <tbody>
+            <tr><td>톱(자동) 수정</td><td>자동 감지된 톱 기사도 수정 가능하게 변경</td><td><span class="badge bg-success">완료</span></td></tr>
+            <tr><td>일별 기준 날짜</td><td>오늘 날짜 기준으로 변경</td><td><span class="badge bg-success">완료</span></td></tr>
+            <tr><td>자동 동기화 스케줄</td><td>오전 6시 1회로 변경</td><td><span class="badge bg-success">완료</span></td></tr>
+            <tr><td>기자 상세 페이지</td><td>reporter.html 레이아웃 및 권한 체크 수정</td><td><span class="badge bg-success">완료</span></td></tr>
+        </tbody>
+    </table>
+    
+    <h5 class="mt-4 mb-3"><i class="bi bi-hourglass-split text-primary me-2"></i>향후 계획 (TODO)</h5>
+    <div class="card-grid">
+        <div class="info-card orange">
+            <h5>비밀번호 변경 기능</h5>
+            <p>사용자별 비밀번호 변경 기능 구현</p>
+        </div>
+        <div class="info-card orange">
+            <h5>평가 데이터 백업</h5>
+            <p>평가 데이터 백업/복원 기능</p>
+        </div>
+        <div class="info-card orange">
+            <h5>API 인증 강화</h5>
+            <p>Lambda API에 JWT 또는 API Key 인증 추가</p>
+        </div>
+        <div class="info-card orange">
+            <h5>gzip 압축</h5>
+            <p>data.json CloudFront 자동 압축 활성화</p>
+        </div>
+    </div>
+</section>
+
+<!-- ==================== 변경 이력 ==================== -->
+<section id="changelog" class="section">
+    <h2 class="section-title"><i class="bi bi-clock-history"></i> 변경 이력</h2>
+    
+    <table class="custom-table">
+        <thead>
+            <tr><th>날짜</th><th>버전</th><th>변경 내용</th></tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>2026-01-29</td>
+                <td>1.5.0</td>
+                <td>
+                    <ul class="mb-0">
+                        <li>보안 강화: 세션 만료(24시간), 부서 권한 체크</li>
+                        <li>성능 최적화: Preconnect, Preload, 병렬 로딩</li>
+                        <li>버그 수정: reporter.html 태그 오류, 평가 완료 카운트</li>
+                        <li>사용 설명서 (guide.html) 추가</li>
+                    </ul>
+                </td>
+            </tr>
+            <tr>
+                <td>2026-01-28</td>
+                <td>1.4.0</td>
+                <td>
+                    <ul class="mb-0">
+                        <li>사원 관리 페이지 (admin.html) 추가</li>
+                        <li>kpi-users-api Lambda 구현</li>
+                        <li>12월 XML 데이터 동기화</li>
+                    </ul>
+                </td>
+            </tr>
+            <tr>
+                <td>2026-01-21</td>
+                <td>1.3.0</td>
+                <td>
+                    <ul class="mb-0">
+                        <li>권한 기반 로그인 시스템 구현</li>
+                        <li>235명 사용자 계정 생성</li>
+                        <li>시스템 이름 S-CORE → KPI 변경</li>
+                    </ul>
+                </td>
+            </tr>
+            <tr>
+                <td>2026-01-19</td>
+                <td>1.2.0</td>
+                <td>
+                    <ul class="mb-0">
+                        <li>자동 동기화 스케줄 (매일 6시) 설정</li>
+                        <li>직위 서버 저장 기능</li>
+                    </ul>
+                </td>
+            </tr>
+            <tr>
+                <td>2026-01-16</td>
+                <td>1.1.0</td>
+                <td>
+                    <ul class="mb-0">
+                        <li>평가 서버 저장 기능 (kpi-evaluation-api)</li>
+                        <li>캐시 제어 개선</li>
+                    </ul>
+                </td>
+            </tr>
+            <tr>
+                <td>2026-01-09</td>
+                <td>1.0.0</td>
+                <td>
+                    <ul class="mb-0">
+                        <li>웹 대시보드 MVP 완성</li>
+                        <li>XML 파싱 및 정량 점수 계산</li>
+                    </ul>
+                </td>
+            </tr>
+            <tr>
+                <td>2026-01-08</td>
+                <td>0.1.0</td>
+                <td>프로젝트 시작</td>
+            </tr>
+        </tbody>
+    </table>
+</section>
+
+<!-- ==================== 문의 ==================== -->
+<section id="contact" class="section">
+    <h2 class="section-title"><i class="bi bi-envelope"></i> 문의</h2>
+    
+    <div class="card-grid">
+        <div class="info-card">
+            <h5><i class="bi bi-github me-2"></i>GitHub (Private)</h5>
+            <p><a href="https://github.com/gkfla2020-bit/kpi-system" target="_blank">github.com/gkfla2020-bit/kpi-system</a></p>
+        </div>
+        <div class="info-card orange">
+            <h5><i class="bi bi-github me-2"></i>GitHub (Public)</h5>
+            <p><a href="https://github.com/gkfla2020-bit/journalist-evaluation" target="_blank">github.com/gkfla2020-bit/journalist-evaluation</a><br><small>(민감정보 제외)</small></p>
+        </div>
+    </div>
+    
+    <div class="alert-box info mt-4">
+        <i class="bi bi-info-circle"></i>
+        <div>
+            <strong>시스템 관련 문의</strong><br>
+            시스템 오류, 기능 개선 요청, 계정 문제 등은 관리자에게 문의해 주세요.
+        </div>
+    </div>
+</section>
+
+</main>
+
+<!-- 탭 전환 스크립트 -->
+<script>
+function showTab(tabId) {
+    // 모든 탭 버튼 비활성화
+    document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+    // 모든 탭 콘텐츠 숨김
+    document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+    
+    // 선택된 탭 활성화
+    event.target.classList.add('active');
+    document.getElementById(tabId).classList.add('active');
+}
+
+// 네비게이션 활성화
+document.addEventListener('DOMContentLoaded', function() {
+    const navLinks = document.querySelectorAll('.nav-link');
+    
+    // 스크롤 시 현재 섹션 하이라이트
+    window.addEventListener('scroll', function() {
+        let current = '';
+        document.querySelectorAll('section').forEach(section => {
+            const sectionTop = section.offsetTop - 100;
+            if (scrollY >= sectionTop) {
+                current = section.getAttribute('id');
+            }
+        });
+        
+        navLinks.forEach(link => {
+            link.classList.remove('active');
+            if (link.getAttribute('href') === '#' + current) {
+                link.classList.add('active');
+            }
+        });
+    });
+});
+</script>
+
+</body>
+</html>

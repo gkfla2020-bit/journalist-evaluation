@@ -71,8 +71,7 @@ XML 원본 (S3) → Lambda 파싱 → data.json (S3) → 웹 대시보드
 
 ### 자동 동기화 (설정 완료)
 - **오전 6시 (KST)**: 전날 밤 업로드된 지면 기사 반영
-- **자정 0시 (KST)**: 당일 마감 후 최종 데이터 반영
-- EventBridge 규칙: `kpi-sync-morning`, `kpi-sync-midnight`
+- EventBridge 규칙: `kpi-sync-morning`
 
 ### Lambda Function URLs
 | 기능 | URL |
@@ -118,7 +117,7 @@ lambda/
 | 2026-01-14 | 기간별 필터링, 직위 수정 기능 |
 | 2026-01-15 | CORS 수정, GitHub 백업 |
 | 2026-01-16 | 평가 서버 저장 기능, 캐시 제어 |
-| 2026-01-19 | 자동 동기화 스케줄(6시/0시), 직위 서버 저장 |
+| 2026-01-19 | 자동 동기화 스케줄(매일 6시), 직위 서버 저장 |
 
 ---
 
