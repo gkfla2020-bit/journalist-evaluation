@@ -9,17 +9,18 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
     <style>
         :root {
-            --primary: #1a5f7a;
-            --primary-light: #4487a1;
-            --secondary: #159895;
-            --accent: #FF9800;
-            --success: #4CAF50;
-            --danger: #dc3545;
+            --primary: #2c5282;
+            --primary-light: #2b6cb0;
+            --primary-dark: #1a365d;
+            --secondary: #4299e1;
+            --accent: #ffc107;
+            --success: #48bb78;
+            --danger: #f56565;
         }
         * { scroll-behavior: smooth; }
         body { 
             font-family: 'Pretendard', -apple-system, 'Malgun Gothic', sans-serif;
-            background: #f8f9fa;
+            background: #f5f7fa;
             line-height: 1.7;
         }
         /* 사이드바 */
@@ -29,7 +30,7 @@
             left: 0;
             width: 280px;
             height: 100vh;
-            background: linear-gradient(180deg, var(--primary) 0%, var(--primary-light) 100%);
+            background: linear-gradient(180deg, var(--primary-dark) 0%, var(--primary) 50%, var(--primary-light) 100%);
             padding: 1.5rem;
             overflow-y: auto;
             z-index: 1000;
@@ -92,7 +93,7 @@
             font-weight: 700;
             margin-bottom: 0.5rem;
         }
-        .page-header p { color: #6c757d; margin: 0; }
+        .page-header p { color: #718096; margin: 0; }
         /* 섹션 */
         .section {
             background: white;

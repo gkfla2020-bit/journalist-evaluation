@@ -7,24 +7,24 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
     <style>
-        :root { --primary: #1a5f7a; --secondary: #159895; --accent: #57c5b6; }
-        body { background: #f8f9fa; font-family: 'Pretendard', -apple-system, sans-serif; }
-        .navbar { background: linear-gradient(135deg, var(--primary), var(--secondary)); }
+        :root { --primary: #2c5282; --primary-dark: #1a365d; --primary-light: #2b6cb0; --accent: #ffc107; }
+        body { background: #f5f7fa; font-family: 'Pretendard', -apple-system, sans-serif; }
+        .navbar { background: linear-gradient(135deg, var(--primary-dark), var(--primary), var(--primary-light)); }
         .stat-card { border: none; border-radius: 12px; box-shadow: 0 2px 12px rgba(0,0,0,0.08); transition: transform 0.2s; }
         .stat-card:hover { transform: translateY(-4px); }
         .stat-icon { width: 48px; height: 48px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; }
         .stat-value { font-size: 2rem; font-weight: 700; color: #333; }
-        .stat-label { color: #6c757d; font-size: 0.9rem; }
+        .stat-label { color: #718096; font-size: 0.9rem; }
         .section-title { font-weight: 600; color: var(--primary); margin-bottom: 1rem; padding-bottom: 0.5rem; border-bottom: 2px solid var(--accent); }
         .table-container { background: white; border-radius: 12px; box-shadow: 0 2px 12px rgba(0,0,0,0.08); padding: 1.5rem; }
         .table thead th { background: var(--primary); color: white; font-weight: 500; border: none; }
         .filter-section { background: white; border-radius: 12px; padding: 1.5rem; margin-bottom: 1.5rem; box-shadow: 0 2px 12px rgba(0,0,0,0.08); }
         .btn-primary { background: var(--primary); border-color: var(--primary); }
-        .btn-primary:hover { background: var(--secondary); border-color: var(--secondary); }
+        .btn-primary:hover { background: var(--primary-light); border-color: var(--primary-light); }
         .page-badge { display: inline-block; padding: 0.25rem 0.5rem; border-radius: 6px; font-weight: 600; font-size: 0.85rem; }
         .page-1 { background: #ffd700; color: #333; }
-        .page-main { background: #17a2b8; color: white; }
-        .page-other { background: #6c757d; color: white; }
+        .page-main { background: #2b6cb0; color: white; }
+        .page-other { background: #718096; color: white; }
         .toast-container { position: fixed; top: 20px; right: 20px; z-index: 9999; }
     </style>
 </head>
