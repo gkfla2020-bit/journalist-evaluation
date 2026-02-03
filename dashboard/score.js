@@ -26,32 +26,39 @@ function saveScoreConfig(config) {
     localStorage.setItem('score_config', JSON.stringify(config));
 }
 
-// 면 가중치 계산
+// 면 가중치 계산 (설정값 사용)
 function getPageWeight(page) {
-    if (page === 1) return 1.00;
-    if (page <= 3) return 0.85;
-    if (page <= 5) return 0.70;
-    if (page <= 10) return 0.55;
-    if (page <= 20) return 0.40;
-    return 0.30;
+    const config = getScoreConfig();
+    const pw = config.PAGE_WEIGHTS;
+    
+    // 설정된 임계값 기준으로 가중치 반환
+    if (page === 1) return pw[1] || 1.00;
+    if (page <= 3) return pw[3] || 0.85;
+    if (page <= 5) return pw[5] || 0.70;
+    if (page <= 10) return pw[10] || 0.55;
+    if (page <= 20) return pw[20] || 0.40;
+    return pw[32] || 0.30;
 }
 
-// 분량 가중치 계산
+// 분량 가중치 계산 (설정값 사용)
 function getLengthWeight(charCount) {
-    if (charCount >= 2000) return 1.00;
-    if (charCount >= 1200) return 0.70;
-    return 0.55;
+    const config = getScoreConfig();
+    const lw = config.LENGTH_WEIGHTS;
+    
+    if (charCount >= 2000) return lw[2000] || 1.00;
+    if (charCount >= 1200) return lw[1200] || 0.70;
+    return lw[600] || lw[0] || 0.55;
 }
 
-// 품질 가점 계산
+// 품질 가점 계산 (설정값 사용)
 function calculateQualityBonus(article) {
     const config = getScoreConfig();
     let bonus = 0;
-    if (article.isTopArticle) bonus += config.QUALITY_BONUS.isTopArticle;
-    if (article.isExclusive) bonus += config.QUALITY_BONUS.isExclusive;
-    if (article.isFeature) bonus += config.QUALITY_BONUS.isFeature;
-    if (article.isSGrade) bonus += config.QUALITY_BONUS.isSGrade;
-    return Math.min(bonus, config.QUALITY_BONUS_CAP);
+    if (article.isTopArticle) bonus += config.QUALITY_BONUS.isTopArticle || 2;
+    if (article.isExclusive) bonus += config.QUALITY_BONUS.isExclusive || 5;
+    if (article.isFeature) bonus += config.QUALITY_BONUS.isFeature || 5;
+    if (article.isSGrade) bonus += config.QUALITY_BONUS.isSGrade || 3;
+    return Math.min(bonus, config.QUALITY_BONUS_CAP || 10);
 }
 
 // 기사 점수 계산
@@ -61,11 +68,11 @@ function calculateArticleScore(article) {
     const lengthWeight = getLengthWeight(article.charCount || article.char_count);
     const qualityBonus = calculateQualityBonus(article);
     
-    const baseScore = pageWeight * lengthWeight * config.BASE_SCORE;
+    const baseScore = pageWeight * lengthWeight * (config.BASE_SCORE || 10);
     let totalScore = baseScore + qualityBonus;
     
     if (!article.hasAdminBonus) {
-        totalScore = Math.min(totalScore, config.MAX_SCORE);
+        totalScore = Math.min(totalScore, config.MAX_SCORE || 20);
     }
     
     return {
