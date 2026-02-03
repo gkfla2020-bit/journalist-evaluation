@@ -1400,6 +1400,21 @@ function renderMyScorePage() {
 }
 
 // 부서 통계 계산 (부서 평균, 순위)
+// usersData는 loadData()에서 로드됨
+let usersDataCache = null;
+
+async function loadUsersData() {
+    if (usersDataCache) return usersDataCache;
+    try {
+        const res = await fetch('users.json?t=' + Date.now());
+        usersDataCache = await res.json();
+        return usersDataCache;
+    } catch (e) {
+        console.error('users.json 로드 실패:', e);
+        return [];
+    }
+}
+
 function calculateDeptStats() {
     if (!allData || !allData.reporters) return { deptAvg: null, myRank: null, totalCount: 0 };
     
@@ -1407,13 +1422,25 @@ function calculateDeptStats() {
     const myDept = session.department;
     if (!myDept) return { deptAvg: null, myRank: null, totalCount: 0 };
     
+    // usersDataCache가 없으면 비동기로 로드 후 다시 렌더링
+    if (!usersDataCache) {
+        loadUsersData().then(() => {
+            if (currentPeriod === 'myscore') renderMyScorePage();
+        });
+        return { deptAvg: null, myRank: null, totalCount: 0 };
+    }
+    
     const evals = ScoreDataStore ? ScoreDataStore.getEvals() : {};
     const scores = [];
     
+    // 같은 부서 기자들만 필터링
+    const deptReporters = usersDataCache.filter(u => u.department === myDept && u.role === 'reporter');
+    const deptReporterNames = new Set(deptReporters.map(u => u.name));
+    
     // 같은 부서 기자들의 점수 계산
     allData.reporters.forEach(reporter => {
-        // users.json에서 부서 확인 필요 - 여기서는 간단히 처리
-        // 실제로는 users.json을 로드해서 확인해야 함
+        // 같은 부서 기자만 계산
+        if (!deptReporterNames.has(reporter.name)) return;
         if (!reporter.articles) return;
         
         let reporterScore = 0;
