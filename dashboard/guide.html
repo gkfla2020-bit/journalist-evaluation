@@ -3,8 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>KPI 시스템 사용 설명서</title>
-    <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+    <title>S-CORE 사용 설명서</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
     <style>
@@ -12,7 +11,6 @@
             --primary: #2c5282;
             --primary-light: #2b6cb0;
             --primary-dark: #1a365d;
-            --secondary: #4299e1;
             --accent: #ffc107;
             --success: #48bb78;
             --danger: #f56565;
@@ -23,7 +21,6 @@
             background: #f5f7fa;
             line-height: 1.7;
         }
-        /* 사이드바 */
         .sidebar {
             position: fixed;
             top: 0;
@@ -75,11 +72,10 @@
             color: white;
         }
         .nav-link i { width: 20px; text-align: center; }
-        /* 메인 콘텐츠 */
         .main-content {
             margin-left: 280px;
             padding: 2rem 3rem;
-            max-width: 1200px;
+            min-height: 100vh;
         }
         .page-header {
             background: white;
@@ -94,7 +90,6 @@
             margin-bottom: 0.5rem;
         }
         .page-header p { color: #718096; margin: 0; }
-        /* 섹션 */
         .section {
             background: white;
             border-radius: 16px;
@@ -114,7 +109,6 @@
             gap: 0.5rem;
         }
         .section-title i { color: var(--accent); }
-        /* 카드 그리드 */
         .card-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
@@ -136,7 +130,6 @@
             color: #333;
         }
         .info-card p { font-size: 0.9rem; color: #666; margin: 0; }
-        /* 테이블 */
         .custom-table {
             width: 100%;
             border-collapse: collapse;
@@ -156,7 +149,6 @@
             border-bottom: 1px solid #e9ecef;
         }
         .custom-table tr:hover { background: #f8f9fa; }
-        /* 배지 */
         .badge-role {
             padding: 4px 10px;
             border-radius: 20px;
@@ -166,7 +158,6 @@
         .badge-admin { background: #dc3545; color: white; }
         .badge-manager { background: #0d6efd; color: white; }
         .badge-reporter { background: #6c757d; color: white; }
-        /* 코드 블록 */
         .code-block {
             background: #1e1e1e;
             color: #d4d4d4;
@@ -178,44 +169,9 @@
             margin: 1rem 0;
         }
         .code-block .comment { color: #6a9955; }
-        .code-block .command { color: #dcdcaa; }
+        .code-block .keyword { color: #569cd6; }
         .code-block .string { color: #ce9178; }
-        /* 아키텍처 다이어그램 */
-        .arch-diagram {
-            background: linear-gradient(135deg, #f5f7fa 0%, #e4e8ec 100%);
-            border-radius: 16px;
-            padding: 2rem;
-            margin: 1.5rem 0;
-        }
-        .arch-flow {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            flex-wrap: wrap;
-            gap: 1rem;
-        }
-        .arch-box {
-            background: white;
-            border-radius: 12px;
-            padding: 1.25rem;
-            text-align: center;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
-            min-width: 140px;
-            flex: 1;
-        }
-        .arch-box i { font-size: 2rem; margin-bottom: 0.5rem; display: block; }
-        .arch-box.source i { color: #FF9800; }
-        .arch-box.process i { color: #4CAF50; }
-        .arch-box.storage i { color: #2196F3; }
-        .arch-box.service i { color: #E91E63; }
-        .arch-box h6 { font-weight: 700; margin-bottom: 0.25rem; font-size: 0.9rem; }
-        .arch-box small { color: #888; font-size: 0.75rem; }
-        .arch-arrow {
-            color: var(--primary);
-            font-size: 1.5rem;
-            flex-shrink: 0;
-        }
-        /* 스텝 가이드 */
+        .code-block .number { color: #b5cea8; }
         .step-list { counter-reset: step; }
         .step-item {
             position: relative;
@@ -244,7 +200,6 @@
         }
         .step-item h6 { font-weight: 600; margin-bottom: 0.5rem; }
         .step-item p { color: #666; margin: 0; font-size: 0.9rem; }
-        /* 알림 박스 */
         .alert-box {
             padding: 1rem 1.25rem;
             border-radius: 8px;
@@ -258,41 +213,43 @@
         .alert-box.warning { background: #fff3e0; color: #e65100; }
         .alert-box.success { background: #e8f5e9; color: #2e7d32; }
         .alert-box.danger { background: #ffebee; color: #c62828; }
-        /* 탭 */
-        .tab-nav {
+        .dept-tab-demo {
             display: flex;
+            flex-wrap: wrap;
             gap: 0.5rem;
-            margin-bottom: 1rem;
-            border-bottom: 2px solid #e9ecef;
-            padding-bottom: 0.5rem;
+            padding: 1rem;
+            background: #f8f9fa;
+            border-radius: 8px;
+            margin: 1rem 0;
         }
-        .tab-btn {
+        .dept-tab-demo .tab {
             padding: 0.5rem 1rem;
-            border: none;
-            background: none;
-            color: #666;
-            font-weight: 500;
-            cursor: pointer;
-            border-radius: 8px 8px 0 0;
-            transition: all 0.2s;
+            border-radius: 20px;
+            background: #e9ecef;
+            color: #495057;
+            font-size: 0.85rem;
         }
-        .tab-btn:hover { color: var(--primary); }
-        .tab-btn.active {
+        .dept-tab-demo .tab.active {
             background: var(--primary);
             color: white;
         }
-        .tab-content { display: none; }
-        .tab-content.active { display: block; }
-        /* 스크린샷 플레이스홀더 */
-        .screenshot {
-            background: #e9ecef;
-            border-radius: 8px;
-            padding: 3rem;
+        .formula-box {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 1.5rem;
+            border-radius: 12px;
             text-align: center;
-            color: #888;
             margin: 1rem 0;
         }
-        /* 반응형 */
+        .formula-box .formula {
+            font-size: 1.3rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+        .formula-box .desc {
+            font-size: 0.9rem;
+            opacity: 0.9;
+        }
         @media (max-width: 992px) {
             .sidebar { width: 240px; }
             .main-content { margin-left: 240px; padding: 1.5rem; }
@@ -302,67 +259,73 @@
                 position: relative;
                 width: 100%;
                 height: auto;
+                padding: 1rem;
             }
-            .main-content { margin-left: 0; }
-            .arch-flow { flex-direction: column; }
-            .arch-arrow { transform: rotate(90deg); }
+            .main-content { 
+                margin-left: 0; 
+                padding: 1rem;
+            }
         }
     </style>
 </head>
 <body>
 
-<!-- 사이드바 네비게이션 -->
+<!-- 사이드바 -->
 <nav class="sidebar">
     <div class="sidebar-logo">
-        <i class="bi bi-speedometer2"></i> KPI
+        <i class="bi bi-bar-chart-fill"></i> S-CORE
     </div>
-    <div class="sidebar-subtitle">기자 지면 정보 정량평가 시스템<br>사용 설명서 v1.0</div>
+    <div class="sidebar-subtitle">기자 지면 기여도 평가 시스템<br>사용 설명서 v2.1</div>
     
     <div class="nav-section">시작하기</div>
     <a href="#overview" class="nav-link"><i class="bi bi-house"></i> 시스템 개요</a>
-    <a href="#architecture" class="nav-link"><i class="bi bi-diagram-3"></i> 시스템 아키텍처</a>
     <a href="#login" class="nav-link"><i class="bi bi-box-arrow-in-right"></i> 로그인</a>
+    <a href="#navigation" class="nav-link"><i class="bi bi-list"></i> 메뉴 구성</a>
     
-    <div class="nav-section">사용자 가이드</div>
+    <div class="nav-section">권한별 가이드</div>
     <a href="#role-admin" class="nav-link"><i class="bi bi-shield-check"></i> 관리자 (Admin)</a>
     <a href="#role-manager" class="nav-link"><i class="bi bi-person-badge"></i> 부장 (Manager)</a>
     <a href="#role-reporter" class="nav-link"><i class="bi bi-person"></i> 기자 (Reporter)</a>
     
-    <div class="nav-section">기능 설명</div>
+    <div class="nav-section">주요 기능</div>
     <a href="#dashboard" class="nav-link"><i class="bi bi-graph-up"></i> 대시보드</a>
-    <a href="#reporter-list" class="nav-link"><i class="bi bi-list-ul"></i> 기자 목록</a>
-    <a href="#reporter-detail" class="nav-link"><i class="bi bi-file-person"></i> 기자 상세</a>
-    <a href="#evaluation" class="nav-link"><i class="bi bi-star"></i> 평가 입력</a>
-    <a href="#user-management" class="nav-link"><i class="bi bi-people"></i> 사원 관리</a>
+    <a href="#dept-dashboard" class="nav-link"><i class="bi bi-speedometer2"></i> 부서 대시보드</a>
+    <a href="#reporter-list" class="nav-link"><i class="bi bi-people"></i> 기자 목록</a>
+    <a href="#score-eval" class="nav-link"><i class="bi bi-clipboard-check"></i> 기사 평가</a>
+    <a href="#confirm-feature" class="nav-link"><i class="bi bi-check-circle"></i> 확정 기능</a>
+    <a href="#appeals" class="nav-link"><i class="bi bi-chat-left-text"></i> 소명 관리</a>
+    <a href="#score-config" class="nav-link"><i class="bi bi-sliders"></i> 가중치 설정</a>
+    <a href="#feature-flags" class="nav-link"><i class="bi bi-toggles"></i> Feature Flags</a>
+    <a href="#admin-page" class="nav-link"><i class="bi bi-gear"></i> 사원 관리</a>
+    
+    <div class="nav-section">점수 산출</div>
+    <a href="#score-formula" class="nav-link"><i class="bi bi-calculator"></i> 점수 공식</a>
+    <a href="#page-weight" class="nav-link"><i class="bi bi-newspaper"></i> 면 가중치</a>
+    <a href="#length-weight" class="nav-link"><i class="bi bi-text-paragraph"></i> 분량 가중치</a>
+    <a href="#quality-bonus" class="nav-link"><i class="bi bi-star"></i> 품질 가점</a>
+    <a href="#score-matrix" class="nav-link"><i class="bi bi-table"></i> 점수 매트릭스</a>
     
     <div class="nav-section">기술 문서</div>
-    <a href="#data-flow" class="nav-link"><i class="bi bi-arrow-repeat"></i> 데이터 흐름</a>
     <a href="#aws-resources" class="nav-link"><i class="bi bi-cloud"></i> AWS 리소스</a>
-    <a href="#deployment" class="nav-link"><i class="bi bi-rocket"></i> 배포 방법</a>
+    <a href="#data-sync" class="nav-link"><i class="bi bi-arrow-repeat"></i> 데이터 동기화</a>
     <a href="#troubleshooting" class="nav-link"><i class="bi bi-wrench"></i> 문제 해결</a>
-    
-    <div class="nav-section">부록</div>
-    <a href="#accounts" class="nav-link"><i class="bi bi-key"></i> 계정 정보</a>
-    <a href="#roadmap" class="nav-link"><i class="bi bi-map"></i> 개발 로드맵</a>
     <a href="#changelog" class="nav-link"><i class="bi bi-clock-history"></i> 변경 이력</a>
-    <a href="#contact" class="nav-link"><i class="bi bi-envelope"></i> 문의</a>
 </nav>
-
 
 <!-- 메인 콘텐츠 -->
 <main class="main-content">
 
 <!-- 페이지 헤더 -->
 <div class="page-header">
-    <h1><i class="bi bi-book me-2"></i>KPI 시스템 사용 설명서</h1>
-    <p>서울경제신문 기자 지면 정보 정량평가 시스템 완벽 가이드</p>
+    <h1><i class="bi bi-book me-2"></i>S-CORE 사용 설명서</h1>
+    <p>서울경제신문 기자 지면 기여도 평가 시스템 완벽 가이드 | v2.1 | 최종 업데이트: 2026년 2월 3일</p>
 </div>
 
 <!-- ==================== 시스템 개요 ==================== -->
 <section id="overview" class="section">
     <h2 class="section-title"><i class="bi bi-info-circle"></i> 시스템 개요</h2>
     
-    <p>KPI(기자 지면 정보 정량평가 시스템)는 서울경제신문 기자들의 기사 실적을 자동으로 집계하고, 정량/정성 평가를 지원하는 웹 기반 시스템입니다.</p>
+    <p><strong>S-CORE(기자 지면 기여도 평가 시스템)</strong>는 서울경제신문 기자들의 지면 기사 실적을 자동으로 집계하고, 객관적인 점수 산출과 정성 평가를 지원하는 웹 기반 시스템입니다.</p>
     
     <div class="card-grid">
         <div class="info-card">
@@ -371,293 +334,84 @@
         </div>
         <div class="info-card orange">
             <h5><i class="bi bi-calendar-check me-2"></i>데이터 기간</h5>
-            <p>2025년 12월 ~ 현재 (매일 자동 동기화)</p>
+            <p>2025년 12월 1일 ~ 현재<br>(매일 오전 6시 자동 동기화)</p>
         </div>
         <div class="info-card green">
             <h5><i class="bi bi-people me-2"></i>등록 사용자</h5>
-            <p>235명 (관리자 1, 부장 32, 기자 202)</p>
+            <p>총 248명<br>(관리자 1명, 부장 32명, 기자 215명)</p>
+        </div>
+        <div class="info-card red">
+            <h5><i class="bi bi-newspaper me-2"></i>집계 기사</h5>
+            <p>총 3,145건 (169명 기자)<br>지면 기사만 집계 (온라인 제외)</p>
         </div>
     </div>
     
-    <h4 class="mt-4 mb-3">주요 기능</h4>
+    <h4 class="mt-4 mb-3">S-CORE의 핵심 기능</h4>
     <div class="row">
         <div class="col-md-6">
-            <h6><i class="bi bi-robot text-success me-2"></i>자동 처리 (정량)</h6>
+            <h6><i class="bi bi-robot text-success me-2"></i>자동 처리 (정량 평가)</h6>
             <ul>
-                <li>지면 기사 자동 필터링 (paperNumber ≥ 1)</li>
-                <li>톱기사 자동 분류 (XML paragraph=TOP)</li>
-                <li>기자별 통계 자동 계산 (기사수, 글자수, 면별 분포)</li>
-                <li>공동 취재 기사 각 기자별 분리 집계</li>
+                <li><strong>지면 기사 자동 필터링</strong>: XML의 paperNumber ≥ 1인 기사만 집계</li>
+                <li><strong>톱기사 자동 분류</strong>: XML paragraph="TOP" 자동 인식</li>
+                <li><strong>기자별 통계 자동 계산</strong>: 기사수, 글자수, 면별 분포</li>
+                <li><strong>공동 취재 분리 집계</strong>: 여러 기자가 작성한 기사 각각 집계</li>
+                <li><strong>점수 자동 산출</strong>: 면 가중치 × 분량 가중치 × 10 + 품질 가점</li>
             </ul>
         </div>
         <div class="col-md-6">
-            <h6><i class="bi bi-pencil text-warning me-2"></i>수동 입력 (정성)</h6>
+            <h6><i class="bi bi-pencil text-warning me-2"></i>수동 입력 (정성 평가)</h6>
             <ul>
-                <li>위치: 톱, 사이드(좌/우), 하단, 기타</li>
-                <li>취재유형: 특종, 단독, 기획발굴, 현장취재 등</li>
-                <li>기사성격: 탐사심층, 해설분석, 인터뷰 등</li>
-                <li>임팩트 등급: S, A, B, C, D</li>
+                <li><strong>위치</strong>: 톱, 사이드(좌/우), 하단, 박스, 기타</li>
+                <li><strong>취재유형</strong>: 특종, 단독, 기획발굴, 현장취재, 단순발생, 보도자료, 인용외신</li>
+                <li><strong>기사성격</strong>: 탐사심층, 해설분석, 인터뷰, 르포스케치, 스트레이트, 가십미담</li>
+                <li><strong>임팩트 등급</strong>: S, A, B, C, D (5단계)</li>
+                <li><strong>소명 관리</strong>: 기자 이의제기 접수 및 처리</li>
             </ul>
         </div>
     </div>
-</section>
-
-<!-- ==================== 시스템 아키텍처 ==================== -->
-<section id="architecture" class="section">
-    <h2 class="section-title"><i class="bi bi-diagram-3"></i> 시스템 아키텍처</h2>
-    
-    <p>KPI 시스템은 AWS 서버리스 아키텍처를 기반으로 구축되어 있습니다. 별도의 서버 관리 없이 자동으로 확장되며, 비용 효율적으로 운영됩니다.</p>
-    
-    <!-- 상세 아키텍처 다이어그램 -->
-    <div style="background:#f5f5f5; border-radius:16px; padding:1.5rem; margin:1.5rem 0; overflow-x:auto;">
-        <div style="display:flex; justify-content:flex-end; gap:1.5rem; margin-bottom:0.75rem; font-size:0.75rem;">
-            <div style="display:flex; align-items:center; gap:0.4rem;"><div style="width:12px; height:12px; border-radius:3px; background:#4CAF50;"></div><span>자동 처리</span></div>
-            <div style="display:flex; align-items:center; gap:0.4rem;"><div style="width:12px; height:12px; border-radius:3px; background:#FF9800;"></div><span>수동 입력</span></div>
-        </div>
-        
-        <div style="display:grid; grid-template-columns:200px auto 280px auto 280px auto 380px; gap:0.5rem; align-items:start; min-width:1400px;">
-            
-            <!-- 데이터 소스 -->
-            <div style="background:#e3f2fd; border:2px solid #90caf9; border-radius:12px; padding:0.75rem; position:relative;">
-                <span style="position:absolute; top:-10px; left:50%; transform:translateX(-50%); padding:3px 12px; border-radius:16px; font-size:0.7rem; font-weight:600; color:white; background:#2196F3; white-space:nowrap;">데이터 소스</span>
-                <div style="background:white; border-radius:10px; padding:0.75rem; text-align:center; margin-bottom:0.5rem; box-shadow:0 2px 8px rgba(0,0,0,0.06);">
-                    <i class="bi bi-cloud-fill" style="font-size:2rem; color:#FFC107; display:block; margin-bottom:0.3rem;"></i>
-                    <div style="font-weight:700; font-size:0.85rem; color:#333;">S3 XML Storage</div>
-                    <div style="font-size:0.7rem; color:#666;">sedaily-news-xml-storage</div>
-                    <div style="display:inline-block; padding:2px 8px; border-radius:10px; font-size:0.65rem; font-weight:600; margin-top:0.4rem; background:#2196F3; color:white;">기존 시스템</div>
-                </div>
-                <div style="text-align:center; color:#90a4ae; font-size:1.2rem; margin:0.4rem 0;">↓</div>
-                <div style="background:white; border-radius:10px; padding:0.75rem; text-align:center; box-shadow:0 2px 8px rgba(0,0,0,0.06);">
-                    <i class="bi bi-bucket-fill" style="font-size:2rem; color:#FF9800; display:block; margin-bottom:0.3rem;"></i>
-                    <div style="font-weight:700; font-size:0.85rem; color:#333;">Amazon S3</div>
-                    <div style="font-size:0.7rem; color:#666;">XML 원본 저장</div>
-                    <div style="display:inline-block; padding:2px 8px; border-radius:10px; font-size:0.65rem; font-weight:600; margin-top:0.4rem; background:#4CAF50; color:white;">자동</div>
-                </div>
-            </div>
-            
-            <!-- 화살표 1 -->
-            <div style="display:flex; align-items:center; justify-content:center; color:#2196F3; font-size:1.5rem; height:100%; min-height:150px;">→</div>
-            
-            <!-- 데이터 처리 + 저장 -->
-            <div style="display:flex; flex-direction:column; gap:1rem;">
-                <div style="background:#fff8e1; border:2px solid #ffcc80; border-radius:12px; padding:0.75rem; position:relative;">
-                    <span style="position:absolute; top:-10px; left:50%; transform:translateX(-50%); padding:3px 12px; border-radius:16px; font-size:0.7rem; font-weight:600; color:white; background:#FF9800; white-space:nowrap;">데이터 처리</span>
-                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.4rem;">
-                        <div style="background:white; border-radius:6px; padding:0.6rem; text-align:center; box-shadow:0 1px 4px rgba(0,0,0,0.05);">
-                            <i class="bi bi-lightning-charge-fill" style="font-size:1.2rem; color:#FF9800; display:block; margin-bottom:0.2rem;"></i>
-                            <div style="font-size:0.7rem; font-weight:600; color:#333;">kpi-sync-data</div>
-                            <div style="font-size:0.65rem; color:#888;">XML 파싱</div>
-                        </div>
-                        <div style="background:white; border-radius:6px; padding:0.6rem; text-align:center; box-shadow:0 1px 4px rgba(0,0,0,0.05);">
-                            <i class="bi bi-calculator" style="font-size:1.2rem; color:#FF9800; display:block; margin-bottom:0.2rem;"></i>
-                            <div style="font-size:0.7rem; font-weight:600; color:#333;">kpi-evaluation-api</div>
-                            <div style="font-size:0.65rem; color:#888;">평가 저장</div>
-                        </div>
-                    </div>
-                    <div style="margin-top:0.5rem;">
-                        <div style="background:white; border-radius:6px; padding:0.6rem; text-align:center; box-shadow:0 1px 4px rgba(0,0,0,0.05);">
-                            <i class="bi bi-people-fill" style="font-size:1.2rem; color:#dc3545; display:block; margin-bottom:0.2rem;"></i>
-                            <div style="font-size:0.7rem; font-weight:600; color:#333;">kpi-users-api</div>
-                            <div style="font-size:0.65rem; color:#888;">사원 관리</div>
-                        </div>
-                    </div>
-                </div>
-                
-                <div style="background:#e8f5e9; border:2px solid #a5d6a7; border-radius:12px; padding:0.75rem; position:relative;">
-                    <span style="position:absolute; top:-10px; left:50%; transform:translateX(-50%); padding:3px 12px; border-radius:16px; font-size:0.7rem; font-weight:600; color:white; background:#4CAF50; white-space:nowrap;">데이터 저장</span>
-                    <div style="background:white; border-radius:10px; padding:0.75rem; text-align:center; margin-bottom:0.5rem; box-shadow:0 2px 8px rgba(0,0,0,0.06);">
-                        <i class="bi bi-filetype-json" style="font-size:2rem; color:#4CAF50; display:block; margin-bottom:0.3rem;"></i>
-                        <div style="font-weight:700; font-size:0.85rem; color:#333;">data.json</div>
-                        <div style="font-size:0.7rem; color:#666;">S3 정적 파일</div>
-                    </div>
-                    <div style="text-align:center; color:#90a4ae; font-size:1rem; margin:0.3rem 0;">↓</div>
-                    <div style="background:white; border-radius:10px; padding:0.75rem; text-align:center; margin-bottom:0.5rem; box-shadow:0 2px 8px rgba(0,0,0,0.06); border:2px solid #FF9800;">
-                        <i class="bi bi-cloud-upload" style="font-size:1.5rem; color:#FF9800; display:block; margin-bottom:0.3rem;"></i>
-                        <div style="font-weight:700; font-size:0.8rem; color:#333;">evaluations.json</div>
-                        <div style="font-size:0.65rem; color:#666;">평가 데이터</div>
-                    </div>
-                    <div style="text-align:center; color:#90a4ae; font-size:1rem; margin:0.3rem 0;">↓</div>
-                    <div style="background:white; border-radius:10px; padding:0.75rem; text-align:center; box-shadow:0 2px 8px rgba(0,0,0,0.06); border:2px solid #dc3545;">
-                        <i class="bi bi-people-fill" style="font-size:1.5rem; color:#E91E63; display:block; margin-bottom:0.3rem;"></i>
-                        <div style="font-weight:700; font-size:0.8rem; color:#333;">users.json</div>
-                        <div style="font-size:0.65rem; color:#666;">235명 계정</div>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- 화살표 2 -->
-            <div style="display:flex; align-items:center; justify-content:center; color:#2196F3; font-size:1.5rem; height:100%; min-height:150px;">→</div>
-            
-            <!-- 서비스 & 인증 -->
-            <div style="background:#fce4ec; border:2px solid #f8bbd9; border-radius:12px; padding:0.75rem; position:relative;">
-                <span style="position:absolute; top:-10px; left:50%; transform:translateX(-50%); padding:3px 12px; border-radius:16px; font-size:0.7rem; font-weight:600; color:white; background:#E91E63; white-space:nowrap;">서비스 & 인증</span>
-                <div style="background:white; border-radius:10px; padding:0.5rem; text-align:center; margin-bottom:0.4rem; box-shadow:0 2px 8px rgba(0,0,0,0.06);">
-                    <i class="bi bi-globe2" style="font-size:1.5rem; color:#2196F3; display:block; margin-bottom:0.2rem;"></i>
-                    <div style="font-weight:700; font-size:0.75rem; color:#333;">Route 53</div>
-                    <div style="font-size:0.65rem; color:#666;">kpi.sedaily.ai</div>
-                </div>
-                <div style="text-align:center; color:#90a4ae; font-size:1rem; margin:0.2rem 0;">↓</div>
-                <div style="background:white; border-radius:10px; padding:0.5rem; text-align:center; margin-bottom:0.4rem; box-shadow:0 2px 8px rgba(0,0,0,0.06);">
-                    <i class="bi bi-speedometer2" style="font-size:1.5rem; color:#2196F3; display:block; margin-bottom:0.2rem;"></i>
-                    <div style="font-weight:700; font-size:0.75rem; color:#333;">CloudFront</div>
-                    <div style="font-size:0.65rem; color:#666;">CDN</div>
-                </div>
-                <div style="text-align:center; color:#90a4ae; font-size:1rem; margin:0.2rem 0;">↓</div>
-                <div style="background:white; border-radius:10px; padding:0.5rem; text-align:center; margin-bottom:0.4rem; box-shadow:0 2px 8px rgba(0,0,0,0.06); border:2px solid #2196F3;">
-                    <i class="bi bi-shield-lock-fill" style="font-size:1.5rem; color:#2196F3; display:block; margin-bottom:0.2rem;"></i>
-                    <div style="font-weight:700; font-size:0.75rem; color:#333;">로그인 시스템</div>
-                    <div style="font-size:0.65rem; color:#666;">권한 기반</div>
-                </div>
-                <div style="display:flex; justify-content:center; gap:0.3rem; margin-top:0.3rem;">
-                    <div style="background:#dc3545; color:white; font-weight:600; font-size:0.6rem; padding:2px 6px; border-radius:4px;">admin 1</div>
-                    <div style="background:#0d6efd; color:white; font-weight:600; font-size:0.6rem; padding:2px 6px; border-radius:4px;">manager 32</div>
-                    <div style="background:#198754; color:white; font-weight:600; font-size:0.6rem; padding:2px 6px; border-radius:4px;">reporter 202</div>
-                </div>
-            </div>
-            
-            <!-- 화살표 3 -->
-            <div style="display:flex; align-items:center; justify-content:center; color:#2196F3; font-size:1.5rem; height:100%; min-height:150px;">→</div>
-            
-            <!-- 권한별 기능 -->
-            <div style="background:#fce4ec; border:2px solid #f8bbd9; border-radius:12px; padding:0.75rem; position:relative;">
-                <span style="position:absolute; top:-10px; left:50%; transform:translateX(-50%); padding:3px 12px; border-radius:16px; font-size:0.7rem; font-weight:600; color:white; background:#E91E63; white-space:nowrap;">권한별 기능</span>
-                
-                <!-- Admin 전용 -->
-                <div style="background:#fff5f5; border:2px solid #dc3545; border-radius:10px; padding:0.6rem; margin-bottom:0.6rem;">
-                    <div style="text-align:center; margin-bottom:0.4rem;">
-                        <i class="bi bi-shield-fill" style="color:#dc3545; font-size:1.2rem; display:block; margin-bottom:0.2rem;"></i>
-                        <div style="font-weight:700; font-size:0.75rem; color:#dc3545;">Admin 전용</div>
-                    </div>
-                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.3rem;">
-                        <div style="background:white; border-radius:6px; padding:0.4rem; text-align:center; box-shadow:0 1px 3px rgba(0,0,0,0.05);">
-                            <i class="bi bi-house-door-fill" style="color:#dc3545; font-size:1rem; display:block;"></i>
-                            <div style="font-size:0.65rem; font-weight:600; color:#333;">대시보드</div>
-                        </div>
-                        <div style="background:white; border-radius:6px; padding:0.4rem; text-align:center; box-shadow:0 1px 3px rgba(0,0,0,0.05);">
-                            <i class="bi bi-gear-fill" style="color:#dc3545; font-size:1rem; display:block;"></i>
-                            <div style="font-size:0.65rem; font-weight:600; color:#333;">사원 관리</div>
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- 공통 기능 -->
-                <div style="background:#f0f7ff; border:2px solid #0d6efd; border-radius:10px; padding:0.6rem; margin-bottom:0.6rem;">
-                    <div style="text-align:center; margin-bottom:0.4rem;">
-                        <i class="bi bi-people-fill" style="color:#0d6efd; font-size:1.2rem; display:block; margin-bottom:0.2rem;"></i>
-                        <div style="font-weight:700; font-size:0.75rem; color:#0d6efd;">공통 기능</div>
-                    </div>
-                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.3rem;">
-                        <div style="background:white; border-radius:6px; padding:0.4rem; text-align:center; box-shadow:0 1px 3px rgba(0,0,0,0.05);">
-                            <i class="bi bi-list-ul" style="color:#0d6efd; font-size:1rem; display:block;"></i>
-                            <div style="font-size:0.65rem; font-weight:600; color:#333;">기자 목록</div>
-                        </div>
-                        <div style="background:white; border-radius:6px; padding:0.4rem; text-align:center; box-shadow:0 1px 3px rgba(0,0,0,0.05);">
-                            <i class="bi bi-person-badge-fill" style="color:#198754; font-size:1rem; display:block;"></i>
-                            <div style="font-size:0.65rem; font-weight:600; color:#333;">기자 상세</div>
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- 정성평가 -->
-                <div style="background:white; border-radius:10px; padding:0.6rem; text-align:center; box-shadow:0 2px 8px rgba(0,0,0,0.06); border:2px solid #FF9800;">
-                    <i class="bi bi-pencil-square" style="font-size:1.5rem; color:#E91E63; display:block; margin-bottom:0.2rem;"></i>
-                    <div style="font-weight:700; font-size:0.8rem; color:#333;">정성평가 입력</div>
-                    <div style="font-size:0.65rem; color:#666;">admin/manager만</div>
-                    <div style="display:inline-block; padding:2px 8px; border-radius:10px; font-size:0.6rem; font-weight:600; margin-top:0.3rem; background:#FF9800; color:white;"><i class="bi bi-pencil"></i> 수동 입력</div>
-                </div>
-            </div>
-            
-        </div>
-    </div>
-    
-    <h4 class="mt-4 mb-3">구성 요소 상세</h4>
-    <table class="custom-table">
-        <thead>
-            <tr><th>구성 요소</th><th>AWS 서비스</th><th>역할</th><th>자동/수동</th></tr>
-        </thead>
-        <tbody>
-            <tr>
-                <td><strong>XML 저장소</strong></td>
-                <td>S3 (sedaily-news-xml-storage)</td>
-                <td>기존 시스템에서 생성된 XML 원본 저장</td>
-                <td><span class="badge bg-secondary">기존 시스템</span></td>
-            </tr>
-            <tr>
-                <td><strong>데이터 동기화</strong></td>
-                <td>Lambda (kpi-sync-data)</td>
-                <td>XML 파싱 → 정량 점수 계산 → data.json 생성</td>
-                <td><span class="badge bg-success">자동 (매일 6시)</span></td>
-            </tr>
-            <tr>
-                <td><strong>평가 저장</strong></td>
-                <td>Lambda (kpi-evaluation-api)</td>
-                <td>정성평가 데이터 저장/조회</td>
-                <td><span class="badge bg-warning text-dark">수동 입력</span></td>
-            </tr>
-            <tr>
-                <td><strong>사원 관리</strong></td>
-                <td>Lambda (kpi-users-api)</td>
-                <td>사원 정보 변경 → S3 저장 + 캐시 무효화</td>
-                <td><span class="badge bg-warning text-dark">수동 입력</span></td>
-            </tr>
-            <tr>
-                <td><strong>웹 호스팅</strong></td>
-                <td>S3 + CloudFront</td>
-                <td>정적 웹사이트 호스팅 및 CDN 배포</td>
-                <td><span class="badge bg-success">자동</span></td>
-            </tr>
-            <tr>
-                <td><strong>DNS</strong></td>
-                <td>Route 53</td>
-                <td>kpi.sedaily.ai 도메인 관리</td>
-                <td><span class="badge bg-success">자동</span></td>
-            </tr>
-        </tbody>
-    </table>
     
     <div class="alert-box info mt-4">
-        <i class="bi bi-info-circle"></i>
+        <i class="bi bi-lightbulb"></i>
         <div>
-            <strong>서버리스 아키텍처의 장점</strong><br>
-            서버 관리 불필요, 사용량 기반 과금, 자동 확장, 고가용성 보장
+            <strong>S-CORE 명칭의 의미</strong><br>
+            S-CORE는 "Score"(점수)와 "Core"(핵심)의 합성어로, 기자 평가의 핵심 시스템이라는 의미를 담고 있습니다.
         </div>
     </div>
 </section>
-
 
 <!-- ==================== 로그인 ==================== -->
 <section id="login" class="section">
     <h2 class="section-title"><i class="bi bi-box-arrow-in-right"></i> 로그인</h2>
     
-    <p>KPI 시스템은 권한 기반 접근 제어를 사용합니다. 사번과 비밀번호로 로그인하면 권한에 따라 적절한 페이지로 이동합니다.</p>
+    <p>S-CORE는 권한 기반 접근 제어를 사용합니다. 사번과 비밀번호로 로그인하면 권한에 따라 적절한 페이지로 자동 이동합니다.</p>
     
     <div class="row">
         <div class="col-md-6">
-            <h5 class="mb-3">로그인 방법</h5>
+            <h5 class="mb-3">로그인 절차</h5>
             <div class="step-list">
                 <div class="step-item">
-                    <h6>접속</h6>
+                    <h6>사이트 접속</h6>
                     <p><a href="https://kpi.sedaily.ai" target="_blank">https://kpi.sedaily.ai</a> 접속</p>
                 </div>
                 <div class="step-item">
                     <h6>아이디 입력</h6>
-                    <p>본인의 <strong>사번</strong>을 입력 (예: 80486)</p>
+                    <p>본인의 <strong>사번</strong>을 입력합니다<br>예: 80486, 211010</p>
                 </div>
                 <div class="step-item">
                     <h6>비밀번호 입력</h6>
-                    <p>초기 비밀번호: <strong>1234</strong></p>
+                    <p>초기 비밀번호: <strong>1234</strong><br>(모든 계정 동일)</p>
                 </div>
                 <div class="step-item">
-                    <h6>로그인 완료</h6>
-                    <p>권한에 따라 자동으로 해당 페이지로 이동</p>
+                    <h6>자동 페이지 이동</h6>
+                    <p>권한에 따라 해당 페이지로 자동 이동</p>
                 </div>
             </div>
         </div>
         <div class="col-md-6">
-            <h5 class="mb-3">권한별 접근 범위</h5>
+            <h5 class="mb-3">권한별 로그인 후 이동 페이지</h5>
             <table class="custom-table">
                 <thead>
-                    <tr><th>권한</th><th>로그인 후 이동</th><th>접근 가능</th></tr>
+                    <tr><th>권한</th><th>로그인 후 이동</th><th>접근 범위</th></tr>
                 </thead>
                 <tbody>
                     <tr>
@@ -667,12 +421,12 @@
                     </tr>
                     <tr>
                         <td><span class="badge-role badge-manager">부장</span></td>
-                        <td>기자 목록 (list.html)</td>
+                        <td>부서 대시보드</td>
                         <td>소속 부서만</td>
                     </tr>
                     <tr>
                         <td><span class="badge-role badge-reporter">기자</span></td>
-                        <td>본인 상세 (reporter.html)</td>
+                        <td>본인 상세 페이지</td>
                         <td>본인만</td>
                     </tr>
                 </tbody>
@@ -681,10 +435,126 @@
             <div class="alert-box warning mt-3">
                 <i class="bi bi-exclamation-triangle"></i>
                 <div>
-                    <strong>세션 만료</strong><br>
-                    로그인 후 24시간이 지나면 자동 로그아웃됩니다.
+                    <strong>세션 유지 시간</strong><br>
+                    로그인 후 24시간이 지나면 자동 로그아웃됩니다. 다시 로그인해주세요.
                 </div>
             </div>
+        </div>
+    </div>
+    
+    <h5 class="mt-4 mb-3">테스트 계정</h5>
+    <table class="custom-table">
+        <thead>
+            <tr><th>권한</th><th>아이디</th><th>비밀번호</th><th>이름</th><th>부서</th></tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><span class="badge-role badge-admin">관리자</span></td>
+                <td><code>admin</code></td>
+                <td><code>1234</code></td>
+                <td>관리자</td>
+                <td>전체</td>
+            </tr>
+            <tr>
+                <td><span class="badge-role badge-manager">부장</span></td>
+                <td><code>80486</code></td>
+                <td><code>1234</code></td>
+                <td>서일범</td>
+                <td>경제부</td>
+            </tr>
+            <tr>
+                <td><span class="badge-role badge-reporter">기자</span></td>
+                <td><code>211010</code></td>
+                <td><code>1234</code></td>
+                <td>주재현</td>
+                <td>경제부</td>
+            </tr>
+        </tbody>
+    </table>
+</section>
+
+<!-- ==================== 메뉴 구성 ==================== -->
+<section id="navigation" class="section">
+    <h2 class="section-title"><i class="bi bi-list"></i> 메뉴 구성 (7개 탭)</h2>
+    
+    <p>S-CORE는 총 7개의 메뉴 탭으로 구성되어 있습니다. 권한에 따라 일부 메뉴가 숨겨집니다.</p>
+    
+    <table class="custom-table">
+        <thead>
+            <tr><th>순서</th><th>메뉴명</th><th>아이콘</th><th>파일</th><th>설명</th><th>Admin</th><th>Manager</th></tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>1</td>
+                <td><strong>대시보드</strong></td>
+                <td><i class="bi bi-house-door"></i></td>
+                <td>home.html</td>
+                <td>전체 현황 요약, 부서별 통계</td>
+                <td><span class="badge bg-success">✓</span></td>
+                <td><span class="badge bg-secondary">숨김</span></td>
+            </tr>
+            <tr>
+                <td>2</td>
+                <td><strong>부서 대시보드</strong></td>
+                <td><i class="bi bi-speedometer2"></i></td>
+                <td>score-dashboard.html</td>
+                <td>부서별 상세 통계, 탭으로 부서 전환</td>
+                <td><span class="badge bg-success">✓</span></td>
+                <td><span class="badge bg-success">✓</span></td>
+            </tr>
+            <tr>
+                <td>3</td>
+                <td><strong>기자 목록</strong></td>
+                <td><i class="bi bi-people"></i></td>
+                <td>list.html</td>
+                <td>기자별 실적 목록, 검색/필터</td>
+                <td><span class="badge bg-success">✓</span></td>
+                <td><span class="badge bg-success">✓</span></td>
+            </tr>
+            <tr>
+                <td>4</td>
+                <td><strong>기사 평가</strong></td>
+                <td><i class="bi bi-clipboard-check"></i></td>
+                <td>score-eval.html</td>
+                <td>기사별 정성평가 입력</td>
+                <td><span class="badge bg-success">✓</span></td>
+                <td><span class="badge bg-success">✓</span></td>
+            </tr>
+            <tr>
+                <td>5</td>
+                <td><strong>소명 관리</strong></td>
+                <td><i class="bi bi-chat-left-text"></i></td>
+                <td>score-appeals.html</td>
+                <td>기자 이의제기 처리</td>
+                <td><span class="badge bg-success">✓</span></td>
+                <td><span class="badge bg-success">✓</span></td>
+            </tr>
+            <tr>
+                <td>6</td>
+                <td><strong>가중치 설정</strong></td>
+                <td><i class="bi bi-sliders"></i></td>
+                <td>score-config.html</td>
+                <td>점수 산출 가중치 조정</td>
+                <td><span class="badge bg-success">✓</span></td>
+                <td><span class="badge bg-secondary">숨김</span></td>
+            </tr>
+            <tr>
+                <td>7</td>
+                <td><strong>사원 관리</strong></td>
+                <td><i class="bi bi-gear"></i></td>
+                <td>admin.html</td>
+                <td>사원 정보 관리, 권한 변경</td>
+                <td><span class="badge bg-success">✓</span></td>
+                <td><span class="badge bg-secondary">숨김</span></td>
+            </tr>
+        </tbody>
+    </table>
+    
+    <div class="alert-box info mt-4">
+        <i class="bi bi-info-circle"></i>
+        <div>
+            <strong>Manager 권한 메뉴</strong><br>
+            부장(Manager)으로 로그인하면 <strong>대시보드, 가중치 설정, 사원 관리</strong> 3개 메뉴가 숨겨지고, 4개 메뉴만 표시됩니다.
         </div>
     </div>
 </section>
@@ -693,79 +563,108 @@
 <section id="role-admin" class="section">
     <h2 class="section-title"><i class="bi bi-shield-check"></i> 관리자 (Admin) 가이드</h2>
     
-    <p>관리자는 시스템의 모든 기능에 접근할 수 있습니다. 전체 대시보드 조회, 모든 부서/기자 평가, 사원 관리가 가능합니다.</p>
+    <p>관리자는 시스템의 <strong>모든 기능</strong>에 접근할 수 있습니다. 전체 대시보드 조회, 모든 부서/기자 평가, 가중치 설정, 사원 관리가 가능합니다.</p>
     
     <h5 class="mt-4 mb-3">관리자 전용 기능</h5>
     <div class="card-grid">
         <div class="info-card">
             <h5><i class="bi bi-graph-up-arrow me-2"></i>전체 대시보드</h5>
-            <p>전체 기자 통계, 부서별 현황, 기간별 추이 확인</p>
+            <p>전체 기자 통계, 부서별 현황, 기간별 추이를 한눈에 확인합니다.</p>
         </div>
         <div class="info-card orange">
-            <h5><i class="bi bi-people me-2"></i>사원 관리</h5>
-            <p>부서/직급/권한 변경, 신규 사원 추가</p>
+            <h5><i class="bi bi-sliders me-2"></i>가중치 설정</h5>
+            <p>면 가중치, 분량 가중치, 품질 가점 등 점수 산출 기준을 조정합니다.</p>
         </div>
         <div class="info-card green">
-            <h5><i class="bi bi-arrow-repeat me-2"></i>데이터 동기화</h5>
-            <p>수동 동기화 실행, 동기화 상태 확인</p>
+            <h5><i class="bi bi-people me-2"></i>사원 관리</h5>
+            <p>사원의 부서, 직급, 권한을 변경하고 신규 사원을 추가합니다.</p>
         </div>
         <div class="info-card red">
             <h5><i class="bi bi-star me-2"></i>전체 평가</h5>
-            <p>모든 부서 기자의 정성평가 입력/수정</p>
+            <p>모든 부서의 모든 기자에 대해 정성평가를 입력/수정합니다.</p>
         </div>
     </div>
     
-    <h5 class="mt-4 mb-3">관리자 메뉴 구성</h5>
-    <table class="custom-table">
-        <thead>
-            <tr><th>메뉴</th><th>파일</th><th>설명</th></tr>
-        </thead>
-        <tbody>
-            <tr><td>대시보드</td><td>home.html</td><td>전체 통계 및 현황 요약</td></tr>
-            <tr><td>기자 목록</td><td>list.html</td><td>전체 기자 목록 및 필터링</td></tr>
-            <tr><td>기자 상세</td><td>reporter.html</td><td>개별 기자 실적 및 평가</td></tr>
-            <tr><td>사원 관리</td><td>admin.html</td><td>사원 정보 관리 (관리자 전용)</td></tr>
-            <tr><td>시스템 구조</td><td>architecture.html</td><td>아키텍처 다이어그램</td></tr>
-            <tr><td>인수인계</td><td>handover.html</td><td>시스템 문서</td></tr>
-        </tbody>
-    </table>
+    <h5 class="mt-4 mb-3">관리자 주요 업무</h5>
+    <div class="step-list">
+        <div class="step-item">
+            <h6>일일 현황 확인</h6>
+            <p>대시보드에서 전체 기사 현황, 부서별 실적, 상위 기자 확인</p>
+        </div>
+        <div class="step-item">
+            <h6>평가 진행 상황 모니터링</h6>
+            <p>각 부서별 평가 완료율 확인, 미평가 기사 파악</p>
+        </div>
+        <div class="step-item">
+            <h6>소명 처리</h6>
+            <p>기자들의 이의제기 검토 및 승인/반려 처리</p>
+        </div>
+        <div class="step-item">
+            <h6>사원 정보 관리</h6>
+            <p>인사이동 시 부서 변경, 신규 입사자 추가, 퇴사자 처리</p>
+        </div>
+    </div>
 </section>
 
 <!-- ==================== 부장 가이드 ==================== -->
 <section id="role-manager" class="section">
     <h2 class="section-title"><i class="bi bi-person-badge"></i> 부장 (Manager) 가이드</h2>
     
-    <p>부장은 소속 부서의 기자들만 조회하고 평가할 수 있습니다. 다른 부서 기자 페이지에는 접근할 수 없습니다.</p>
+    <p>부장은 <strong>소속 부서의 기자들만</strong> 조회하고 평가할 수 있습니다. 다른 부서 기자 페이지에는 접근할 수 없습니다.</p>
     
-    <h5 class="mt-4 mb-3">부장 업무 흐름</h5>
-    <div class="step-list">
-        <div class="step-item">
-            <h6>로그인</h6>
-            <p>사번으로 로그인하면 자동으로 소속 부서 기자 목록 페이지로 이동</p>
+    <h5 class="mt-4 mb-3">부장 접근 가능 기능</h5>
+    <div class="card-grid">
+        <div class="info-card">
+            <h5><i class="bi bi-speedometer2 me-2"></i>부서 대시보드</h5>
+            <p>소속 부서의 통계만 표시됩니다. 다른 부서 탭은 보이지 않습니다.</p>
         </div>
-        <div class="step-item">
-            <h6>기자 목록 확인</h6>
-            <p>소속 부서 기자들의 기사수, 글자수, 평가 완료 현황 확인</p>
+        <div class="info-card orange">
+            <h5><i class="bi bi-people me-2"></i>기자 목록</h5>
+            <p>소속 부서 기자만 목록에 표시됩니다.</p>
         </div>
-        <div class="step-item">
-            <h6>기자 선택</h6>
-            <p>평가할 기자 이름 클릭하여 상세 페이지로 이동</p>
+        <div class="info-card green">
+            <h5><i class="bi bi-clipboard-check me-2"></i>기사 평가</h5>
+            <p>소속 부서 기자의 기사만 평가할 수 있습니다.</p>
         </div>
-        <div class="step-item">
-            <h6>정성평가 입력</h6>
-            <p>각 기사별로 위치, 취재유형, 기사성격, 임팩트 등급 입력</p>
-        </div>
-        <div class="step-item">
-            <h6>저장</h6>
-            <p>"평가 저장" 버튼 클릭하여 서버에 저장</p>
+        <div class="info-card red">
+            <h5><i class="bi bi-chat-left-text me-2"></i>소명 관리</h5>
+            <p>소속 부서 기자의 소명만 처리할 수 있습니다.</p>
         </div>
     </div>
     
-    <div class="alert-box info mt-4">
-        <i class="bi bi-info-circle"></i>
+    <h5 class="mt-4 mb-3">부장 평가 업무 흐름</h5>
+    <div class="step-list">
+        <div class="step-item">
+            <h6>로그인</h6>
+            <p>사번으로 로그인하면 자동으로 부서 대시보드로 이동합니다.</p>
+        </div>
+        <div class="step-item">
+            <h6>부서 현황 확인</h6>
+            <p>부서 대시보드에서 기사수, 기자 순위, 일별 추이를 확인합니다.</p>
+        </div>
+        <div class="step-item">
+            <h6>기사 평가 페이지 이동</h6>
+            <p>"기사 평가" 메뉴를 클릭하여 평가 페이지로 이동합니다.</p>
+        </div>
+        <div class="step-item">
+            <h6>기자 선택</h6>
+            <p>평가할 기자를 선택하면 해당 기자의 기사 목록이 표시됩니다.</p>
+        </div>
+        <div class="step-item">
+            <h6>정성평가 입력</h6>
+            <p>각 기사별로 위치, 취재유형, 기사성격, 임팩트 등급을 입력합니다.</p>
+        </div>
+        <div class="step-item">
+            <h6>저장</h6>
+            <p>"저장" 버튼을 클릭하여 평가 내용을 서버에 저장합니다.</p>
+        </div>
+    </div>
+    
+    <div class="alert-box warning mt-4">
+        <i class="bi bi-exclamation-triangle"></i>
         <div>
-            <strong>부서 제한</strong><br>
-            부장 계정은 본인 소속 부서의 기자만 조회/평가할 수 있습니다. 다른 부서 기자 페이지 접근 시 "접근 권한이 없습니다" 메시지가 표시됩니다.
+            <strong>부서 제한 안내</strong><br>
+            부장 계정은 본인 소속 부서의 기자만 조회/평가할 수 있습니다. 다른 부서 기자 페이지에 직접 URL로 접근해도 "접근 권한이 없습니다" 메시지가 표시됩니다.
         </div>
     </div>
 </section>
@@ -774,7 +673,7 @@
 <section id="role-reporter" class="section">
     <h2 class="section-title"><i class="bi bi-person"></i> 기자 (Reporter) 가이드</h2>
     
-    <p>기자는 본인의 실적만 조회할 수 있습니다. 평가 입력 영역은 표시되지 않습니다.</p>
+    <p>기자는 <strong>본인의 실적만</strong> 조회할 수 있습니다. 평가 입력 기능은 제공되지 않습니다.</p>
     
     <h5 class="mt-4 mb-3">기자 화면 구성</h5>
     <div class="row">
@@ -782,95 +681,155 @@
             <h6><i class="bi bi-eye text-primary me-2"></i>조회 가능 항목</h6>
             <ul>
                 <li>본인 기사 목록 (제목, 날짜, 면, 글자수)</li>
-                <li>기간별 통계 (기사수, 총 글자수)</li>
+                <li>기간별 통계 (기사수, 총 글자수, 평균 글자수)</li>
                 <li>면별 기사 분포 차트</li>
+                <li>본인 기사 점수 (자동 산출 점수)</li>
+                <li>소명 신청 내역 및 처리 결과</li>
             </ul>
         </div>
         <div class="col-md-6">
-            <h6><i class="bi bi-eye-slash text-danger me-2"></i>숨김 항목</h6>
+            <h6><i class="bi bi-eye-slash text-danger me-2"></i>접근 불가 항목</h6>
             <ul>
                 <li>평가 입력 드롭다운 (위치, 취재유형 등)</li>
                 <li>평가 저장 버튼</li>
-                <li>다른 기자 페이지 접근</li>
-                <li>부장이 입력한 평가 결과</li>
+                <li>다른 기자 페이지</li>
+                <li>부서 대시보드</li>
+                <li>가중치 설정, 사원 관리</li>
             </ul>
         </div>
     </div>
     
-    <div class="alert-box success mt-4">
-        <i class="bi bi-check-circle"></i>
-        <div>
-            <strong>본인 실적 확인</strong><br>
-            로그인하면 자동으로 본인 상세 페이지로 이동합니다. 기간 필터를 변경하여 일별/주별/월별 실적을 확인할 수 있습니다.
+    <h5 class="mt-4 mb-3">기자 주요 기능</h5>
+    <div class="card-grid">
+        <div class="info-card">
+            <h5><i class="bi bi-newspaper me-2"></i>내 기사 확인</h5>
+            <p>로그인하면 자동으로 본인 상세 페이지로 이동합니다. 기간 필터를 변경하여 일별/주별/월별 실적을 확인할 수 있습니다.</p>
+        </div>
+        <div class="info-card orange">
+            <h5><i class="bi bi-chat-left-text me-2"></i>소명 신청</h5>
+            <p>평가 결과에 이의가 있을 경우 소명을 신청할 수 있습니다. 부장/관리자가 검토 후 승인/반려 처리합니다.</p>
         </div>
     </div>
 </section>
-
 
 <!-- ==================== 대시보드 ==================== -->
 <section id="dashboard" class="section">
     <h2 class="section-title"><i class="bi bi-graph-up"></i> 대시보드 (home.html)</h2>
     
-    <p>대시보드는 관리자 전용 페이지로, 전체 시스템 현황을 한눈에 파악할 수 있습니다.</p>
+    <p>대시보드는 <strong>관리자 전용</strong> 페이지로, 전체 시스템 현황을 한눈에 파악할 수 있습니다.</p>
     
     <h5 class="mt-4 mb-3">대시보드 구성 요소</h5>
     <div class="card-grid">
         <div class="info-card">
-            <h5><i class="bi bi-card-text me-2"></i>요약 카드</h5>
-            <p>전체 기자수, 총 기사수, 평균 기사수, 데이터 기간</p>
+            <h5><i class="bi bi-card-text me-2"></i>요약 카드 (4개)</h5>
+            <p>전체 기자수, 총 기사수, 평균 기사수, 데이터 기간을 카드 형태로 표시합니다.</p>
         </div>
         <div class="info-card orange">
-            <h5><i class="bi bi-bar-chart me-2"></i>부서별 통계</h5>
-            <p>부서별 기자수, 기사수, 평균 기사수 비교</p>
+            <h5><i class="bi bi-bar-chart me-2"></i>부서별 통계 테이블</h5>
+            <p>각 부서별 기자수, 기사수, 평균 기사수를 테이블로 비교합니다.</p>
         </div>
         <div class="info-card green">
-            <h5><i class="bi bi-trophy me-2"></i>상위 기자</h5>
-            <p>기사수/글자수 기준 상위 10명</p>
+            <h5><i class="bi bi-trophy me-2"></i>상위 기자 TOP 10</h5>
+            <p>기사수 기준 상위 10명의 기자를 순위와 함께 표시합니다.</p>
         </div>
-        <div class="info-card">
-            <h5><i class="bi bi-calendar3 me-2"></i>기간별 추이</h5>
-            <p>일별/주별/월별 기사 발행 추이 차트</p>
+        <div class="info-card red">
+            <h5><i class="bi bi-graph-up-arrow me-2"></i>일별 기사수 추이</h5>
+            <p>최근 14일간의 일별 기사수를 막대 차트로 표시합니다.</p>
         </div>
     </div>
     
-    <h5 class="mt-4 mb-3">네비게이션 메뉴</h5>
-    <table class="custom-table">
-        <thead>
-            <tr><th>메뉴</th><th>아이콘</th><th>설명</th><th>권한</th></tr>
-        </thead>
-        <tbody>
-            <tr><td>대시보드</td><td><i class="bi bi-house"></i></td><td>전체 현황 요약</td><td>관리자</td></tr>
-            <tr><td>기자 목록</td><td><i class="bi bi-people"></i></td><td>기자별 실적 목록</td><td>관리자/부장</td></tr>
-            <tr><td>사원 관리</td><td><i class="bi bi-person-gear"></i></td><td>사원 정보 관리</td><td>관리자</td></tr>
-            <tr><td>시스템 구조</td><td><i class="bi bi-diagram-3"></i></td><td>아키텍처 문서</td><td>관리자</td></tr>
-            <tr><td>인수인계</td><td><i class="bi bi-file-text"></i></td><td>시스템 문서</td><td>관리자</td></tr>
-            <tr><td>로그아웃</td><td><i class="bi bi-box-arrow-right"></i></td><td>세션 종료</td><td>전체</td></tr>
-        </tbody>
-    </table>
+    <h5 class="mt-4 mb-3">데이터 동기화 버튼</h5>
+    <p>대시보드 상단의 <strong>"데이터 동기화"</strong> 버튼을 클릭하면 최신 XML 데이터를 즉시 동기화할 수 있습니다.</p>
+    <div class="alert-box info">
+        <i class="bi bi-info-circle"></i>
+        <div>
+            <strong>자동 동기화</strong><br>
+            데이터는 매일 오전 6시에 자동으로 동기화됩니다. 수동 동기화는 긴급한 경우에만 사용하세요.
+        </div>
+    </div>
+</section>
+
+<!-- ==================== 부서 대시보드 ==================== -->
+<section id="dept-dashboard" class="section">
+    <h2 class="section-title"><i class="bi bi-speedometer2"></i> 부서 대시보드 (score-dashboard.html)</h2>
+    
+    <p>부서 대시보드는 <strong>부서별 상세 통계</strong>를 제공합니다. 관리자는 모든 부서를 조회할 수 있고, 부장은 소속 부서만 조회할 수 있습니다.</p>
+    
+    <h5 class="mt-4 mb-3">부서 탭 기능</h5>
+    <p>상단의 부서 탭을 클릭하면 해당 부서의 통계로 <strong>즉시 전환</strong>됩니다. 각 탭에는 부서명과 소속 기자 수가 표시됩니다.</p>
+    
+    <div class="dept-tab-demo">
+        <span class="tab active">전체</span>
+        <span class="tab">경제부 (8명)</span>
+        <span class="tab">정치부 (14명)</span>
+        <span class="tab">금융부 (11명)</span>
+        <span class="tab">사회부 (23명)</span>
+        <span class="tab">산업부 (10명)</span>
+        <span class="tab">문화부 (6명)</span>
+        <span class="tab">국제부 (12명)</span>
+        <span class="tab">...</span>
+    </div>
+    
+    <h5 class="mt-4 mb-3">부서 대시보드 구성 요소</h5>
+    <div class="card-grid">
+        <div class="info-card">
+            <h5><i class="bi bi-newspaper me-2"></i>총 기사 수</h5>
+            <p>선택한 부서의 총 기사 수입니다. 공동 취재 기사는 중복 제거됩니다.</p>
+        </div>
+        <div class="info-card orange">
+            <h5><i class="bi bi-people-fill me-2"></i>부서 기자 수</h5>
+            <p>해당 부서에 소속된 기자 수입니다.</p>
+        </div>
+        <div class="info-card green">
+            <h5><i class="bi bi-file-text me-2"></i>평균 글자수</h5>
+            <p>기사당 평균 글자수입니다.</p>
+        </div>
+        <div class="info-card red">
+            <h5><i class="bi bi-trophy me-2"></i>부서 총점</h5>
+            <p>점수 공식에 따라 산출된 부서 전체 총점입니다.</p>
+        </div>
+    </div>
+    
+    <h5 class="mt-4 mb-3">부서 기사수 TOP 10</h5>
+    <p>선택한 부서 내에서 기사수가 많은 상위 10명의 기자를 표시합니다. 기자명을 클릭하면 해당 기자의 상세 페이지로 이동합니다.</p>
+    
+    <h5 class="mt-4 mb-3">최근 일별 기사수</h5>
+    <p>최근 12일간의 일별 기사수와 전일 대비 증감을 테이블로 표시합니다. 일요일은 회색 배경으로 구분됩니다.</p>
+    
+    <h5 class="mt-4 mb-3">일별 기사수 추이 차트</h5>
+    <p>최근 14일간의 일별 기사수를 막대 차트로 시각화합니다. 일요일은 회색 막대로 표시됩니다.</p>
+    
+    <div class="alert-box warning mt-4">
+        <i class="bi bi-exclamation-triangle"></i>
+        <div>
+            <strong>권한별 접근 범위</strong><br>
+            • <strong>관리자</strong>: "전체" 탭 + 모든 부서 탭 표시<br>
+            • <strong>부장</strong>: 소속 부서 탭만 표시 (다른 부서 조회 불가)
+        </div>
+    </div>
 </section>
 
 <!-- ==================== 기자 목록 ==================== -->
 <section id="reporter-list" class="section">
-    <h2 class="section-title"><i class="bi bi-list-ul"></i> 기자 목록 (list.html)</h2>
+    <h2 class="section-title"><i class="bi bi-people"></i> 기자 목록 (list.html)</h2>
     
     <p>기자 목록 페이지에서는 기자별 실적을 한눈에 비교하고, 평가가 필요한 기자를 빠르게 찾을 수 있습니다.</p>
     
-    <h5 class="mt-4 mb-3">기능 설명</h5>
+    <h5 class="mt-4 mb-3">필터링 및 검색</h5>
     <div class="row">
         <div class="col-md-6">
-            <h6><i class="bi bi-funnel me-2"></i>필터링</h6>
+            <h6><i class="bi bi-funnel me-2"></i>필터 옵션</h6>
             <ul>
                 <li><strong>부서 필터</strong>: 특정 부서 기자만 표시</li>
                 <li><strong>기간 필터</strong>: 일별/주별/월별/분기별/반기별</li>
-                <li><strong>검색</strong>: 기자 이름으로 검색</li>
+                <li><strong>정렬</strong>: 기사수/글자수/이름 순</li>
             </ul>
         </div>
         <div class="col-md-6">
-            <h6><i class="bi bi-sort-down me-2"></i>정렬</h6>
+            <h6><i class="bi bi-search me-2"></i>검색</h6>
             <ul>
-                <li><strong>기사수</strong>: 기사 많은 순/적은 순</li>
-                <li><strong>글자수</strong>: 글자수 많은 순/적은 순</li>
-                <li><strong>이름</strong>: 가나다 순</li>
+                <li>기자 이름으로 검색</li>
+                <li>실시간 필터링 (입력 즉시 반영)</li>
             </ul>
         </div>
     </div>
@@ -878,175 +837,381 @@
     <h5 class="mt-4 mb-3">목록 컬럼 설명</h5>
     <table class="custom-table">
         <thead>
-            <tr><th>컬럼</th><th>설명</th><th>계산 방식</th><th>권한</th></tr>
+            <tr><th>컬럼</th><th>설명</th><th>계산 방식</th></tr>
         </thead>
         <tbody>
-            <tr><td>기자명</td><td>기자 이름 (클릭 시 상세 페이지)</td><td>-</td><td>전체</td></tr>
-            <tr><td>부서</td><td>소속 부서</td><td>users.json 기준</td><td>전체</td></tr>
-            <tr><td>기사수</td><td>선택 기간 내 기사 수</td><td>지면 기사만 (paperNumber ≥ 1)</td><td>전체</td></tr>
-            <tr><td>글자수</td><td>선택 기간 내 총 글자수</td><td>기사 본문 글자수 합계</td><td>전체</td></tr>
+            <tr><td><strong>기자명</strong></td><td>기자 이름 (클릭 시 상세 페이지)</td><td>users.json 기준</td></tr>
+            <tr><td><strong>부서</strong></td><td>소속 부서</td><td>users.json 기준</td></tr>
+            <tr><td><strong>기사수</strong></td><td>선택 기간 내 기사 수</td><td>지면 기사만 (paperNumber ≥ 1)</td></tr>
+            <tr><td><strong>글자수</strong></td><td>선택 기간 내 총 글자수</td><td>기사 본문 글자수 합계</td></tr>
+            <tr><td><strong>총점</strong></td><td>점수 공식에 따른 총점</td><td>면 가중치 × 분량 가중치 × 10 + 품질 가점</td></tr>
+        </tbody>
+    </table>
+</section>
+
+<!-- ==================== 기사 평가 ==================== -->
+<section id="score-eval" class="section">
+    <h2 class="section-title"><i class="bi bi-clipboard-check"></i> 기사 평가 (score-eval.html)</h2>
+    
+    <p>기사 평가 페이지에서는 각 기사에 대한 <strong>정성평가</strong>를 입력합니다. 관리자와 부장만 평가를 입력할 수 있습니다.</p>
+    
+    <h5 class="mt-4 mb-3">평가 항목</h5>
+    <table class="custom-table">
+        <thead>
+            <tr><th>항목</th><th>옵션</th><th>설명</th></tr>
+        </thead>
+        <tbody>
             <tr>
-                <td>평가 완료</td>
-                <td>평가 입력된 기사 수</td>
-                <td>evaluations.json 기준</td>
-                <td><span class="badge bg-danger">admin만</span></td>
+                <td><strong>위치</strong></td>
+                <td>톱, 사이드(좌), 사이드(우), 하단, 박스, 기타</td>
+                <td>기사가 지면에서 배치된 위치</td>
+            </tr>
+            <tr>
+                <td><strong>취재유형</strong></td>
+                <td>특종, 단독, 기획발굴, 현장취재, 단순발생, 보도자료, 인용외신</td>
+                <td>기사의 취재 방식과 독창성</td>
+            </tr>
+            <tr>
+                <td><strong>기사성격</strong></td>
+                <td>탐사심층, 해설분석, 인터뷰, 르포스케치, 스트레이트, 가십미담</td>
+                <td>기사의 형식과 깊이</td>
+            </tr>
+            <tr>
+                <td><strong>임팩트</strong></td>
+                <td>S, A, B, C, D</td>
+                <td>기사의 영향력과 중요도 종합 평가</td>
             </tr>
         </tbody>
     </table>
     
-    <div class="alert-box warning mt-4">
-        <i class="bi bi-eye-slash"></i>
+    <h5 class="mt-4 mb-3">평가 입력 절차</h5>
+    <div class="step-list">
+        <div class="step-item">
+            <h6>기자 선택</h6>
+            <p>좌측 기자 목록에서 평가할 기자를 선택합니다.</p>
+        </div>
+        <div class="step-item">
+            <h6>기사 목록 확인</h6>
+            <p>선택한 기자의 기사 목록이 우측에 표시됩니다.</p>
+        </div>
+        <div class="step-item">
+            <h6>평가 입력</h6>
+            <p>각 기사의 드롭다운에서 위치, 취재유형, 기사성격, 임팩트를 선택합니다.</p>
+        </div>
+        <div class="step-item">
+            <h6>저장</h6>
+            <p>"저장" 버튼을 클릭하여 평가 내용을 서버에 저장합니다.</p>
+        </div>
+    </div>
+    
+    <div class="alert-box success mt-4">
+        <i class="bi bi-check-circle"></i>
         <div>
-            <strong>부장 권한 숨김 항목</strong><br>
-            부장(manager) 로그인 시 "평가 완료" 컬럼이 숨겨집니다. 다른 부장이 입력한 평가 현황을 볼 수 없습니다.
+            <strong>자동 저장</strong><br>
+            평가 항목을 변경하면 자동으로 저장됩니다. 별도의 저장 버튼을 누르지 않아도 됩니다.
+        </div>
+    </div>
+</section>
+
+<!-- ==================== 소명 관리 ==================== -->
+<section id="appeals" class="section">
+    <h2 class="section-title"><i class="bi bi-chat-left-text"></i> 소명 관리 (score-appeals.html)</h2>
+    
+    <p>소명 관리 페이지에서는 기자들의 <strong>평가 이의제기</strong>를 확인하고 처리할 수 있습니다.</p>
+    
+    <h5 class="mt-4 mb-3">소명 요청 유형</h5>
+    <table class="custom-table">
+        <thead>
+            <tr><th>유형</th><th>아이콘</th><th>가점</th><th>설명</th></tr>
+        </thead>
+        <tbody>
+            <tr><td><strong>면톱 인정 요청</strong></td><td>🏅</td><td>+2점</td><td>해당 면의 메인 기사임을 인정 요청</td></tr>
+            <tr><td><strong>단독/특종 인정 요청</strong></td><td>⭐</td><td>+5점</td><td>독자적 취재 기사임을 인정 요청</td></tr>
+            <tr><td><strong>기획 기사 인정 요청</strong></td><td>💡</td><td>+5점</td><td>기획 발굴 기사임을 인정 요청</td></tr>
+            <tr><td><strong>S등급 인정 요청</strong></td><td>🏆</td><td>+3점</td><td>최우수 기사임을 인정 요청</td></tr>
+        </tbody>
+    </table>
+    
+    <h5 class="mt-4 mb-3">소명 처리 절차</h5>
+    <div class="step-list">
+        <div class="step-item">
+            <h6>소명 접수</h6>
+            <p>기자가 "내 점수" 페이지에서 기사별 "검토요청" 버튼을 클릭하여 소명을 신청합니다.</p>
+        </div>
+        <div class="step-item">
+            <h6>내용 검토</h6>
+            <p>부장/관리자가 소명 내용과 해당 기사를 확인합니다.</p>
+        </div>
+        <div class="step-item">
+            <h6>처리 결정</h6>
+            <p>승인(가점 반영) 또는 반려(기존 유지)를 결정합니다.</p>
+        </div>
+        <div class="step-item">
+            <h6>점수 재계산</h6>
+            <p><strong>승인 시 자동으로 점수가 재계산</strong>되어 반영됩니다.</p>
+        </div>
+    </div>
+    
+    <h5 class="mt-4 mb-3">소명 상태</h5>
+    <table class="custom-table">
+        <thead>
+            <tr><th>상태</th><th>설명</th><th>표시</th></tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><strong>대기중</strong></td>
+                <td>아직 처리되지 않은 소명</td>
+                <td><span class="badge bg-warning text-dark">대기중</span></td>
+            </tr>
+            <tr>
+                <td><strong>승인</strong></td>
+                <td>소명이 인정되어 가점이 반영됨</td>
+                <td><span class="badge bg-success">승인</span></td>
+            </tr>
+            <tr>
+                <td><strong>반려</strong></td>
+                <td>소명이 기각됨</td>
+                <td><span class="badge bg-danger">반려</span></td>
+            </tr>
+        </tbody>
+    </table>
+    
+    <div class="alert-box success mt-4">
+        <i class="bi bi-check-circle"></i>
+        <div>
+            <strong>소명 승인 시 자동 점수 재계산</strong><br>
+            소명이 승인되면 해당 품질 가점이 자동으로 반영되고, 기사 점수가 즉시 재계산됩니다.
+        </div>
+    </div>
+</section>
+
+<!-- ==================== 확정 기능 ==================== -->
+<section id="confirm-feature" class="section">
+    <h2 class="section-title"><i class="bi bi-check-circle"></i> 확정 기능</h2>
+    
+    <p>기사 평가가 완료되면 <strong>확정</strong>하여 더 이상 수정되지 않도록 잠글 수 있습니다.</p>
+    
+    <h5 class="mt-4 mb-3">확정 상태</h5>
+    <table class="custom-table">
+        <thead>
+            <tr><th>상태</th><th>설명</th><th>수정 가능</th><th>표시</th></tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><strong>미확정 (PENDING)</strong></td>
+                <td>아직 평가가 확정되지 않음</td>
+                <td><span class="badge bg-success">✓ 가능</span></td>
+                <td><span class="badge bg-warning text-dark">미확정</span></td>
+            </tr>
+            <tr>
+                <td><strong>확정 (CONFIRMED)</strong></td>
+                <td>평가가 확정되어 잠김</td>
+                <td><span class="badge bg-danger">✗ 불가</span></td>
+                <td><span class="badge bg-success">확정</span></td>
+            </tr>
+        </tbody>
+    </table>
+    
+    <h5 class="mt-4 mb-3">확정 방법</h5>
+    <div class="card-grid">
+        <div class="info-card">
+            <h5><i class="bi bi-check me-2"></i>선택 확정</h5>
+            <p>체크박스로 선택한 기사들만 확정합니다. 개별 기사를 선택적으로 확정할 때 사용합니다.</p>
+        </div>
+        <div class="info-card orange">
+            <h5><i class="bi bi-check-all me-2"></i>전체 확정</h5>
+            <p>현재 필터된 미확정 기사를 모두 확정합니다. 월말 마감 시 사용합니다.</p>
+        </div>
+    </div>
+    
+    <h5 class="mt-4 mb-3">확정 후 수정</h5>
+    <div class="alert-box warning">
+        <i class="bi bi-exclamation-triangle"></i>
+        <div>
+            <strong>확정된 기사는 수정할 수 없습니다</strong><br>
+            확정된 기사의 품질 가점 버튼은 비활성화됩니다. 수정이 필요한 경우 <strong>관리자(Admin)</strong>만 확정을 취소할 수 있습니다.
+        </div>
+    </div>
+    
+    <h5 class="mt-4 mb-3">확정 취소 (Admin 전용)</h5>
+    <p>관리자는 확정된 기사의 확정을 취소하고 다시 수정할 수 있습니다. 취소 시 사유 입력이 필요합니다.</p>
+</section>
+
+<!-- ==================== 가중치 설정 ==================== -->
+<section id="score-config" class="section">
+    <h2 class="section-title"><i class="bi bi-sliders"></i> 가중치 설정 (score-config.html)</h2>
+    
+    <p>가중치 설정 페이지는 <strong>관리자 전용</strong>입니다. 점수 산출에 사용되는 가중치를 조정할 수 있습니다.</p>
+    
+    <h5 class="mt-4 mb-3">설정 가능 항목</h5>
+    <div class="card-grid">
+        <div class="info-card">
+            <h5><i class="bi bi-newspaper me-2"></i>면 가중치</h5>
+            <p>1면, 2~3면, 4~5면, 6~10면, 11~20면, 21~32면 각각의 가중치를 설정합니다.</p>
+        </div>
+        <div class="info-card orange">
+            <h5><i class="bi bi-text-paragraph me-2"></i>분량 가중치</h5>
+            <p>2000자↑, 1200~1999자, 600~1199자, 600자↓ 구간별 가중치를 설정합니다.</p>
+        </div>
+        <div class="info-card green">
+            <h5><i class="bi bi-star me-2"></i>품질 가점</h5>
+            <p>면톱, 단독, 기획, S등급 각각의 가점을 설정합니다.</p>
+        </div>
+        <div class="info-card red">
+            <h5><i class="bi bi-gear me-2"></i>기본 설정</h5>
+            <p>기본 점수(10), 가점 상한(10), 최대 점수(20)를 설정합니다.</p>
+        </div>
+    </div>
+    
+    <h5 class="mt-4 mb-3">변경 이력</h5>
+    <p>가중치 변경 시 변경 사유를 입력해야 하며, 모든 변경 내역이 이력으로 저장됩니다.</p>
+    
+    <div class="alert-box warning mt-4">
+        <i class="bi bi-exclamation-triangle"></i>
+        <div>
+            <strong>가중치 변경 시 주의</strong><br>
+            가중치를 변경하면 모든 기사의 점수가 재계산됩니다. 변경 전 충분히 검토하시기 바랍니다.
+        </div>
+    </div>
+</section>
+
+<!-- ==================== Feature Flags ==================== -->
+<section id="feature-flags" class="section">
+    <h2 class="section-title"><i class="bi bi-toggles"></i> Feature Flags (점수 공개 정책)</h2>
+    
+    <p>Feature Flags를 통해 기자에게 공개되는 정보의 범위를 단계적으로 조절할 수 있습니다. <strong>관리자 전용</strong> 기능입니다.</p>
+    
+    <div class="alert-box success mb-4">
+        <i class="bi bi-check-circle"></i>
+        <div>
+            <strong>v2.1 업데이트</strong><br>
+            Feature Flags가 기자 상세 페이지(reporter.html)에도 적용되었습니다. 관리자가 설정한 값이 기자 로그인 시 즉시 반영됩니다.
+        </div>
+    </div>
+    
+    <h5 class="mt-4 mb-3">설정 항목</h5>
+    <table class="custom-table">
+        <thead>
+            <tr><th>Flag</th><th>기본값</th><th>설명</th><th>적용 페이지</th></tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><strong>SHOW_MY_SCORE</strong></td>
+                <td><span class="badge bg-success">ON</span></td>
+                <td>기자 본인의 점수 표시 여부<br><small class="text-muted">OFF 시 점수가 "-"로 표시됨</small></td>
+                <td>reporter.html, score-my.html</td>
+            </tr>
+            <tr>
+                <td><strong>SHOW_PREVIOUS_MONTH</strong></td>
+                <td><span class="badge bg-success">ON</span></td>
+                <td>전월 대비 증감 표시 여부</td>
+                <td>score-my.html</td>
+            </tr>
+            <tr>
+                <td><strong>SHOW_DEPT_AVERAGE</strong></td>
+                <td><span class="badge bg-secondary">OFF</span></td>
+                <td>부서 평균 점수 표시 여부<br><small class="text-muted">ON 시 부서 평균 카드 표시</small></td>
+                <td>reporter.html, score-my.html</td>
+            </tr>
+            <tr>
+                <td><strong>SHOW_DEPT_RANKING</strong></td>
+                <td><span class="badge bg-secondary">OFF</span></td>
+                <td>부서 내 순위 표시 여부<br><small class="text-muted">ON 시 "N위/M명" 형태로 표시</small></td>
+                <td>reporter.html, score-my.html</td>
+            </tr>
+        </tbody>
+    </table>
+    
+    <h5 class="mt-4 mb-3">Flag별 화면 변화</h5>
+    <table class="custom-table">
+        <thead>
+            <tr><th>Flag</th><th>ON 상태</th><th>OFF 상태</th></tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><strong>SHOW_MY_SCORE</strong></td>
+                <td>점수 숫자 표시 (예: 8.5점)</td>
+                <td>"-" 표시 (회색)</td>
+            </tr>
+            <tr>
+                <td><strong>SHOW_DEPT_AVERAGE</strong></td>
+                <td>부서 평균 카드 표시</td>
+                <td>카드 숨김</td>
+            </tr>
+            <tr>
+                <td><strong>SHOW_DEPT_RANKING</strong></td>
+                <td>순위 카드 표시 (예: 3위/12명)</td>
+                <td>카드 숨김</td>
+            </tr>
+        </tbody>
+    </table>
+    
+    <h5 class="mt-4 mb-3">단계별 오픈 계획</h5>
+    <table class="custom-table">
+        <thead>
+            <tr><th>단계</th><th>공개 범위</th><th>Flag 설정</th></tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><strong>Phase 1</strong> (현재)</td>
+                <td>본인 점수 + 전월 대비</td>
+                <td>SHOW_DEPT_AVERAGE: OFF</td>
+            </tr>
+            <tr>
+                <td><strong>Phase 2</strong></td>
+                <td>Phase 1 + 부서 평균</td>
+                <td>SHOW_DEPT_AVERAGE: ON</td>
+            </tr>
+            <tr>
+                <td><strong>Phase 3</strong></td>
+                <td>Phase 2 + 부서 내 순위</td>
+                <td>SHOW_DEPT_RANKING: ON</td>
+            </tr>
+        </tbody>
+    </table>
+    
+    <h5 class="mt-4 mb-3">설정 방법</h5>
+    <div class="step-list">
+        <div class="step-item">
+            <h6>가중치 설정 페이지 접속</h6>
+            <p>관리자로 로그인 후 "가중치 설정" 메뉴로 이동합니다.</p>
+        </div>
+        <div class="step-item">
+            <h6>Feature Flags 섹션 확인</h6>
+            <p>페이지 하단의 "Feature Flags (점수 공개 정책)" 섹션을 찾습니다.</p>
+        </div>
+        <div class="step-item">
+            <h6>토글 스위치 변경</h6>
+            <p>원하는 항목의 토글 스위치를 ON/OFF로 변경합니다.</p>
+        </div>
+        <div class="step-item">
+            <h6>Flag 저장</h6>
+            <p>"Flag 저장" 버튼을 클릭하여 설정을 저장합니다.</p>
         </div>
     </div>
     
     <div class="alert-box info mt-4">
         <i class="bi bi-info-circle"></i>
         <div>
-            <strong>데이터 동기화</strong><br>
-            "데이터 동기화" 버튼을 클릭하면 최신 XML 데이터를 파싱하여 data.json을 갱신합니다. 동기화는 매일 오전 6시에 자동 실행됩니다.
-        </div>
-    </div>
-</section>
-
-<!-- ==================== 기자 상세 ==================== -->
-<section id="reporter-detail" class="section">
-    <h2 class="section-title"><i class="bi bi-file-person"></i> 기자 상세 (reporter.html)</h2>
-    
-    <p>기자 상세 페이지에서는 개별 기자의 상세 실적과 기사별 평가를 확인/입력할 수 있습니다.</p>
-    
-    <h5 class="mt-4 mb-3">페이지 구성</h5>
-    <div class="card-grid">
-        <div class="info-card">
-            <h5><i class="bi bi-person-circle me-2"></i>기자 정보</h5>
-            <p>이름, 부서, 직급, 사번</p>
-        </div>
-        <div class="info-card orange">
-            <h5><i class="bi bi-speedometer2 me-2"></i>KPI 요약</h5>
-            <p>기사수, 글자수, 특종, 단독, S/A등급 수</p>
-        </div>
-        <div class="info-card green">
-            <h5><i class="bi bi-pie-chart me-2"></i>면별 분포</h5>
-            <p>1~32면 기사 분포 차트</p>
-        </div>
-        <div class="info-card">
-            <h5><i class="bi bi-table me-2"></i>기사 목록</h5>
-            <p>기사별 상세 정보 및 평가 입력</p>
+            <strong>실시간 반영</strong><br>
+            Feature Flags 설정은 저장 즉시 모든 기자의 페이지에 반영됩니다. 기자가 새로고침하면 변경된 설정이 적용됩니다.
         </div>
     </div>
     
-    <h5 class="mt-4 mb-3">기사 목록 컬럼</h5>
-    <table class="custom-table">
-        <thead>
-            <tr><th>컬럼</th><th>설명</th><th>입력 방식</th></tr>
-        </thead>
-        <tbody>
-            <tr><td>날짜</td><td>기사 발행일</td><td>자동 (XML)</td></tr>
-            <tr><td>제목</td><td>기사 제목 (클릭 시 원문 링크)</td><td>자동 (XML)</td></tr>
-            <tr><td>면</td><td>지면 번호</td><td>자동 (XML)</td></tr>
-            <tr><td>글자수</td><td>기사 본문 글자수</td><td>자동 (XML)</td></tr>
-            <tr><td>톱</td><td>톱기사 여부 (★ 표시)</td><td>자동 (XML paragraph=TOP)</td></tr>
-            <tr><td>위치</td><td>톱/사이드/하단/기타</td><td><span class="badge bg-warning text-dark">수동</span></td></tr>
-            <tr><td>취재유형</td><td>특종/단독/기획발굴 등</td><td><span class="badge bg-warning text-dark">수동</span></td></tr>
-            <tr><td>기사성격</td><td>탐사심층/해설분석 등</td><td><span class="badge bg-warning text-dark">수동</span></td></tr>
-            <tr><td>임팩트</td><td>S/A/B/C/D 등급</td><td><span class="badge bg-warning text-dark">수동</span></td></tr>
-        </tbody>
-    </table>
-</section>
-
-<!-- ==================== 평가 입력 ==================== -->
-<section id="evaluation" class="section">
-    <h2 class="section-title"><i class="bi bi-star"></i> 평가 입력 가이드</h2>
-    
-    <p>정성평가는 부장 이상 권한을 가진 사용자만 입력할 수 있습니다. 각 항목의 의미와 입력 기준을 안내합니다.</p>
-    
-    <div class="tab-nav">
-        <button class="tab-btn active" onclick="showTab('tab-position')">위치</button>
-        <button class="tab-btn" onclick="showTab('tab-type')">취재유형</button>
-        <button class="tab-btn" onclick="showTab('tab-nature')">기사성격</button>
-        <button class="tab-btn" onclick="showTab('tab-impact')">임팩트</button>
-    </div>
-    
-    <div id="tab-position" class="tab-content active">
-        <h5>위치 (Position)</h5>
-        <p>기사가 지면에서 배치된 위치를 선택합니다.</p>
-        <table class="custom-table">
-            <thead><tr><th>옵션</th><th>설명</th></tr></thead>
-            <tbody>
-                <tr><td><strong>톱</strong></td><td>해당 면의 메인 기사 (가장 큰 제목)</td></tr>
-                <tr><td><strong>사이드(좌)</strong></td><td>톱 기사 왼쪽에 배치된 기사</td></tr>
-                <tr><td><strong>사이드(우)</strong></td><td>톱 기사 오른쪽에 배치된 기사</td></tr>
-                <tr><td><strong>하단</strong></td><td>면 하단에 배치된 기사</td></tr>
-                <tr><td><strong>기타</strong></td><td>위 분류에 해당하지 않는 경우</td></tr>
-            </tbody>
-        </table>
-    </div>
-    
-    <div id="tab-type" class="tab-content">
-        <h5>취재유형 (Coverage Type)</h5>
-        <p>기사의 취재 방식과 독창성을 평가합니다.</p>
-        <table class="custom-table">
-            <thead><tr><th>옵션</th><th>설명</th><th>가중치</th></tr></thead>
-            <tbody>
-                <tr><td><strong>특종</strong></td><td>타 매체보다 먼저 보도한 중요 뉴스</td><td>최고</td></tr>
-                <tr><td><strong>단독</strong></td><td>독자적으로 취재한 기사</td><td>높음</td></tr>
-                <tr><td><strong>기획발굴</strong></td><td>기자가 직접 기획하고 발굴한 기사</td><td>높음</td></tr>
-                <tr><td><strong>현장취재</strong></td><td>현장에서 직접 취재한 기사</td><td>중간</td></tr>
-                <tr><td><strong>단순발생</strong></td><td>발생한 사건을 보도한 기사</td><td>기본</td></tr>
-                <tr><td><strong>보도자료</strong></td><td>보도자료 기반 기사</td><td>기본</td></tr>
-                <tr><td><strong>인용외신</strong></td><td>외신을 인용한 기사</td><td>기본</td></tr>
-            </tbody>
-        </table>
-    </div>
-    
-    <div id="tab-nature" class="tab-content">
-        <h5>기사성격 (Article Nature)</h5>
-        <p>기사의 형식과 깊이를 평가합니다.</p>
-        <table class="custom-table">
-            <thead><tr><th>옵션</th><th>설명</th></tr></thead>
-            <tbody>
-                <tr><td><strong>탐사심층</strong></td><td>장기간 심층 취재한 탐사보도</td></tr>
-                <tr><td><strong>해설분석</strong></td><td>이슈를 분석하고 해설한 기사</td></tr>
-                <tr><td><strong>인터뷰</strong></td><td>인물 인터뷰 기사</td></tr>
-                <tr><td><strong>르포스케치</strong></td><td>현장 르포 또는 스케치 기사</td></tr>
-                <tr><td><strong>스트레이트</strong></td><td>사실 전달 중심의 기본 기사</td></tr>
-                <tr><td><strong>가십미담</strong></td><td>가벼운 화제성 기사</td></tr>
-            </tbody>
-        </table>
-    </div>
-    
-    <div id="tab-impact" class="tab-content">
-        <h5>임팩트 등급 (Impact Grade)</h5>
-        <p>기사의 영향력과 중요도를 종합 평가합니다.</p>
-        <table class="custom-table">
-            <thead><tr><th>등급</th><th>설명</th><th>기준</th></tr></thead>
-            <tbody>
-                <tr><td><span class="badge bg-danger">S</span></td><td>최우수</td><td>특종, 사회적 파급력 큰 기사</td></tr>
-                <tr><td><span class="badge bg-warning text-dark">A</span></td><td>우수</td><td>단독, 기획발굴 등 독창적 기사</td></tr>
-                <tr><td><span class="badge bg-primary">B</span></td><td>양호</td><td>현장취재, 심층분석 기사</td></tr>
-                <tr><td><span class="badge bg-secondary">C</span></td><td>보통</td><td>일반적인 기사</td></tr>
-                <tr><td><span class="badge bg-dark">D</span></td><td>기본</td><td>보도자료, 인용외신 기반 기사</td></tr>
-            </tbody>
-        </table>
-    </div>
-    
-    <div class="alert-box success mt-4">
-        <i class="bi bi-check-circle"></i>
+    <div class="alert-box warning mt-3">
+        <i class="bi bi-exclamation-triangle"></i>
         <div>
-            <strong>평가 저장</strong><br>
-            평가 입력 후 "평가 저장" 버튼을 클릭하면 Lambda API를 통해 서버에 저장됩니다. 저장된 평가는 모든 사용자가 공유합니다.
+            <strong>운영 팁</strong><br>
+            평가 기간 중에는 SHOW_MY_SCORE를 OFF로 설정하여 점수를 숨기고, 평가 완료 후 ON으로 변경하여 공개하는 방식으로 운영할 수 있습니다.
         </div>
     </div>
 </section>
-
 
 <!-- ==================== 사원 관리 ==================== -->
-<section id="user-management" class="section">
-    <h2 class="section-title"><i class="bi bi-people"></i> 사원 관리 (admin.html)</h2>
+<section id="admin-page" class="section">
+    <h2 class="section-title"><i class="bi bi-gear"></i> 사원 관리 (admin.html)</h2>
     
-    <p>사원 관리 페이지는 관리자 전용입니다. 사원의 부서, 직급, 권한을 변경할 수 있습니다.</p>
+    <p>사원 관리 페이지는 <strong>관리자 전용</strong>입니다. 사원의 부서, 직급, 권한을 변경할 수 있습니다.</p>
     
     <h5 class="mt-4 mb-3">사원 관리 기능</h5>
     <div class="card-grid">
@@ -1072,141 +1237,332 @@
     <div class="step-list">
         <div class="step-item">
             <h6>사원 검색</h6>
-            <p>이름 또는 사번으로 검색하거나, 부서/권한 필터로 찾기</p>
+            <p>이름 또는 사번으로 검색하거나, 부서/권한 필터로 찾습니다.</p>
         </div>
         <div class="step-item">
             <h6>정보 수정</h6>
-            <p>해당 사원의 부서/직급/권한 드롭다운에서 새 값 선택</p>
+            <p>해당 사원의 부서/직급/권한 드롭다운에서 새 값을 선택합니다.</p>
         </div>
         <div class="step-item">
             <h6>변경사항 저장</h6>
-            <p>"변경사항 저장" 버튼 클릭</p>
+            <p>"변경사항 저장" 버튼을 클릭합니다.</p>
         </div>
         <div class="step-item">
             <h6>캐시 갱신 대기</h6>
-            <p>CloudFront 캐시 무효화로 약 10초 후 반영</p>
-        </div>
-    </div>
-    
-    <div class="alert-box warning mt-4">
-        <i class="bi bi-exclamation-triangle"></i>
-        <div>
-            <strong>부서 변경 시 주의</strong><br>
-            부장(manager)의 부서를 변경하면, 해당 부장이 관리하는 기자 목록도 변경됩니다. 부장 계정은 본인 소속 부서의 기자만 조회/평가할 수 있습니다.
+            <p>CloudFront 캐시 무효화로 약 10초 후 반영됩니다.</p>
         </div>
     </div>
 </section>
 
-<!-- ==================== 데이터 흐름 ==================== -->
-<section id="data-flow" class="section">
-    <h2 class="section-title"><i class="bi bi-arrow-repeat"></i> 데이터 흐름</h2>
+<!-- ==================== 점수 공식 ==================== -->
+<section id="score-formula" class="section">
+    <h2 class="section-title"><i class="bi bi-calculator"></i> 점수 산출 공식</h2>
     
-    <p>KPI 시스템의 데이터는 다음과 같은 흐름으로 처리됩니다.</p>
+    <p>S-CORE는 객관적이고 투명한 점수 산출을 위해 다음 공식을 사용합니다. <strong>"Max-Auto, Min-Manual"</strong> 철학에 따라 대부분의 점수는 자동 계산되고, 품질 가점만 부장이 수동 입력합니다.</p>
     
-    <h5 class="mt-4 mb-3">1. 기사 데이터 흐름</h5>
-    <div class="arch-diagram">
-        <div class="arch-flow">
-            <div class="arch-box source">
-                <i class="bi bi-newspaper"></i>
-                <h6>기존 시스템</h6>
-                <small>XML 생성</small>
-            </div>
-            <div class="arch-arrow">→</div>
-            <div class="arch-box storage">
-                <i class="bi bi-cloud-upload"></i>
-                <h6>S3 업로드</h6>
-                <small>daily-xml/</small>
-            </div>
-            <div class="arch-arrow">→</div>
-            <div class="arch-box process">
-                <i class="bi bi-gear"></i>
-                <h6>Lambda 파싱</h6>
-                <small>kpi-sync-data</small>
-            </div>
-            <div class="arch-arrow">→</div>
-            <div class="arch-box storage">
-                <i class="bi bi-file-earmark-code"></i>
-                <h6>data.json</h6>
-                <small>정량 데이터</small>
-            </div>
-            <div class="arch-arrow">→</div>
-            <div class="arch-box service">
-                <i class="bi bi-display"></i>
-                <h6>웹 표시</h6>
-                <small>대시보드</small>
-            </div>
-        </div>
+    <div class="formula-box">
+        <div class="formula">기사 점수 = (면 가중치 × 분량 가중치 × 10) + 품질 가점</div>
+        <div class="desc">최대 점수: 20점 | 최저 점수: 1.7점 | 품질 가점 상한: 10점</div>
     </div>
     
-    <h5 class="mt-4 mb-3">2. 평가 데이터 흐름</h5>
-    <div class="arch-diagram">
-        <div class="arch-flow">
-            <div class="arch-box service">
-                <i class="bi bi-pencil"></i>
-                <h6>평가 입력</h6>
-                <small>부장/관리자</small>
-            </div>
-            <div class="arch-arrow">→</div>
-            <div class="arch-box process">
-                <i class="bi bi-lightning"></i>
-                <h6>Lambda API</h6>
-                <small>kpi-evaluation-api</small>
-            </div>
-            <div class="arch-arrow">→</div>
-            <div class="arch-box storage">
-                <i class="bi bi-file-earmark-code"></i>
-                <h6>evaluations.json</h6>
-                <small>평가 데이터</small>
-            </div>
-            <div class="arch-arrow">→</div>
-            <div class="arch-box service">
-                <i class="bi bi-eye"></i>
-                <h6>웹 표시</h6>
-                <small>전체 공유</small>
-            </div>
-        </div>
-    </div>
-    
-    <h5 class="mt-4 mb-3">3. 사원 데이터 흐름</h5>
-    <div class="arch-diagram">
-        <div class="arch-flow">
-            <div class="arch-box service">
-                <i class="bi bi-person-gear"></i>
-                <h6>사원 관리</h6>
-                <small>admin.html</small>
-            </div>
-            <div class="arch-arrow">→</div>
-            <div class="arch-box process">
-                <i class="bi bi-lightning"></i>
-                <h6>Lambda API</h6>
-                <small>kpi-users-api</small>
-            </div>
-            <div class="arch-arrow">→</div>
-            <div class="arch-box storage">
-                <i class="bi bi-file-earmark-code"></i>
-                <h6>users.json</h6>
-                <small>사원 데이터</small>
-            </div>
-            <div class="arch-arrow">→</div>
-            <div class="arch-box process">
-                <i class="bi bi-arrow-clockwise"></i>
-                <h6>캐시 무효화</h6>
-                <small>CloudFront</small>
-            </div>
-        </div>
-    </div>
-    
-    <h5 class="mt-4 mb-3">자동 동기화 스케줄</h5>
+    <h5 class="mt-4 mb-3">점수 구성 요소</h5>
     <table class="custom-table">
         <thead>
-            <tr><th>시간 (KST)</th><th>작업</th><th>목적</th></tr>
+            <tr><th>구성 요소</th><th>설명</th><th>범위</th><th>입력 방식</th></tr>
         </thead>
         <tbody>
             <tr>
-                <td><strong>오전 6시</strong></td>
-                <td>kpi-sync-data Lambda 실행</td>
-                <td>전날 밤 업로드된 지면 기사 반영</td>
+                <td><strong>기본 점수</strong></td>
+                <td>기사 1건당 기준 점수</td>
+                <td>10점 (고정)</td>
+                <td>자동</td>
             </tr>
+            <tr>
+                <td><strong>면 가중치</strong></td>
+                <td>기사가 실린 지면 번호에 따른 가중치</td>
+                <td>0.30 ~ 1.00</td>
+                <td>자동 (XML)</td>
+            </tr>
+            <tr>
+                <td><strong>분량 가중치</strong></td>
+                <td>기사 글자수에 따른 가중치</td>
+                <td>0.55 ~ 1.00</td>
+                <td>자동 (XML)</td>
+            </tr>
+            <tr>
+                <td><strong>품질 가점</strong></td>
+                <td>면톱, 단독, 기획, S등급에 따른 추가 점수</td>
+                <td>0 ~ 10점 (상한)</td>
+                <td>수동 (부장)</td>
+            </tr>
+        </tbody>
+    </table>
+    
+    <h5 class="mt-4 mb-3">점수 계산 예시</h5>
+    <div class="code-block">
+        <span class="comment">// 예시 1: 1면 톱기사, 2100자, 단독+기획</span><br>
+        <span class="keyword">면 가중치</span> = <span class="number">1.00</span> <span class="comment">(1면)</span><br>
+        <span class="keyword">분량 가중치</span> = <span class="number">1.00</span> <span class="comment">(2000자 이상)</span><br>
+        <span class="keyword">기본 점수</span> = 1.00 × 1.00 × 10 = <span class="number">10.0</span><br><br>
+        <span class="keyword">품질 가점</span>:<br>
+        &nbsp;&nbsp;면톱 = <span class="number">+2</span><br>
+        &nbsp;&nbsp;단독 = <span class="number">+5</span><br>
+        &nbsp;&nbsp;기획 = <span class="number">+5</span><br>
+        &nbsp;&nbsp;합계 = 12 → <span class="number">10</span> <span class="comment">(상한 적용)</span><br><br>
+        <span class="keyword">최종 점수</span> = 10.0 + 10 = <span class="string">20.0점 (최대)</span>
+    </div>
+    
+    <div class="code-block">
+        <span class="comment">// 예시 2: 15면 기사, 1000자, 가점 없음</span><br>
+        <span class="keyword">면 가중치</span> = <span class="number">0.40</span> <span class="comment">(11~20면)</span><br>
+        <span class="keyword">분량 가중치</span> = <span class="number">0.55</span> <span class="comment">(600~1199자)</span><br>
+        <span class="keyword">기본 점수</span> = 0.40 × 0.55 × 10 = <span class="number">2.2</span><br>
+        <span class="keyword">품질 가점</span> = <span class="number">0</span><br><br>
+        <span class="keyword">최종 점수</span> = 2.2 + 0 = <span class="string">2.2점</span>
+    </div>
+    
+    <div class="alert-box info mt-4">
+        <i class="bi bi-lightbulb"></i>
+        <div>
+            <strong>Max-Auto, Min-Manual 철학</strong><br>
+            대부분의 기사는 자동 점수 그대로 확정됩니다. 특별한 가치가 있는 기사(단독, 기획, S등급)만 부장이 가점 버튼을 눌러주세요.
+        </div>
+    </div>
+</section>
+
+<!-- ==================== 면 가중치 ==================== -->
+<section id="page-weight" class="section">
+    <h2 class="section-title"><i class="bi bi-newspaper"></i> 면 가중치 (Page Weight)</h2>
+    
+    <p>기사가 실린 지면 번호에 따라 가중치가 적용됩니다. 1면에 가까울수록 높은 가중치가 부여됩니다.</p>
+    
+    <table class="custom-table">
+        <thead>
+            <tr><th>면 범위</th><th>가중치</th><th>설명</th><th>비고</th></tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><strong>1면</strong></td>
+                <td><span class="badge bg-danger">1.00</span></td>
+                <td>신문의 얼굴, 최고 주목도</td>
+                <td>1면 톱, 1면 사이드</td>
+            </tr>
+            <tr>
+                <td><strong>2~3면</strong></td>
+                <td><span class="badge bg-warning text-dark">0.85</span></td>
+                <td>주요 뉴스 연장면</td>
+                <td>정치, 경제 주요 기사</td>
+            </tr>
+            <tr>
+                <td><strong>4~5면</strong></td>
+                <td><span class="badge bg-primary">0.70</span></td>
+                <td>핵심 뉴스면</td>
+                <td>주요 섹션 기사</td>
+            </tr>
+            <tr>
+                <td><strong>6~10면</strong></td>
+                <td><span class="badge bg-info">0.55</span></td>
+                <td>주요 섹션면</td>
+                <td>사회, 문화 기사</td>
+            </tr>
+            <tr>
+                <td><strong>11~20면</strong></td>
+                <td><span class="badge bg-secondary">0.40</span></td>
+                <td>일반 뉴스면</td>
+                <td>증권, 부동산</td>
+            </tr>
+            <tr>
+                <td><strong>21~32면</strong></td>
+                <td><span class="badge bg-dark">0.30</span></td>
+                <td>후면부</td>
+                <td>스포츠, 연예</td>
+            </tr>
+        </tbody>
+    </table>
+    
+    <div class="alert-box info mt-4">
+        <i class="bi bi-info-circle"></i>
+        <div>
+            <strong>면 번호 자동 인식</strong><br>
+            면 번호는 XML의 <code>paperNumber</code> 필드에서 자동으로 추출됩니다. 수동 입력이 필요 없습니다.
+        </div>
+    </div>
+</section>
+
+<!-- ==================== 분량 가중치 ==================== -->
+<section id="length-weight" class="section">
+    <h2 class="section-title"><i class="bi bi-text-paragraph"></i> 분량 가중치 (Length Weight)</h2>
+    
+    <p>기사의 글자수에 따라 가중치가 적용됩니다. 긴 기사일수록 높은 가중치가 부여됩니다.</p>
+    
+    <table class="custom-table">
+        <thead>
+            <tr><th>글자수 범위</th><th>등급</th><th>가중치</th><th>기사 유형</th></tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><strong>2,000자 이상</strong></td>
+                <td><span class="badge bg-danger">L</span></td>
+                <td><strong>1.00</strong></td>
+                <td>심층 분석, 기획, 인터뷰</td>
+            </tr>
+            <tr>
+                <td><strong>1,200 ~ 1,999자</strong></td>
+                <td><span class="badge bg-warning text-dark">M</span></td>
+                <td><strong>0.70</strong></td>
+                <td>일반 스트레이트</td>
+            </tr>
+            <tr>
+                <td><strong>600 ~ 1,199자</strong></td>
+                <td><span class="badge bg-primary">S</span></td>
+                <td><strong>0.55</strong></td>
+                <td>짧은 리포트</td>
+            </tr>
+            <tr>
+                <td><strong>600자 미만</strong></td>
+                <td><span class="badge bg-secondary">XS</span></td>
+                <td><strong>0.55</strong></td>
+                <td>단신, 브리프</td>
+            </tr>
+        </tbody>
+    </table>
+    
+    <div class="alert-box info mt-4">
+        <i class="bi bi-info-circle"></i>
+        <div>
+            <strong>글자수 자동 계산</strong><br>
+            글자수는 XML의 <code>charCount</code> 필드에서 자동으로 추출됩니다. 기사 본문의 순수 글자수만 계산됩니다.
+        </div>
+    </div>
+</section>
+
+<!-- ==================== 품질 가점 ==================== -->
+<section id="quality-bonus" class="section">
+    <h2 class="section-title"><i class="bi bi-star"></i> 품질 가점 (Quality Bonus)</h2>
+    
+    <p>품질 가점은 <strong>부장이 체크박스로 입력</strong>합니다. 모든 항목은 중복 체크 가능하며, 합계가 10점을 초과하면 10점으로 제한됩니다.</p>
+    
+    <table class="custom-table">
+        <thead>
+            <tr><th>항목</th><th>아이콘</th><th>가점</th><th>설명</th><th>판정 주체</th></tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><strong>면톱</strong></td>
+                <td>🏅</td>
+                <td><span class="badge bg-warning text-dark">+2점</span></td>
+                <td>해당 면의 메인 기사</td>
+                <td>부장 체크</td>
+            </tr>
+            <tr>
+                <td><strong>단독/특종</strong></td>
+                <td>⭐</td>
+                <td><span class="badge bg-danger">+5점</span></td>
+                <td>타 매체보다 먼저 보도한 독자적 기사</td>
+                <td>부장 체크</td>
+            </tr>
+            <tr>
+                <td><strong>기획</strong></td>
+                <td>💡</td>
+                <td><span class="badge bg-primary">+5점</span></td>
+                <td>기자가 직접 기획하고 발굴한 기사</td>
+                <td>부장 체크</td>
+            </tr>
+            <tr>
+                <td><strong>S등급</strong></td>
+                <td>🏆</td>
+                <td><span class="badge bg-success">+3점</span></td>
+                <td>사회적 파급력이 큰 최우수 기사</td>
+                <td>부장 체크</td>
+            </tr>
+        </tbody>
+    </table>
+    
+    <div class="alert-box warning mt-4">
+        <i class="bi bi-exclamation-triangle"></i>
+        <div>
+            <strong>품질 가점 상한: 10점</strong><br>
+            단독(5) + 기획(5) + S등급(3) = 13점이지만, 상한 적용으로 <strong>10점</strong>만 반영됩니다.<br>
+            최대 점수는 기본 10점 + 품질 가점 10점 = <strong>20점</strong>입니다.
+        </div>
+    </div>
+</section>
+
+<!-- ==================== 점수 매트릭스 ==================== -->
+<section id="score-matrix" class="section">
+    <h2 class="section-title"><i class="bi bi-table"></i> 점수 매트릭스 (검증용)</h2>
+    
+    <p>면 가중치와 분량 가중치 조합에 따른 기본 점수표입니다. (품질 가점 제외)</p>
+    
+    <table class="custom-table text-center">
+        <thead>
+            <tr>
+                <th>면 \ 글자수</th>
+                <th>2,000자↑<br><small>(L: 1.00)</small></th>
+                <th>1,200~1,999자<br><small>(M: 0.70)</small></th>
+                <th>600~1,199자<br><small>(S: 0.55)</small></th>
+                <th>600자↓<br><small>(XS: 0.55)</small></th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><strong>1면</strong> (1.00)</td>
+                <td><span class="badge bg-danger">10.0</span></td>
+                <td>7.0</td>
+                <td>5.5</td>
+                <td>5.5</td>
+            </tr>
+            <tr>
+                <td><strong>2~3면</strong> (0.85)</td>
+                <td>8.5</td>
+                <td>6.0</td>
+                <td>4.7</td>
+                <td>4.7</td>
+            </tr>
+            <tr>
+                <td><strong>4~5면</strong> (0.70)</td>
+                <td>7.0</td>
+                <td>4.9</td>
+                <td>3.9</td>
+                <td>3.9</td>
+            </tr>
+            <tr>
+                <td><strong>6~10면</strong> (0.55)</td>
+                <td>5.5</td>
+                <td>3.9</td>
+                <td>3.0</td>
+                <td>3.0</td>
+            </tr>
+            <tr>
+                <td><strong>11~20면</strong> (0.40)</td>
+                <td>4.0</td>
+                <td>2.8</td>
+                <td>2.2</td>
+                <td>2.2</td>
+            </tr>
+            <tr>
+                <td><strong>21~32면</strong> (0.30)</td>
+                <td>3.0</td>
+                <td>2.1</td>
+                <td><span class="badge bg-secondary">1.7</span></td>
+                <td><span class="badge bg-secondary">1.7</span></td>
+            </tr>
+        </tbody>
+    </table>
+    
+    <h5 class="mt-4 mb-3">테스트 케이스 (검증 완료)</h5>
+    <table class="custom-table">
+        <thead>
+            <tr><th>케이스</th><th>면</th><th>글자수</th><th>면톱</th><th>단독</th><th>기획</th><th>S등급</th><th>예상 점수</th><th>상태</th></tr>
+        </thead>
+        <tbody>
+            <tr><td>TC-01</td><td>1</td><td>2,100</td><td>Y</td><td>Y</td><td>Y</td><td>Y</td><td>20.0</td><td><span class="badge bg-success">✓</span></td></tr>
+            <tr><td>TC-02</td><td>1</td><td>2,000</td><td>Y</td><td>Y</td><td>N</td><td>N</td><td>17.0</td><td><span class="badge bg-success">✓</span></td></tr>
+            <tr><td>TC-03</td><td>3</td><td>1,500</td><td>Y</td><td>N</td><td>Y</td><td>N</td><td>13.0</td><td><span class="badge bg-success">✓</span></td></tr>
+            <tr><td>TC-04</td><td>5</td><td>1,500</td><td>Y</td><td>N</td><td>N</td><td>N</td><td>6.9</td><td><span class="badge bg-success">✓</span></td></tr>
+            <tr><td>TC-05</td><td>10</td><td>1,300</td><td>N</td><td>N</td><td>N</td><td>N</td><td>3.9</td><td><span class="badge bg-success">✓</span></td></tr>
+            <tr><td>TC-06</td><td>15</td><td>1,000</td><td>N</td><td>N</td><td>N</td><td>N</td><td>2.2</td><td><span class="badge bg-success">✓</span></td></tr>
+            <tr><td>TC-07</td><td>30</td><td>400</td><td>N</td><td>N</td><td>N</td><td>N</td><td>1.7</td><td><span class="badge bg-success">✓</span></td></tr>
         </tbody>
     </table>
 </section>
@@ -1215,7 +1571,7 @@
 <section id="aws-resources" class="section">
     <h2 class="section-title"><i class="bi bi-cloud"></i> AWS 리소스</h2>
     
-    <p>KPI 시스템에서 사용하는 AWS 리소스 목록입니다.</p>
+    <p>S-CORE 시스템은 AWS 서버리스 아키텍처를 기반으로 구축되어 있습니다.</p>
     
     <table class="custom-table">
         <thead>
@@ -1223,130 +1579,113 @@
         </thead>
         <tbody>
             <tr>
-                <td><i class="bi bi-bucket text-warning me-2"></i>S3</td>
+                <td><i class="bi bi-bucket text-warning me-2"></i><strong>S3</strong></td>
                 <td>sedaily-news-xml-storage</td>
                 <td>XML 원본 저장 (daily-xml/)</td>
                 <td>us-east-1</td>
             </tr>
             <tr>
-                <td><i class="bi bi-bucket text-warning me-2"></i>S3</td>
+                <td><i class="bi bi-bucket text-warning me-2"></i><strong>S3</strong></td>
                 <td>kpi.sedaily.ai</td>
-                <td>웹 호스팅 (HTML, JSON)</td>
+                <td>웹 호스팅 (HTML, JSON, JS)</td>
                 <td>us-east-1</td>
             </tr>
             <tr>
-                <td><i class="bi bi-lightning text-success me-2"></i>Lambda</td>
+                <td><i class="bi bi-lightning text-success me-2"></i><strong>Lambda</strong></td>
                 <td>kpi-sync-data</td>
                 <td>XML 파싱 및 data.json 생성</td>
                 <td>us-east-1</td>
             </tr>
             <tr>
-                <td><i class="bi bi-lightning text-success me-2"></i>Lambda</td>
+                <td><i class="bi bi-lightning text-success me-2"></i><strong>Lambda</strong></td>
                 <td>kpi-evaluation-api</td>
                 <td>평가 데이터 저장/조회</td>
                 <td>us-east-1</td>
             </tr>
             <tr>
-                <td><i class="bi bi-lightning text-success me-2"></i>Lambda</td>
+                <td><i class="bi bi-lightning text-success me-2"></i><strong>Lambda</strong></td>
                 <td>kpi-users-api</td>
-                <td>사원 정보 저장 + 캐시 무효화</td>
+                <td>사원 정보 관리</td>
                 <td>us-east-1</td>
             </tr>
             <tr>
-                <td><i class="bi bi-globe text-primary me-2"></i>CloudFront</td>
+                <td><i class="bi bi-speedometer2 text-primary me-2"></i><strong>CloudFront</strong></td>
                 <td>E1DJQD9MHS4VRO</td>
-                <td>CDN 배포</td>
+                <td>CDN 배포, HTTPS</td>
                 <td>Global</td>
             </tr>
             <tr>
-                <td><i class="bi bi-signpost text-info me-2"></i>Route 53</td>
+                <td><i class="bi bi-globe text-info me-2"></i><strong>Route 53</strong></td>
                 <td>kpi.sedaily.ai</td>
-                <td>DNS 관리</td>
+                <td>도메인 관리</td>
                 <td>Global</td>
-            </tr>
-            <tr>
-                <td><i class="bi bi-clock text-secondary me-2"></i>EventBridge</td>
-                <td>kpi-sync-morning</td>
-                <td>오전 6시 자동 동기화</td>
-                <td>us-east-1</td>
             </tr>
         </tbody>
     </table>
     
-    <h5 class="mt-4 mb-3">Lambda Function URLs</h5>
+    <h5 class="mt-4 mb-3">주요 파일 경로</h5>
     <table class="custom-table">
         <thead>
-            <tr><th>Lambda</th><th>URL</th></tr>
+            <tr><th>파일</th><th>S3 경로</th><th>설명</th></tr>
         </thead>
         <tbody>
-            <tr>
-                <td>kpi-sync-data</td>
-                <td><code style="font-size:0.8rem;">https://3pxmyosj2eunachemenbx4b6ay0dzqvd.lambda-url.us-east-1.on.aws/</code></td>
-            </tr>
-            <tr>
-                <td>kpi-evaluation-api</td>
-                <td><code style="font-size:0.8rem;">https://yyffk7tpfey7s2kv7hoitskxb40aljqw.lambda-url.us-east-1.on.aws/</code></td>
-            </tr>
-            <tr>
-                <td>kpi-users-api</td>
-                <td><code style="font-size:0.8rem;">https://aesyomxdaohdy3tykjsbzo6nr40zfnap.lambda-url.us-east-1.on.aws/</code></td>
-            </tr>
+            <tr><td><strong>data.json</strong></td><td>s3://kpi.sedaily.ai/data.json</td><td>기자별 기사 데이터</td></tr>
+            <tr><td><strong>users.json</strong></td><td>s3://kpi.sedaily.ai/users.json</td><td>사원 계정 정보</td></tr>
+            <tr><td><strong>evaluations.json</strong></td><td>s3://kpi.sedaily.ai/evaluations.json</td><td>평가 데이터</td></tr>
+            <tr><td><strong>score-config.json</strong></td><td>s3://kpi.sedaily.ai/score-config.json</td><td>가중치 설정</td></tr>
         </tbody>
     </table>
 </section>
 
-
-<!-- ==================== 배포 방법 ==================== -->
-<section id="deployment" class="section">
-    <h2 class="section-title"><i class="bi bi-rocket"></i> 배포 방법</h2>
+<!-- ==================== 데이터 동기화 ==================== -->
+<section id="data-sync" class="section">
+    <h2 class="section-title"><i class="bi bi-arrow-repeat"></i> 데이터 동기화</h2>
     
-    <p>KPI 시스템의 파일을 수정한 후 S3에 배포하는 방법입니다.</p>
+    <p>S-CORE의 데이터는 다음과 같은 흐름으로 처리됩니다.</p>
     
-    <h5 class="mt-4 mb-3">1. 개별 파일 배포</h5>
+    <h5 class="mt-4 mb-3">자동 동기화 스케줄</h5>
+    <table class="custom-table">
+        <thead>
+            <tr><th>시간 (KST)</th><th>작업</th><th>목적</th></tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><strong>매일 오전 6시</strong></td>
+                <td>kpi-sync-data Lambda 실행</td>
+                <td>전날 밤 업로드된 지면 기사 반영</td>
+            </tr>
+        </tbody>
+    </table>
+    
+    <h5 class="mt-4 mb-3">수동 동기화</h5>
+    <p>긴급한 경우 대시보드의 <strong>"데이터 동기화"</strong> 버튼을 클릭하여 즉시 동기화할 수 있습니다.</p>
+    
     <div class="code-block">
-<span class="comment"># HTML 파일 배포</span>
-<span class="command">aws s3 cp</span> dashboard/login.html s3://kpi.sedaily.ai/login.html <span class="string">--content-type "text/html; charset=utf-8"</span>
-<span class="command">aws s3 cp</span> dashboard/home.html s3://kpi.sedaily.ai/home.html <span class="string">--content-type "text/html; charset=utf-8"</span>
-<span class="command">aws s3 cp</span> dashboard/list.html s3://kpi.sedaily.ai/list.html <span class="string">--content-type "text/html; charset=utf-8"</span>
-
-<span class="comment"># JSON 파일 배포</span>
-<span class="command">aws s3 cp</span> dashboard/users.json s3://kpi.sedaily.ai/users.json <span class="string">--content-type "application/json; charset=utf-8"</span>
+        <span class="comment">// Lambda 동기화 URL</span><br>
+        <span class="string">https://3pxmyosj2eunachemenbx4b6ay0dzqvd.lambda-url.us-east-1.on.aws/</span>
     </div>
     
-    <h5 class="mt-4 mb-3">2. 전체 폴더 동기화</h5>
-    <div class="code-block">
-<span class="comment"># dashboard 폴더 전체 동기화 (JSON 제외)</span>
-<span class="command">aws s3 sync</span> dashboard/ s3://kpi.sedaily.ai/ --exclude "*.json" <span class="string">--content-type "text/html; charset=utf-8"</span>
-
-<span class="comment"># JSON 파일 별도 업로드</span>
-<span class="command">aws s3 cp</span> dashboard/data.json s3://kpi.sedaily.ai/data.json <span class="string">--content-type "application/json; charset=utf-8"</span>
-<span class="command">aws s3 cp</span> dashboard/users.json s3://kpi.sedaily.ai/users.json <span class="string">--content-type "application/json; charset=utf-8"</span>
-    </div>
-    
-    <h5 class="mt-4 mb-3">3. CloudFront 캐시 무효화</h5>
-    <div class="code-block">
-<span class="comment"># 전체 캐시 무효화</span>
-<span class="command">aws cloudfront create-invalidation</span> --distribution-id E1DJQD9MHS4VRO --paths "/*"
-
-<span class="comment"># 특정 파일만 무효화</span>
-<span class="command">aws cloudfront create-invalidation</span> --distribution-id E1DJQD9MHS4VRO --paths "/login.html" "/home.html"
-    </div>
-    
-    <h5 class="mt-4 mb-3">4. 로컬 테스트</h5>
-    <div class="code-block">
-<span class="comment"># dashboard 폴더에서 로컬 서버 실행</span>
-<span class="command">cd</span> dashboard
-<span class="command">python -m http.server</span> 8080
-
-<span class="comment"># 브라우저에서 접속</span>
-http://localhost:8080/login.html
-    </div>
-    
-    <div class="alert-box info mt-4">
-        <i class="bi bi-info-circle"></i>
-        <div>
-            <strong>캐시 무효화 소요 시간</strong><br>
-            CloudFront 캐시 무효화는 보통 30초~1분 정도 소요됩니다. 무효화 완료 전까지는 이전 버전이 표시될 수 있습니다.
+    <h5 class="mt-4 mb-3">데이터 흐름</h5>
+    <div class="step-list">
+        <div class="step-item">
+            <h6>XML 생성</h6>
+            <p>기존 시스템에서 지면 기사 XML 파일 생성</p>
+        </div>
+        <div class="step-item">
+            <h6>S3 업로드</h6>
+            <p>XML 파일이 sedaily-news-xml-storage 버킷에 업로드</p>
+        </div>
+        <div class="step-item">
+            <h6>Lambda 파싱</h6>
+            <p>kpi-sync-data Lambda가 XML을 파싱하여 기자별 데이터 추출</p>
+        </div>
+        <div class="step-item">
+            <h6>data.json 생성</h6>
+            <p>파싱된 데이터를 data.json으로 저장</p>
+        </div>
+        <div class="step-item">
+            <h6>캐시 무효화</h6>
+            <p>CloudFront 캐시를 무효화하여 최신 데이터 반영</p>
         </div>
     </div>
 </section>
@@ -1357,462 +1696,192 @@ http://localhost:8080/login.html
     
     <p>자주 발생하는 문제와 해결 방법입니다.</p>
     
-    <div class="accordion" id="troubleshootingAccordion">
-        
-        <div class="info-card mb-3">
-            <h5><i class="bi bi-question-circle text-danger me-2"></i>로그인이 안 됩니다</h5>
-            <p><strong>원인:</strong> 사번 또는 비밀번호 오류, users.json 로드 실패</p>
-            <p><strong>해결:</strong></p>
-            <ul class="mb-0">
-                <li>사번을 정확히 입력했는지 확인 (예: 80486)</li>
-                <li>초기 비밀번호는 1234</li>
-                <li>브라우저 개발자 도구(F12) → Network 탭에서 users.json 로드 확인</li>
-                <li>캐시 문제일 경우 Ctrl+Shift+R로 강력 새로고침</li>
-            </ul>
-        </div>
-        
-        <div class="info-card orange mb-3">
-            <h5><i class="bi bi-question-circle text-warning me-2"></i>데이터가 갱신되지 않습니다</h5>
-            <p><strong>원인:</strong> CloudFront 캐시, 동기화 미실행</p>
-            <p><strong>해결:</strong></p>
-            <ul class="mb-0">
-                <li>기자 목록 페이지에서 "데이터 동기화" 버튼 클릭</li>
-                <li>CloudFront 캐시 무효화 실행</li>
-                <li>브라우저 캐시 삭제 후 새로고침</li>
-                <li>data.json URL에 ?t=시간 파라미터 추가하여 직접 확인</li>
-            </ul>
-        </div>
-        
-        <div class="info-card green mb-3">
-            <h5><i class="bi bi-question-circle text-success me-2"></i>평가가 저장되지 않습니다</h5>
-            <p><strong>원인:</strong> Lambda API 오류, 네트워크 문제</p>
-            <p><strong>해결:</strong></p>
-            <ul class="mb-0">
-                <li>브라우저 개발자 도구(F12) → Console 탭에서 오류 메시지 확인</li>
-                <li>Network 탭에서 API 호출 상태 확인 (200 OK 여부)</li>
-                <li>Lambda 함수 로그 확인 (AWS CloudWatch)</li>
-                <li>CORS 오류일 경우 Lambda 응답 헤더 확인</li>
-            </ul>
-        </div>
-        
-        <div class="info-card mb-3">
-            <h5><i class="bi bi-question-circle text-primary me-2"></i>부장이 다른 부서 기자를 볼 수 없습니다</h5>
-            <p><strong>원인:</strong> 정상 동작 (권한 제한)</p>
-            <p><strong>해결:</strong></p>
-            <ul class="mb-0">
-                <li>부장(manager) 권한은 소속 부서 기자만 조회 가능</li>
-                <li>다른 부서 기자 조회가 필요하면 관리자에게 권한 변경 요청</li>
-                <li>또는 admin 계정으로 로그인</li>
-            </ul>
-        </div>
-        
-        <div class="info-card red mb-3">
-            <h5><i class="bi bi-question-circle text-danger me-2"></i>사원 정보 변경이 반영되지 않습니다</h5>
-            <p><strong>원인:</strong> CloudFront 캐시</p>
-            <p><strong>해결:</strong></p>
-            <ul class="mb-0">
-                <li>사원 관리에서 저장 후 약 10초 대기 (캐시 무효화 시간)</li>
-                <li>부장 계정으로 새로고침하여 확인</li>
-                <li>문제 지속 시 수동으로 CloudFront 캐시 무효화 실행</li>
-            </ul>
-        </div>
-        
-        <div class="info-card orange mb-3">
-            <h5><i class="bi bi-question-circle text-warning me-2"></i>일요일 데이터가 없습니다</h5>
-            <p><strong>원인:</strong> 정상 (일요일은 신문 미발행)</p>
-            <p><strong>해결:</strong></p>
-            <ul class="mb-0">
-                <li>일요일은 신문이 발행되지 않아 기사 0건이 정상</li>
-                <li>주별/월별 필터로 조회하면 일요일 제외하고 집계됨</li>
-            </ul>
-        </div>
-    </div>
-</section>
-
-<!-- ==================== 계정 정보 ==================== -->
-<section id="accounts" class="section">
-    <h2 class="section-title"><i class="bi bi-key"></i> 계정 정보</h2>
-    
-    <p>테스트 및 관리용 계정 정보입니다.</p>
-    
-    <h5 class="mt-4 mb-3">테스트 계정</h5>
+    <h5 class="mt-4 mb-3">로그인 문제</h5>
     <table class="custom-table">
         <thead>
-            <tr><th>권한</th><th>사번</th><th>이름</th><th>부서</th><th>비밀번호</th></tr>
+            <tr><th>증상</th><th>원인</th><th>해결 방법</th></tr>
         </thead>
         <tbody>
             <tr>
-                <td><span class="badge-role badge-admin">관리자</span></td>
-                <td>admin</td>
-                <td>관리자</td>
-                <td>전체</td>
-                <td>1234</td>
+                <td>로그인이 안 됨</td>
+                <td>사번 또는 비밀번호 오류</td>
+                <td>사번 확인, 초기 비밀번호 1234 사용</td>
             </tr>
             <tr>
-                <td><span class="badge-role badge-manager">부장</span></td>
-                <td>80486</td>
-                <td>서일범</td>
-                <td>경제부</td>
-                <td>1234</td>
+                <td>로그인 후 빈 화면</td>
+                <td>세션 만료 또는 캐시 문제</td>
+                <td>브라우저 캐시 삭제 후 재로그인</td>
             </tr>
             <tr>
-                <td><span class="badge-role badge-reporter">기자</span></td>
-                <td>211010</td>
-                <td>주재현</td>
-                <td>경제부</td>
-                <td>1234</td>
+                <td>권한 없음 메시지</td>
+                <td>해당 페이지 접근 권한 없음</td>
+                <td>관리자에게 권한 요청</td>
             </tr>
         </tbody>
     </table>
     
-    <h5 class="mt-4 mb-3">계정 통계</h5>
-    <div class="card-grid">
-        <div class="info-card">
-            <h5>전체 계정</h5>
-            <p style="font-size:2rem; font-weight:700; color:var(--primary);">235명</p>
-        </div>
-        <div class="info-card red">
-            <h5>관리자 (admin)</h5>
-            <p style="font-size:2rem; font-weight:700; color:#dc3545;">1명</p>
-        </div>
-        <div class="info-card orange">
-            <h5>부장 (manager)</h5>
-            <p style="font-size:2rem; font-weight:700; color:#0d6efd;">32명</p>
-        </div>
-        <div class="info-card green">
-            <h5>기자 (reporter)</h5>
-            <p style="font-size:2rem; font-weight:700; color:#6c757d;">202명</p>
-        </div>
-    </div>
+    <h5 class="mt-4 mb-3">데이터 문제</h5>
+    <table class="custom-table">
+        <thead>
+            <tr><th>증상</th><th>원인</th><th>해결 방법</th></tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>기사가 표시되지 않음</td>
+                <td>동기화 미완료</td>
+                <td>"데이터 동기화" 버튼 클릭</td>
+            </tr>
+            <tr>
+                <td>기자가 목록에 없음</td>
+                <td>users.json에 미등록</td>
+                <td>관리자에게 사원 추가 요청</td>
+            </tr>
+            <tr>
+                <td>점수가 0으로 표시</td>
+                <td>평가 미입력</td>
+                <td>정성평가 입력 필요</td>
+            </tr>
+        </tbody>
+    </table>
     
-    <div class="alert-box danger mt-4">
-        <i class="bi bi-exclamation-octagon"></i>
+    <h5 class="mt-4 mb-3">기타 문제</h5>
+    <table class="custom-table">
+        <thead>
+            <tr><th>증상</th><th>원인</th><th>해결 방법</th></tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>페이지 로딩 느림</td>
+                <td>네트워크 또는 서버 문제</td>
+                <td>잠시 후 재시도, 새로고침</td>
+            </tr>
+            <tr>
+                <td>차트가 표시되지 않음</td>
+                <td>JavaScript 오류</td>
+                <td>브라우저 콘솔 확인, 새로고침</td>
+            </tr>
+            <tr>
+                <td>저장이 안 됨</td>
+                <td>Lambda API 오류</td>
+                <td>잠시 후 재시도, 관리자 문의</td>
+            </tr>
+        </tbody>
+    </table>
+    
+    <div class="alert-box info mt-4">
+        <i class="bi bi-envelope"></i>
         <div>
-            <strong>보안 주의사항</strong><br>
-            현재 모든 계정의 비밀번호가 1234로 설정되어 있습니다. 실서비스 전 비밀번호 변경 기능 구현 및 개별 비밀번호 설정이 필요합니다.
-        </div>
-    </div>
-</section>
-
-<!-- ==================== 개발 로드맵 ==================== -->
-<section id="roadmap" class="section">
-    <h2 class="section-title"><i class="bi bi-map"></i> 개발 로드맵</h2>
-    
-    <p>KPI 시스템의 개발 과정과 완료된 기능, 향후 계획입니다.</p>
-    
-    <h5 class="mt-4 mb-3"><i class="bi bi-check-circle-fill text-success me-2"></i>기능 업데이트 (완료)</h5>
-    <div class="card-grid">
-        <div class="info-card green">
-            <h5>평가 데이터 서버 저장</h5>
-            <p>Lambda API를 통한 평가 데이터 저장/조회 기능</p>
-        </div>
-        <div class="info-card green">
-            <h5>저장 버튼 동작</h5>
-            <p>평가 입력 후 서버 저장 버튼 구현</p>
-        </div>
-        <div class="info-card green">
-            <h5>로그인/관리자 페이지 구분</h5>
-            <p>권한 기반 접근 제어 (admin/manager/reporter)</p>
-        </div>
-        <div class="info-card green">
-            <h5>톱(자동) 토글화</h5>
-            <p>XML paragraph=TOP 자동 감지 및 수정 가능</p>
-        </div>
-        <div class="info-card green">
-            <h5>자동 동기화 스케줄</h5>
-            <p>매일 오전 6시 자동 동기화 (EventBridge)</p>
-        </div>
-        <div class="info-card green">
-            <h5>날짜 네비게이션</h5>
-            <p>일별/주별/월별/분기별/반기별 필터링</p>
-        </div>
-        <div class="info-card green">
-            <h5>데이터 확장</h5>
-            <p>12월 XML 데이터 동기화 완료</p>
-        </div>
-        <div class="info-card green">
-            <h5>엑셀 내보내기</h5>
-            <p>기자 목록 엑셀 다운로드 버튼</p>
-        </div>
-        <div class="info-card green">
-            <h5>대시보드 홈 페이지</h5>
-            <p>전체 통계 요약 대시보드 (home.html)</p>
-        </div>
-        <div class="info-card green">
-            <h5>로딩 속도 개선</h5>
-            <p>Preconnect, Preload, 병렬 로딩 적용</p>
-        </div>
-        <div class="info-card green">
-            <h5>로그인 시스템</h5>
-            <p>235명 사용자 계정 생성 및 권한 관리</p>
-        </div>
-        <div class="info-card green">
-            <h5>HTTPS 적용</h5>
-            <p>CloudFront + ACM 인증서로 보안 연결</p>
-        </div>
-        <div class="info-card green">
-            <h5>사원 관리 페이지</h5>
-            <p>admin.html - 부서/직급/권한 변경</p>
-        </div>
-    </div>
-    
-    <h5 class="mt-4 mb-3"><i class="bi bi-bug-fill text-danger me-2"></i>디버그 (해결됨)</h5>
-    <table class="custom-table">
-        <thead>
-            <tr><th>이슈</th><th>해결 방법</th><th>상태</th></tr>
-        </thead>
-        <tbody>
-            <tr><td>CORS 중복 헤더</td><td>Lambda 응답 헤더 정리</td><td><span class="badge bg-success">완료</span></td></tr>
-            <tr><td>브라우저 캐시 문제</td><td>?t=Date.now() 캐시 버스팅 적용</td><td><span class="badge bg-success">완료</span></td></tr>
-            <tr><td>하드코딩 제거</td><td>설정값 변수화</td><td><span class="badge bg-success">완료</span></td></tr>
-            <tr><td>중복 기사 제거</td><td>newsId 기준 중복 체크</td><td><span class="badge bg-success">완료</span></td></tr>
-            <tr><td>공동 기자 파싱 개선</td><td>byline 분리 로직 개선</td><td><span class="badge bg-success">완료</span></td></tr>
-            <tr><td>기자명 파싱 로직 개선</td><td>정규식 패턴 수정</td><td><span class="badge bg-success">완료</span></td></tr>
-            <tr><td>대시보드 일별 기사수</td><td>날짜 필터 로직 수정 (2026-01-21)</td><td><span class="badge bg-success">완료</span></td></tr>
-            <tr><td>reporter.html 태그 오류</td><td>&lt;/option&gt; 태그 닫힘 수정</td><td><span class="badge bg-success">완료</span></td></tr>
-            <tr><td>평가 완료 카운트</td><td>실제 평가 데이터 반영</td><td><span class="badge bg-success">완료</span></td></tr>
-        </tbody>
-    </table>
-    
-    <h5 class="mt-4 mb-3"><i class="bi bi-pencil-fill text-warning me-2"></i>기능 변경</h5>
-    <table class="custom-table">
-        <thead>
-            <tr><th>항목</th><th>변경 내용</th><th>상태</th></tr>
-        </thead>
-        <tbody>
-            <tr><td>톱(자동) 수정</td><td>자동 감지된 톱 기사도 수정 가능하게 변경</td><td><span class="badge bg-success">완료</span></td></tr>
-            <tr><td>일별 기준 날짜</td><td>오늘 날짜 기준으로 변경</td><td><span class="badge bg-success">완료</span></td></tr>
-            <tr><td>자동 동기화 스케줄</td><td>오전 6시 1회로 변경</td><td><span class="badge bg-success">완료</span></td></tr>
-            <tr><td>기자 상세 페이지</td><td>reporter.html 레이아웃 및 권한 체크 수정</td><td><span class="badge bg-success">완료</span></td></tr>
-        </tbody>
-    </table>
-    
-    <h5 class="mt-4 mb-3"><i class="bi bi-hourglass-split text-primary me-2"></i>향후 계획 (TODO)</h5>
-    
-    <!-- 우선순위 높음 -->
-    <div style="background:linear-gradient(135deg, #fff5f5 0%, #ffe8e8 100%); border:2px solid #dc3545; border-radius:12px; padding:1.25rem; margin-bottom:1rem;">
-        <div style="display:flex; align-items:center; gap:0.5rem; margin-bottom:1rem;">
-            <span style="background:#dc3545; color:white; padding:4px 12px; border-radius:20px; font-size:0.75rem; font-weight:600;">
-                <i class="bi bi-exclamation-triangle-fill me-1"></i>우선순위 높음
-            </span>
-        </div>
-        <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(250px, 1fr)); gap:1rem;">
-            <div style="background:white; border-radius:10px; padding:1rem; box-shadow:0 2px 8px rgba(0,0,0,0.06);">
-                <div style="display:flex; align-items:center; gap:0.5rem; margin-bottom:0.5rem;">
-                    <i class="bi bi-shield-lock-fill" style="color:#dc3545; font-size:1.25rem;"></i>
-                    <strong style="font-size:0.9rem;">비밀번호 변경 기능</strong>
-                </div>
-                <p style="font-size:0.8rem; color:#666; margin:0;">현재 모든 계정 비밀번호가 1234로 동일. 사용자별 비밀번호 변경 기능 필요</p>
-            </div>
-            <div style="background:white; border-radius:10px; padding:1rem; box-shadow:0 2px 8px rgba(0,0,0,0.06);">
-                <div style="display:flex; align-items:center; gap:0.5rem; margin-bottom:0.5rem;">
-                    <i class="bi bi-key-fill" style="color:#dc3545; font-size:1.25rem;"></i>
-                    <strong style="font-size:0.9rem;">API 인증 강화</strong>
-                </div>
-                <p style="font-size:0.8rem; color:#666; margin:0;">Lambda API에 JWT 또는 API Key 인증 추가하여 보안 강화</p>
-            </div>
-        </div>
-    </div>
-    
-    <!-- 우선순위 중간 -->
-    <div style="background:linear-gradient(135deg, #fff8e1 0%, #ffecb3 100%); border:2px solid #FF9800; border-radius:12px; padding:1.25rem; margin-bottom:1rem;">
-        <div style="display:flex; align-items:center; gap:0.5rem; margin-bottom:1rem;">
-            <span style="background:#FF9800; color:white; padding:4px 12px; border-radius:20px; font-size:0.75rem; font-weight:600;">
-                <i class="bi bi-clock-fill me-1"></i>우선순위 중간
-            </span>
-        </div>
-        <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(250px, 1fr)); gap:1rem;">
-            <div style="background:white; border-radius:10px; padding:1rem; box-shadow:0 2px 8px rgba(0,0,0,0.06);">
-                <div style="display:flex; align-items:center; gap:0.5rem; margin-bottom:0.5rem;">
-                    <i class="bi bi-cloud-download-fill" style="color:#FF9800; font-size:1.25rem;"></i>
-                    <strong style="font-size:0.9rem;">평가 데이터 백업</strong>
-                </div>
-                <p style="font-size:0.8rem; color:#666; margin:0;">평가 데이터 정기 백업 및 복원 기능 구현</p>
-            </div>
-            <div style="background:white; border-radius:10px; padding:1rem; box-shadow:0 2px 8px rgba(0,0,0,0.06);">
-                <div style="display:flex; align-items:center; gap:0.5rem; margin-bottom:0.5rem;">
-                    <i class="bi bi-file-earmark-excel-fill" style="color:#FF9800; font-size:1.25rem;"></i>
-                    <strong style="font-size:0.9rem;">엑셀 리포트 개선</strong>
-                </div>
-                <p style="font-size:0.8rem; color:#666; margin:0;">기간별/부서별 상세 리포트 엑셀 다운로드 기능</p>
-            </div>
-            <div style="background:white; border-radius:10px; padding:1rem; box-shadow:0 2px 8px rgba(0,0,0,0.06);">
-                <div style="display:flex; align-items:center; gap:0.5rem; margin-bottom:0.5rem;">
-                    <i class="bi bi-bell-fill" style="color:#FF9800; font-size:1.25rem;"></i>
-                    <strong style="font-size:0.9rem;">알림 기능</strong>
-                </div>
-                <p style="font-size:0.8rem; color:#666; margin:0;">평가 미완료 기자 알림, 데이터 동기화 완료 알림</p>
-            </div>
-        </div>
-    </div>
-    
-    <!-- 우선순위 낮음 -->
-    <div style="background:linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%); border:2px solid #2196F3; border-radius:12px; padding:1.25rem;">
-        <div style="display:flex; align-items:center; gap:0.5rem; margin-bottom:1rem;">
-            <span style="background:#2196F3; color:white; padding:4px 12px; border-radius:20px; font-size:0.75rem; font-weight:600;">
-                <i class="bi bi-lightbulb-fill me-1"></i>개선 아이디어
-            </span>
-        </div>
-        <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(200px, 1fr)); gap:0.75rem;">
-            <div style="background:white; border-radius:8px; padding:0.75rem; box-shadow:0 1px 4px rgba(0,0,0,0.05); display:flex; align-items:center; gap:0.5rem;">
-                <i class="bi bi-speedometer" style="color:#2196F3;"></i>
-                <span style="font-size:0.8rem;">gzip 압축 활성화</span>
-            </div>
-            <div style="background:white; border-radius:8px; padding:0.75rem; box-shadow:0 1px 4px rgba(0,0,0,0.05); display:flex; align-items:center; gap:0.5rem;">
-                <i class="bi bi-graph-up-arrow" style="color:#2196F3;"></i>
-                <span style="font-size:0.8rem;">성과 추이 그래프</span>
-            </div>
-            <div style="background:white; border-radius:8px; padding:0.75rem; box-shadow:0 1px 4px rgba(0,0,0,0.05); display:flex; align-items:center; gap:0.5rem;">
-                <i class="bi bi-phone" style="color:#2196F3;"></i>
-                <span style="font-size:0.8rem;">모바일 최적화</span>
-            </div>
-            <div style="background:white; border-radius:8px; padding:0.75rem; box-shadow:0 1px 4px rgba(0,0,0,0.05); display:flex; align-items:center; gap:0.5rem;">
-                <i class="bi bi-printer" style="color:#2196F3;"></i>
-                <span style="font-size:0.8rem;">인쇄용 리포트</span>
-            </div>
-            <div style="background:white; border-radius:8px; padding:0.75rem; box-shadow:0 1px 4px rgba(0,0,0,0.05); display:flex; align-items:center; gap:0.5rem;">
-                <i class="bi bi-search" style="color:#2196F3;"></i>
-                <span style="font-size:0.8rem;">기사 검색 기능</span>
-            </div>
-            <div style="background:white; border-radius:8px; padding:0.75rem; box-shadow:0 1px 4px rgba(0,0,0,0.05); display:flex; align-items:center; gap:0.5rem;">
-                <i class="bi bi-bar-chart-line" style="color:#2196F3;"></i>
-                <span style="font-size:0.8rem;">부서별 비교 차트</span>
-            </div>
+            <strong>문의처</strong><br>
+            시스템 관련 문의는 관리자에게 연락해주세요.
         </div>
     </div>
 </section>
 
 <!-- ==================== 변경 이력 ==================== -->
 <section id="changelog" class="section">
-    <h2 class="section-title"><i class="bi bi-clock-history"></i> 변경 이력</h2>
+    <h2 class="section-title"><i class="bi bi-clock-history"></i> 변경 이력 (Changelog)</h2>
     
+    <p>S-CORE 시스템의 주요 변경 사항을 기록합니다.</p>
+    
+    <h5 class="mt-4 mb-3">v2.1 (2026년 2월 3일)</h5>
+    <div class="info-card green mb-3">
+        <h5><i class="bi bi-plus-circle me-2"></i>신규 기능</h5>
+        <ul class="mb-0">
+            <li><strong>확정 기능 구현</strong>: 기사별 PENDING/CONFIRMED 상태 관리, 확정 후 수정 불가</li>
+            <li><strong>소명 처리 후 점수 재계산</strong>: 소명 승인 시 자동으로 가점 반영 및 점수 재계산</li>
+            <li><strong>Feature Flags 기자 페이지 적용</strong>: reporter.html에 Feature Flags 완전 적용
+                <ul>
+                    <li>SHOW_MY_SCORE: OFF 시 점수 "-"로 표시</li>
+                    <li>SHOW_DEPT_AVERAGE: ON 시 부서 평균 카드 표시</li>
+                    <li>SHOW_DEPT_RANKING: ON 시 부서 내 순위 표시</li>
+                </ul>
+            </li>
+            <li><strong>실시간 동기화 준비</strong>: Lambda API 연동 구조 추가 (SYNC_ENABLED 플래그)</li>
+            <li><strong>부서 평균/순위 실제 계산</strong>: 하드코딩 제거, 실제 데이터 기반 계산</li>
+        </ul>
+    </div>
+    
+    <div class="info-card orange mb-3">
+        <h5><i class="bi bi-pencil me-2"></i>개선 사항</h5>
+        <ul class="mb-0">
+            <li><strong>확정된 기사 수정 방지</strong>: 확정된 기사의 품질 가점 버튼 비활성화</li>
+            <li><strong>확정 취소 기능</strong>: Admin 전용 확정 취소 (사유 입력 필수)</li>
+            <li><strong>사용설명서 대폭 업데이트</strong>: 점수 공식 정확한 수치 반영, 신규 기능 문서화</li>
+            <li><strong>Feature Flags 문서화</strong>: 설정 항목별 화면 변화 상세 설명 추가</li>
+        </ul>
+    </div>
+    
+    <h5 class="mt-4 mb-3">v2.0 (2026년 2월 1일)</h5>
+    <div class="info-card green mb-3">
+        <h5><i class="bi bi-plus-circle me-2"></i>신규 기능</h5>
+        <ul class="mb-0">
+            <li><strong>S-CORE 점수 산출 시스템</strong>: 면 가중치 × 분량 가중치 × 10 + 품질 가점</li>
+            <li><strong>부서 대시보드 탭 기능</strong>: 드롭다운 → 부서별 탭 버튼으로 변경</li>
+            <li><strong>기사 평가 페이지</strong>: 품질 가점 체크박스 (면톱, 단독, 기획, S등급)</li>
+            <li><strong>소명 관리 페이지</strong>: 기자 이의제기 접수 및 처리</li>
+            <li><strong>가중치 설정 페이지</strong>: 면/분량/품질 가중치 조정, 변경 이력 관리</li>
+            <li><strong>기자 내 점수 페이지</strong>: 본인 기사 목록, 점수 확인, 검토 요청</li>
+        </ul>
+    </div>
+    
+    <div class="info-card orange mb-3">
+        <h5><i class="bi bi-pencil me-2"></i>개선 사항</h5>
+        <ul class="mb-0">
+            <li><strong>테마 통일</strong>: 네이비 블루 그라데이션 (#1a365d → #2c5282 → #2b6cb0)</li>
+            <li><strong>누락 기자 추가</strong>: users.json에 16명 실제 기자 추가 (232명 → 248명)</li>
+            <li><strong>테스트 케이스 검증</strong>: TC-01~TC-07 모두 통과</li>
+        </ul>
+    </div>
+    
+    <h5 class="mt-4 mb-3">v1.0 (2026년 1월)</h5>
+    <div class="info-card mb-3">
+        <h5><i class="bi bi-rocket me-2"></i>초기 릴리스</h5>
+        <ul class="mb-0">
+            <li>KPI 시스템 초기 버전</li>
+            <li>기자별 기사 목록 조회</li>
+            <li>부서별 통계 대시보드</li>
+            <li>AWS 서버리스 아키텍처 구축</li>
+        </ul>
+    </div>
+    
+    <h5 class="mt-4 mb-3">향후 계획</h5>
     <table class="custom-table">
         <thead>
-            <tr><th>날짜</th><th>버전</th><th>변경 내용</th></tr>
+            <tr><th>버전</th><th>예정 기능</th><th>상태</th></tr>
         </thead>
         <tbody>
             <tr>
-                <td>2026-01-29</td>
-                <td>1.5.0</td>
-                <td>
-                    <ul class="mb-0">
-                        <li>보안 강화: 세션 만료(24시간), 부서 권한 체크</li>
-                        <li>성능 최적화: Preconnect, Preload, 병렬 로딩</li>
-                        <li>버그 수정: reporter.html 태그 오류, 평가 완료 카운트</li>
-                        <li>사용 설명서 (guide.html) 추가</li>
-                    </ul>
-                </td>
+                <td><strong>v2.2</strong></td>
+                <td>Lambda API + S3 저장 방식으로 전환 (데이터 영속성)</td>
+                <td><span class="badge bg-warning text-dark">계획중</span></td>
             </tr>
             <tr>
-                <td>2026-01-28</td>
-                <td>1.4.0</td>
-                <td>
-                    <ul class="mb-0">
-                        <li>사원 관리 페이지 (admin.html) 추가</li>
-                        <li>kpi-users-api Lambda 구현</li>
-                        <li>12월 XML 데이터 동기화</li>
-                    </ul>
-                </td>
+                <td><strong>v2.3</strong></td>
+                <td>월간 리포트 자동 생성 및 엑셀 내보내기</td>
+                <td><span class="badge bg-secondary">예정</span></td>
             </tr>
             <tr>
-                <td>2026-01-21</td>
-                <td>1.3.0</td>
-                <td>
-                    <ul class="mb-0">
-                        <li>권한 기반 로그인 시스템 구현</li>
-                        <li>235명 사용자 계정 생성</li>
-                        <li>시스템 이름 S-CORE → KPI 변경</li>
-                    </ul>
-                </td>
-            </tr>
-            <tr>
-                <td>2026-01-19</td>
-                <td>1.2.0</td>
-                <td>
-                    <ul class="mb-0">
-                        <li>자동 동기화 스케줄 (매일 6시) 설정</li>
-                        <li>직위 서버 저장 기능</li>
-                    </ul>
-                </td>
-            </tr>
-            <tr>
-                <td>2026-01-16</td>
-                <td>1.1.0</td>
-                <td>
-                    <ul class="mb-0">
-                        <li>평가 서버 저장 기능 (kpi-evaluation-api)</li>
-                        <li>캐시 제어 개선</li>
-                    </ul>
-                </td>
-            </tr>
-            <tr>
-                <td>2026-01-09</td>
-                <td>1.0.0</td>
-                <td>
-                    <ul class="mb-0">
-                        <li>웹 대시보드 MVP 완성</li>
-                        <li>XML 파싱 및 정량 점수 계산</li>
-                    </ul>
-                </td>
-            </tr>
-            <tr>
-                <td>2026-01-08</td>
-                <td>0.1.0</td>
-                <td>프로젝트 시작</td>
+                <td><strong>v3.0</strong></td>
+                <td>온라인 기사 지표 통합 (조회수, 공유수)</td>
+                <td><span class="badge bg-secondary">예정</span></td>
             </tr>
         </tbody>
     </table>
 </section>
 
-<!-- ==================== 문의 ==================== -->
-<section id="contact" class="section">
-    <h2 class="section-title"><i class="bi bi-envelope"></i> 문의</h2>
-    
-    <div class="card-grid">
-        <div class="info-card">
-            <h5><i class="bi bi-github me-2"></i>GitHub (Private)</h5>
-            <p><a href="https://github.com/gkfla2020-bit/kpi-system" target="_blank">github.com/gkfla2020-bit/kpi-system</a></p>
-        </div>
-        <div class="info-card orange">
-            <h5><i class="bi bi-github me-2"></i>GitHub (Public)</h5>
-            <p><a href="https://github.com/gkfla2020-bit/journalist-evaluation" target="_blank">github.com/gkfla2020-bit/journalist-evaluation</a><br><small>(민감정보 제외)</small></p>
-        </div>
-    </div>
-    
-    <div class="alert-box info mt-4">
-        <i class="bi bi-info-circle"></i>
-        <div>
-            <strong>시스템 관련 문의</strong><br>
-            시스템 오류, 기능 개선 요청, 계정 문제 등은 관리자에게 문의해 주세요.
-        </div>
-    </div>
-</section>
-
 </main>
 
-<!-- 탭 전환 스크립트 -->
 <script>
-function showTab(tabId) {
-    // 모든 탭 버튼 비활성화
-    document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
-    // 모든 탭 콘텐츠 숨김
-    document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
-    
-    // 선택된 탭 활성화
-    event.target.classList.add('active');
-    document.getElementById(tabId).classList.add('active');
-}
-
-// 네비게이션 활성화
+// 사이드바 현재 위치 표시
 document.addEventListener('DOMContentLoaded', function() {
+    const sections = document.querySelectorAll('section[id]');
     const navLinks = document.querySelectorAll('.nav-link');
     
-    // 스크롤 시 현재 섹션 하이라이트
     window.addEventListener('scroll', function() {
         let current = '';
-        document.querySelectorAll('section').forEach(section => {
-            const sectionTop = section.offsetTop - 100;
-            if (scrollY >= sectionTop) {
+        sections.forEach(section => {
+            const sectionTop = section.offsetTop;
+            if (scrollY >= sectionTop - 100) {
                 current = section.getAttribute('id');
             }
         });

@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>관리자 - S-CORE</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+    <style>
+        body { background: #f5f7fa; font-family: 'Pretendard', -apple-system, sans-serif; }
+        .container-main { max-width: 1400px; margin: 0 auto; padding: 1.5rem; }
+        .header { background: linear-gradient(135deg, #1a365d 0%, #2c5282 50%, #2b6cb0 100%); color: white; padding: 1.5rem; border-radius: 12px; margin-bottom: 1.5rem; }
+        .card { border: none; border-radius: 12px; box-shadow: 0 2px 12px rgba(0,0,0,0.08); margin-bottom: 1.5rem; }
+        .card-header { background: #2c5282; color: white; font-weight: 600; border-radius: 12px 12px 0 0 !important; padding: 1rem 1.5rem; }
+        .nav-menu { background: white; border-radius: 12px; padding: 1rem; margin-bottom: 1.5rem; box-shadow: 0 2px 12px rgba(0,0,0,0.08); }
+        .nav-menu a { color: #2c5282; text-decoration: none; padding: 0.5rem 1rem; border-radius: 8px; margin-right: 0.5rem; transition: all 0.2s; }
+        .nav-menu a:hover, .nav-menu a.active { background: #2c5282; color: white; }
+        .stat-card { background: white; border-radius: 12px; padding: 1.25rem; text-align: center; box-shadow: 0 2px 12px rgba(0,0,0,0.08); }
+        .stat-card .value { font-size: 2rem; font-weight: 700; color: #2c5282; }
+        .stat-card .label { font-size: 0.85rem; color: #718096; }
+        .config-card { background: #f7fafc; border-radius: 12px; padding: 1.5rem; }
+        .config-card h6 { color: #2c5282; font-weight: 700; margin-bottom: 1rem; }
+        .config-item { display: flex; justify-content: space-between; align-items: center; padding: 0.5rem 0; border-bottom: 1px solid #e2e8f0; }
+        .config-item:last-child { border-bottom: none; }
+        .config-item label { font-weight: 500; color: #4a5568; }
+        .config-item input { width: 80px; text-align: center; }
+        .toast-container { position: fixed; top: 20px; right: 20px; z-index: 9999; }
+        .test-result { padding: 0.5rem 1rem; border-radius: 8px; margin-bottom: 0.5rem; font-family: monospace; font-size: 0.85rem; }
+        .test-pass { background: #d1fae5; color: #065f46; }
+        .test-fail { background: #fee2e2; color: #991b1b; }
+    </style>
+</head>
+<body>
+<div class="container-main">
+
+<!-- 토스트 -->
+<div class="toast-container">
+    <div id="toast" class="toast align-items-center text-bg-success border-0" role="alert">
+        <div class="d-flex">
+            <div class="toast-body" id="toastMsg"></div>
+            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+        </div>
+    </div>
+</div>
+
+<!-- 헤더 -->
+<div class="header">
+    <div class="d-flex justify-content-between align-items-center">
+        <div>
+            <h1 style="font-size:1.8rem; margin-bottom:0.25rem;"><i class="bi bi-gear-fill me-2"></i>관리자 설정</h1>
+            <div style="opacity:0.9;">S-CORE 점수 산출 시스템</div>
+        </div>
+        <div class="text-end">
+            <small id="userInfo" class="me-2"></small>
+            <button class="btn btn-sm btn-outline-light" onclick="logout()"><i class="bi bi-box-arrow-right"></i> 로그아웃</button>
+        </div>
+    </div>
+</div>
+
+<!-- 네비게이션 -->
+<div class="nav-menu">
+    <a href="admin.html" class="active"><i class="bi bi-sliders me-1"></i>가중치 설정</a>
+    <a href="#" onclick="viewAllArticles()"><i class="bi bi-newspaper me-1"></i>전체 기사</a>
+    <a href="#" onclick="runTests()"><i class="bi bi-bug me-1"></i>테스트</a>
+    <a href="#" onclick="resetData()"><i class="bi bi-arrow-counterclockwise me-1"></i>데이터 리셋</a>
+</div>
+
+<!-- 요약 통계 -->
+<div class="row g-3 mb-4">
+    <div class="col-md-3">
+        <div class="stat-card">
+            <div class="value" id="totalArticles">0</div>
+            <div class="label">총 기사 수</div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="stat-card">
+            <div class="value" id="totalReporters">0</div>
+            <div class="label">기자 수</div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="stat-card">
+            <div class="value" id="avgScore">0</div>
+            <div class="label">평균 점수</div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="stat-card">
+            <div class="value" id="pendingAppeals">0</div>
+            <div class="label">대기 소명</div>
+        </div>
+    </div>
+</div>
+
+<!-- 가중치 설정 -->
+<div class="card">
+    <div class="card-header"><i class="bi bi-sliders me-2"></i>점수 가중치 설정</div>
+    <div class="card-body">
+        <div class="row g-4">
+            <!-- 면 가중치 -->
+            <div class="col-md-3">
+                <div class="config-card">
+                    <h6><i class="bi bi-file-earmark me-2"></i>면 가중치</h6>
+                    <div class="config-item">
+                        <label>1면</label>
+                        <input type="number" class="form-control form-control-sm" id="page1" value="1.00" step="0.05" min="0" max="2">
+                    </div>
+                    <div class="config-item">
+                        <label>2~3면</label>
+                        <input type="number" class="form-control form-control-sm" id="page3" value="0.85" step="0.05" min="0" max="2">
+                    </div>
+                    <div class="config-item">
+                        <label>4~5면</label>
+                        <input type="number" class="form-control form-control-sm" id="page5" value="0.70" step="0.05" min="0" max="2">
+                    </div>
+                    <div class="config-item">
+                        <label>6~10면</label>
+                        <input type="number" class="form-control form-control-sm" id="page10" value="0.55" step="0.05" min="0" max="2">
+                    </div>
+                    <div class="config-item">
+                        <label>11~20면</label>
+                        <input type="number" class="form-control form-control-sm" id="page20" value="0.40" step="0.05" min="0" max="2">
+                    </div>
+                    <div class="config-item">
+                        <label>21~32면</label>
+                        <input type="number" class="form-control form-control-sm" id="page32" value="0.30" step="0.05" min="0" max="2">
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 분량 가중치 -->
+            <div class="col-md-3">
+                <div class="config-card">
+                    <h6><i class="bi bi-text-paragraph me-2"></i>분량 가중치</h6>
+                    <div class="config-item">
+                        <label>2,000자↑</label>
+                        <input type="number" class="form-control form-control-sm" id="len2000" value="1.00" step="0.05" min="0" max="2">
+                    </div>
+                    <div class="config-item">
+                        <label>1,200~1,999자</label>
+                        <input type="number" class="form-control form-control-sm" id="len1200" value="0.70" step="0.05" min="0" max="2">
+                    </div>
+                    <div class="config-item">
+                        <label>600~1,199자</label>
+                        <input type="number" class="form-control form-control-sm" id="len600" value="0.55" step="0.05" min="0" max="2">
+                    </div>
+                    <div class="config-item">
+                        <label>600자↓</label>
+                        <input type="number" class="form-control form-control-sm" id="len0" value="0.55" step="0.05" min="0" max="2">
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 품질 가점 -->
+            <div class="col-md-3">
+                <div class="config-card">
+                    <h6><i class="bi bi-star me-2"></i>품질 가점</h6>
+                    <div class="config-item">
+                        <label>면톱</label>
+                        <input type="number" class="form-control form-control-sm" id="bonusTop" value="2" step="1" min="0" max="10">
+                    </div>
+                    <div class="config-item">
+                        <label>단독/특종</label>
+                        <input type="number" class="form-control form-control-sm" id="bonusExclusive" value="5" step="1" min="0" max="10">
+                    </div>
+                    <div class="config-item">
+                        <label>기획</label>
+                        <input type="number" class="form-control form-control-sm" id="bonusFeature" value="5" step="1" min="0" max="10">
+                    </div>
+                    <div class="config-item">
+                        <label>S등급</label>
+                        <input type="number" class="form-control form-control-sm" id="bonusSGrade" value="3" step="1" min="0" max="10">
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 기본 설정 -->
+            <div class="col-md-3">
+                <div class="config-card">
+                    <h6><i class="bi bi-gear me-2"></i>기본 설정</h6>
+                    <div class="config-item">
+                        <label>기본 점수</label>
+                        <input type="number" class="form-control form-control-sm" id="baseScore" value="10" step="1" min="1" max="20">
+                    </div>
+                    <div class="config-item">
+                        <label>가점 상한</label>
+                        <input type="number" class="form-control form-control-sm" id="bonusCap" value="10" step="1" min="0" max="20">
+                    </div>
+                    <div class="config-item">
+                        <label>최대 점수</label>
+                        <input type="number" class="form-control form-control-sm" id="maxScore" value="20" step="1" min="10" max="50">
+                    </div>
+                </div>
+                
+                <div class="mt-3">
+                    <label class="form-label fw-bold">변경 사유</label>
+                    <input type="text" class="form-control" id="changeReason" placeholder="변경 사유 입력...">
+                </div>
+            </div>
+        </div>
+        
+        <div class="d-flex justify-content-between mt-4">
+            <button class="btn btn-outline-secondary" onclick="showChangeHistory()">
+                <i class="bi bi-clock-history me-1"></i>변경 이력 보기
+            </button>
+            <button class="btn btn-primary" onclick="saveConfig()">
+                <i class="bi bi-save me-1"></i>저장
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- 테스트 결과 -->
+<div class="card" id="testResultCard" style="display:none;">
+    <div class="card-header"><i class="bi bi-bug me-2"></i>테스트 결과</div>
+    <div class="card-body" id="testResults"></div>
+</div>
+
+<!-- 점수 매트릭스 미리보기 -->
+<div class="card">
+    <div class="card-header"><i class="bi bi-table me-2"></i>점수 매트릭스 미리보기</div>
+    <div class="card-body">
+        <table class="table table-bordered table-sm text-center mb-0" id="matrixTable">
+            <thead class="table-dark">
+                <tr>
+                    <th>면 \ 글자수</th>
+                    <th>2,000자↑</th>
+                    <th>1,200~1,999자</th>
+                    <th>600~1,199자</th>
+                    <th>600자↓</th>
+                </tr>
+            </thead>
+            <tbody id="matrixBody"></tbody>
+        </table>
+    </div>
+</div>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="score.js"></script>
+<script src="data.js"></script>
+<script>
+// 로그인 체크
+const session = JSON.parse(localStorage.getItem('score_session') || 'null');
+if (!session || session.role !== 'admin') {
+    location.href = 'login.html';
+}
+
+document.getElementById('userInfo').textContent = session.name;
+
+function logout() {
+    localStorage.removeItem('score_session');
+    location.href = 'login.html';
+}
+
+// 통계 로드
+function loadStats() {
+    const articles = DataStore.getArticles();
+    const appeals = DataStore.getAppeals({ status: 'SUBMITTED' });
+    const reporters = [...new Set(articles.map(a => a.reporterId))];
+    
+    let totalScore = 0;
+    articles.forEach(a => {
+        totalScore += calculateArticleScore(a).totalScore;
+    });
+    
+    document.getElementById('totalArticles').textContent = articles.length;
+    document.getElementById('totalReporters').textContent = reporters.length;
+    document.getElementById('avgScore').textContent = articles.length > 0 ? (totalScore / articles.length).toFixed(1) : '0';
+    document.getElementById('pendingAppeals').textContent = appeals.length;
+}
+
+// 매트릭스 업데이트
+function updateMatrix() {
+    const baseScore = parseFloat(document.getElementById('baseScore').value) || 10;
+    const pageWeights = {
+        1: parseFloat(document.getElementById('page1').value) || 1.00,
+        3: parseFloat(document.getElementById('page3').value) || 0.85,
+        5: parseFloat(document.getElementById('page5').value) || 0.70,
+        10: parseFloat(document.getElementById('page10').value) || 0.55,
+        20: parseFloat(document.getElementById('page20').value) || 0.40,
+        32: parseFloat(document.getElementById('page32').value) || 0.30
+    };
+    const lenWeights = {
+        2000: parseFloat(document.getElementById('len2000').value) || 1.00,
+        1200: parseFloat(document.getElementById('len1200').value) || 0.70,
+        600: parseFloat(document.getElementById('len600').value) || 0.55,
+        0: parseFloat(document.getElementById('len0').value) || 0.55
+    };
+    
+    const rows = [
+        { label: '1면', pw: pageWeights[1] },
+        { label: '2~3면', pw: pageWeights[3] },
+        { label: '4~5면', pw: pageWeights[5] },
+        { label: '6~10면', pw: pageWeights[10] },
+        { label: '11~20면', pw: pageWeights[20] },
+        { label: '21~32면', pw: pageWeights[32] }
+    ];
+    
+    const tbody = document.getElementById('matrixBody');
+    tbody.innerHTML = rows.map(row => {
+        const scores = [
+            (row.pw * lenWeights[2000] * baseScore).toFixed(1),
+            (row.pw * lenWeights[1200] * baseScore).toFixed(1),
+            (row.pw * lenWeights[600] * baseScore).toFixed(1),
+            (row.pw * lenWeights[0] * baseScore).toFixed(1)
+        ];
+        return `
+            <tr>
+                <td class="fw-bold">${row.label}</td>
+                <td>${scores[0]}</td>
+                <td>${scores[1]}</td>
+                <td>${scores[2]}</td>
+                <td>${scores[3]}</td>
+            </tr>
+        `;
+    }).join('');
+}
+
+// 설정 저장
+function saveConfig() {
+    const reason = document.getElementById('changeReason').value.trim();
+    if (!reason) {
+        showToast('변경 사유를 입력해주세요', 'warning');
+        return;
+    }
+    
+    // 실제로는 서버에 저장
+    showToast('설정이 저장되었습니다');
+    document.getElementById('changeReason').value = '';
+}
+
+// 테스트 실행
+function runTests() {
+    const testCases = [
+        { page: 1, charCount: 2100, isTopArticle: true, isExclusive: true, isFeature: true, isSGrade: true, expected: 20.0 },
+        { page: 1, charCount: 2000, isTopArticle: true, isExclusive: true, isFeature: false, isSGrade: false, expected: 17.0 },
+        { page: 3, charCount: 1500, isTopArticle: true, isExclusive: false, isFeature: true, isSGrade: false, expected: 13.0 },
+        { page: 5, charCount: 1500, isTopArticle: true, isExclusive: false, isFeature: false, isSGrade: false, expected: 6.9 },
+        { page: 10, charCount: 1300, isTopArticle: false, isExclusive: false, isFeature: false, isSGrade: false, expected: 3.9 },
+        { page: 15, charCount: 1000, isTopArticle: false, isExclusive: false, isFeature: false, isSGrade: false, expected: 2.2 },
+        { page: 30, charCount: 400, isTopArticle: false, isExclusive: false, isFeature: false, isSGrade: false, expected: 1.7 }
+    ];
+    
+    const results = document.getElementById('testResults');
+    let html = '';
+    let allPassed = true;
+    
+    testCases.forEach((tc, i) => {
+        const result = calculateArticleScore(tc);
+        const passed = result.totalScore === tc.expected;
+        if (!passed) allPassed = false;
+        
+        html += `
+            <div class="test-result ${passed ? 'test-pass' : 'test-fail'}">
+                TC-0${i+1}: ${passed ? '✅ PASS' : '❌ FAIL'} | 
+                ${tc.page}면, ${tc.charCount}자 | 
+                예상: ${tc.expected} | 실제: ${result.totalScore}
+            </div>
+        `;
+    });
+    
+    html += `<div class="mt-3 fw-bold">${allPassed ? '✅ 모든 테스트 통과!' : '❌ 일부 테스트 실패'}</div>`;
+    
+    results.innerHTML = html;
+    document.getElementById('testResultCard').style.display = 'block';
+}
+
+// 데이터 리셋
+function resetData() {
+    if (confirm('모든 데이터를 초기 상태로 리셋하시겠습니까?')) {
+        DataStore.reset();
+        loadStats();
+        showToast('데이터가 리셋되었습니다');
+    }
+}
+
+// 전체 기사 보기
+function viewAllArticles() {
+    alert('전체 기사 목록 페이지 (개발 예정)');
+}
+
+// 변경 이력 보기
+function showChangeHistory() {
+    alert('변경 이력 페이지 (개발 예정)');
+}
+
+// 토스트
+function showToast(msg, type = 'success') {
+    const t = document.getElementById('toast');
+    t.className = `toast align-items-center text-bg-${type} border-0`;
+    document.getElementById('toastMsg').textContent = msg;
+    new bootstrap.Toast(t).show();
+}
+
+// 입력값 변경 시 매트릭스 업데이트
+document.querySelectorAll('input[type="number"]').forEach(input => {
+    input.addEventListener('change', updateMatrix);
+});
+
+// 초기 로드
+loadStats();
+updateMatrix();
+</script>
+</body>
+</html>

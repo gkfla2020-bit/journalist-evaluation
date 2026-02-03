@@ -1,0 +1,590 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>내 점수 - S-CORE</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+    <style>
+        body { background: #f5f7fa; font-family: 'Pretendard', -apple-system, sans-serif; }
+        .container-main { max-width: 1200px; margin: 0 auto; padding: 1.5rem; }
+        .header { background: linear-gradient(135deg, #1a365d 0%, #2c5282 50%, #2b6cb0 100%); color: white; padding: 1.5rem; border-radius: 12px; margin-bottom: 1.5rem; }
+        .card { border: none; border-radius: 12px; box-shadow: 0 2px 12px rgba(0,0,0,0.08); margin-bottom: 1.5rem; }
+        .card-header { background: #2c5282; color: white; font-weight: 600; border-radius: 12px 12px 0 0 !important; padding: 1rem 1.5rem; }
+        .stat-card { background: white; border-radius: 12px; padding: 1.5rem; text-align: center; box-shadow: 0 2px 12px rgba(0,0,0,0.08); }
+        .stat-card .value { font-size: 2.5rem; font-weight: 700; color: #2c5282; }
+        .stat-card .label { font-size: 0.9rem; color: #718096; margin-top: 0.5rem; }
+        .stat-card .change { font-size: 0.85rem; margin-top: 0.25rem; }
+        .change-up { color: #10b981; }
+        .change-down { color: #ef4444; }
+        .badge-quality { padding: 0.25rem 0.5rem; border-radius: 6px; font-size: 0.75rem; font-weight: 600; margin-right: 0.25rem; }
+        .badge-top { background: #fef3c7; color: #92400e; }
+        .badge-exclusive { background: #fee2e2; color: #991b1b; }
+        .badge-feature { background: #ede9fe; color: #5b21b6; }
+        .badge-sgrade { background: #d1fae5; color: #065f46; }
+        .page-badge { display: inline-block; width: 32px; height: 32px; line-height: 32px; text-align: center; border-radius: 8px; font-weight: 700; font-size: 0.9rem; }
+        .page-1 { background: #ffd700; color: #333; }
+        .page-main { background: #2b6cb0; color: white; }
+        .page-other { background: #718096; color: white; }
+        .score-cell { font-weight: 700; font-size: 1.1rem; }
+        .score-high { color: #ef4444; }
+        .score-mid { color: #f59e0b; }
+        .score-low { color: #718096; }
+        .toast-container { position: fixed; top: 20px; right: 20px; z-index: 9999; }
+        .info-box { background: #fef3c7; border-left: 4px solid #f59e0b; padding: 1rem; border-radius: 0 8px 8px 0; margin-bottom: 1rem; font-size: 0.9rem; }
+        .nav-menu { background: white; border-radius: 12px; padding: 1rem; margin-bottom: 1.5rem; box-shadow: 0 2px 12px rgba(0,0,0,0.08); }
+        .nav-menu a { color: #2c5282; text-decoration: none; padding: 0.5rem 1rem; border-radius: 8px; margin-right: 0.5rem; transition: all 0.2s; }
+        .nav-menu a:hover, .nav-menu a.active { background: #2c5282; color: white; }
+        .appeal-status { font-size: 0.75rem; }
+        .btn-outline-light:hover { background: rgba(255,255,255,0.15); }
+    </style>
+</head>
+<body>
+<div class="container-main">
+
+<!-- 토스트 -->
+<div class="toast-container">
+    <div id="toast" class="toast align-items-center text-bg-success border-0" role="alert">
+        <div class="d-flex">
+            <div class="toast-body" id="toastMsg"></div>
+            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+        </div>
+    </div>
+</div>
+
+<!-- 헤더 -->
+<div class="header">
+    <div class="d-flex justify-content-between align-items-center">
+        <div>
+            <h1 style="font-size:1.8rem; margin-bottom:0.25rem;"><i class="bi bi-newspaper me-2"></i>1월 나의 기사</h1>
+            <div style="opacity:0.9;" id="reporterInfo">-</div>
+        </div>
+        <div class="text-end">
+            <button class="btn btn-sm btn-outline-light" onclick="logout()"><i class="bi bi-box-arrow-right"></i> 로그아웃</button>
+        </div>
+    </div>
+</div>
+
+<!-- 네비게이션 -->
+<div class="nav-menu">
+    <a href="score-my.html" class="active"><i class="bi bi-person me-1"></i>내 점수</a>
+    <a href="reporter.html?name=" id="navDetail"><i class="bi bi-bar-chart me-1"></i>상세 통계</a>
+</div>
+
+<!-- 요약 통계 -->
+<div class="row g-3 mb-4">
+    <div class="col-md-3">
+        <div class="stat-card">
+            <div class="value" id="totalScore">0</div>
+            <div class="label">총점</div>
+            <div class="change" id="scoreChange"></div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="stat-card">
+            <div class="value" id="articleCount">0</div>
+            <div class="label">기사 수</div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="stat-card">
+            <div class="value" id="avgScore">0</div>
+            <div class="label">평균 점수</div>
+        </div>
+    </div>
+    <div class="col-md-3" id="deptAvgCard" style="display:none;">
+        <div class="stat-card">
+            <div class="value" id="deptAvg">0</div>
+            <div class="label">부서 평균</div>
+        </div>
+    </div>
+    <div class="col-md-3" id="deptRankCard" style="display:none;">
+        <div class="stat-card">
+            <div class="value" id="deptRank">-</div>
+            <div class="label">부서 내 순위</div>
+        </div>
+    </div>
+</div>
+
+<!-- 부서 가중치 안내 -->
+<div class="info-box" id="deptWeightInfo" style="display:none;">
+    <i class="bi bi-info-circle me-2"></i>
+    <span id="deptWeightText"></span>
+</div>
+
+<!-- 내 소명 현황 -->
+<div class="card" id="myAppealsCard">
+    <div class="card-header"><i class="bi bi-chat-left-text me-2"></i>내 검토 요청 현황</div>
+    <div class="card-body p-0">
+        <table class="table table-sm mb-0">
+            <thead class="table-light">
+                <tr><th>기사</th><th>요청 유형</th><th>상태</th><th>처리일</th><th>코멘트</th></tr>
+            </thead>
+            <tbody id="myAppealsList">
+                <tr><td colspan="5" class="text-center py-3 text-muted">검토 요청 내역이 없습니다</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- 기사 목록 -->
+<div class="card">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <span><i class="bi bi-list-ul me-2"></i>기사 목록</span>
+        <span class="badge bg-light text-dark" id="articleBadge">0건</span>
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th style="width:8%">면</th>
+                        <th style="width:40%">기사 제목</th>
+                        <th style="width:10%">글자수</th>
+                        <th style="width:10%">점수</th>
+                        <th style="width:20%">배지</th>
+                        <th style="width:12%">액션</th>
+                    </tr>
+                </thead>
+                <tbody id="articleList"></tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- 점수 산출 방식 안내 -->
+<div class="card">
+    <div class="card-body">
+        <h6 class="fw-bold mb-3"><i class="bi bi-question-circle me-2"></i>점수 산출 방식</h6>
+        <p class="mb-2">기사 점수 = (면 가중치 × 분량 가중치 × 10) + 품질 가점</p>
+        <div class="row">
+            <div class="col-md-6">
+                <small class="text-muted">
+                    <strong>면 가중치:</strong> 1면(1.0), 2~3면(0.85), 4~5면(0.70), 6~10면(0.55), 11~20면(0.40), 21~32면(0.30)
+                </small>
+            </div>
+            <div class="col-md-6">
+                <small class="text-muted">
+                    <strong>분량 가중치:</strong> 2,000자↑(1.0), 1,200~1,999자(0.70), 600자↓(0.55)
+                </small>
+            </div>
+        </div>
+        <div class="mt-2">
+            <small class="text-muted">
+                <strong>품질 가점:</strong> 
+                <span class="badge-quality badge-top">🏅 면톱 +2</span>
+                <span class="badge-quality badge-exclusive">⭐ 단독 +5</span>
+                <span class="badge-quality badge-feature">💡 기획 +5</span>
+                <span class="badge-quality badge-sgrade">🏆 S등급 +3</span>
+                (상한 10점)
+            </small>
+        </div>
+    </div>
+</div>
+
+</div>
+
+<!-- 검토 요청 모달 -->
+<div class="modal fade" id="appealModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title"><i class="bi bi-chat-left-text me-2"></i>검토 요청</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="appealNsid">
+                <input type="hidden" id="appealTitle">
+                <div class="mb-3">
+                    <label class="form-label fw-bold">대상 기사</label>
+                    <div id="appealArticleInfo" class="p-2 bg-light rounded"></div>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label fw-bold">요청 유형 *</label>
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" name="appealType" id="typeTop" value="TOP_ARTICLE">
+                        <label class="form-check-label" for="typeTop">🏅 면톱 인정 요청 (+2점)</label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" name="appealType" id="typeExclusive" value="EXCLUSIVE">
+                        <label class="form-check-label" for="typeExclusive">⭐ 단독/특종 인정 요청 (+5점)</label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" name="appealType" id="typeFeature" value="FEATURE">
+                        <label class="form-check-label" for="typeFeature">💡 기획 기사 인정 요청 (+5점)</label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" name="appealType" id="typeSGrade" value="S_GRADE">
+                        <label class="form-check-label" for="typeSGrade">🏆 S등급 인정 요청 (+3점)</label>
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label fw-bold">소명 사유 * (최대 500자)</label>
+                    <textarea class="form-control" id="appealReason" rows="4" maxlength="500" placeholder="검토 요청 사유를 입력해주세요..."></textarea>
+                    <div class="form-text text-end"><span id="charCount">0</span>/500</div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">취소</button>
+                <button type="button" class="btn btn-primary" onclick="submitAppeal()">제출</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="score.js"></script>
+<script src="score-data.js"></script>
+<script>
+// 로그인 체크
+const session = JSON.parse(localStorage.getItem('kpi_session') || 'null');
+if (!session) {
+    location.href = 'login.html';
+}
+
+document.getElementById('reporterInfo').textContent = `${session.name} 기자 (${session.department})`;
+document.getElementById('navDetail').href = `reporter.html?name=${encodeURIComponent(session.name)}`;
+
+let allData = null;
+let usersData = [];
+
+// 부서 정보
+const DEPARTMENTS = {
+    '정치부': { group: '가군', weight: 1.0 },
+    '경제부': { group: '가군', weight: 1.0 },
+    '산업부': { group: '가군', weight: 1.0 },
+    '금융부': { group: '가군', weight: 1.0 },
+    '사회부': { group: '가군', weight: 1.0 },
+    '문화부': { group: '나군', weight: 1.1 },
+    '생활부': { group: '나군', weight: 1.1 },
+    '스포츠부': { group: '나군', weight: 1.1 },
+    '편집부': { group: '나군', weight: 1.1 }
+};
+
+function logout() {
+    localStorage.removeItem('kpi_session');
+    location.href = 'login.html';
+}
+
+// 초기 로드
+document.addEventListener('DOMContentLoaded', async () => {
+    const [dataRes, usersRes] = await Promise.all([
+        fetch('data.json?t=' + Date.now()),
+        fetch('users.json?t=' + Date.now())
+    ]);
+    allData = await dataRes.json();
+    usersData = await usersRes.json();
+    
+    renderMyArticles();
+    renderMyAppeals();
+    applyFeatureFlags();
+});
+
+function renderMyArticles() {
+    if (!allData) return;
+    
+    console.log('session.name:', session.name);
+    console.log('reporters:', allData.reporters.map(r => r.name));
+    
+    // 내 기사 찾기
+    const myReporter = allData.reporters.find(r => r.name === session.name);
+    console.log('myReporter:', myReporter);
+    
+    if (!myReporter || !myReporter.articles || myReporter.articles.length === 0) {
+        document.getElementById('articleList').innerHTML = '<tr><td colspan="6" class="text-center py-4 text-muted">기사가 없습니다</td></tr>';
+        document.getElementById('totalScore').textContent = '0';
+        document.getElementById('articleCount').textContent = '0';
+        document.getElementById('avgScore').textContent = '0';
+        document.getElementById('articleBadge').textContent = '0건';
+        return;
+    }
+    
+    const evals = ScoreDataStore.getEvals();
+    const articles = myReporter.articles.map(a => ({
+        ...a,
+        ...(evals[a.nsid] || {})
+    }));
+    
+    let totalScore = 0;
+    const tbody = document.getElementById('articleList');
+    
+    tbody.innerHTML = articles.map(article => {
+        const page = article.page || 15;
+        const charCount = article.char_count || 0;
+        const nsid = article.nsid || article.url;
+        
+        const evalData = {
+            page: page,
+            charCount: charCount,
+            isTopArticle: article.isTopArticle || false,
+            isExclusive: article.isExclusive || false,
+            isFeature: article.isFeature || false,
+            isSGrade: article.isSGrade || false
+        };
+        const score = calculateArticleScore(evalData);
+        totalScore += score.totalScore;
+        
+        const pageClass = page === 1 ? 'page-1' : (page <= 5 ? 'page-main' : 'page-other');
+        const scoreClass = score.totalScore >= 10 ? 'score-high' : (score.totalScore >= 5 ? 'score-mid' : 'score-low');
+        
+        // 배지
+        let badges = '';
+        if (article.isTopArticle) badges += '<span class="badge-quality badge-top">🏅 면톱</span>';
+        if (article.isExclusive) badges += '<span class="badge-quality badge-exclusive">⭐ 단독</span>';
+        if (article.isFeature) badges += '<span class="badge-quality badge-feature">💡 기획</span>';
+        if (article.isSGrade) badges += '<span class="badge-quality badge-sgrade">🏆 S등급</span>';
+        
+        // 이미 소명 요청한 기사인지 확인
+        const myAppeals = ScoreDataStore.getAppeals({ reporterId: session.userId });
+        const hasAppeal = myAppeals.some(ap => ap.nsid === nsid);
+        
+        return `
+            <tr>
+                <td><span class="page-badge ${pageClass}">${page}</span></td>
+                <td>
+                    <div class="fw-bold text-truncate" style="max-width:300px;" title="${escapeHtml(article.title)}">${escapeHtml(article.title)}</div>
+                    <small class="text-muted">${article.pub_date}</small>
+                </td>
+                <td>${charCount.toLocaleString()}</td>
+                <td class="score-cell ${scoreClass}">${score.totalScore}점</td>
+                <td>${badges || '<span class="text-muted">-</span>'}</td>
+                <td>
+                    ${hasAppeal ? 
+                        '<span class="text-muted small">요청완료</span>' :
+                        `<button class="btn btn-sm btn-outline-primary" onclick="openAppealModal('${nsid}', '${escapeHtml(article.title)}', ${page}, ${charCount}, ${score.totalScore})">
+                            <i class="bi bi-chat-left-text"></i> 검토요청
+                        </button>`
+                    }
+                </td>
+            </tr>
+        `;
+    }).join('');
+    
+    // 통계 업데이트
+    document.getElementById('totalScore').textContent = totalScore.toFixed(1);
+    document.getElementById('articleCount').textContent = articles.length;
+    document.getElementById('avgScore').textContent = articles.length > 0 ? (totalScore / articles.length).toFixed(1) : '0';
+    document.getElementById('articleBadge').textContent = articles.length + '건';
+    
+    // 전월 대비 (샘플 - 실제로는 이전 달 데이터 필요)
+    const prevMonthScore = totalScore * 0.85;
+    const change = totalScore - prevMonthScore;
+    const changeEl = document.getElementById('scoreChange');
+    if (change > 0) {
+        changeEl.innerHTML = `<span class="change-up">▲ ${change.toFixed(1)} (전월 대비)</span>`;
+    } else if (change < 0) {
+        changeEl.innerHTML = `<span class="change-down">▼ ${Math.abs(change).toFixed(1)} (전월 대비)</span>`;
+    }
+    
+    // 부서 가중치 안내
+    const deptInfo = DEPARTMENTS[session.department];
+    if (deptInfo && deptInfo.group === '나군') {
+        document.getElementById('deptWeightInfo').style.display = 'block';
+        document.getElementById('deptWeightText').textContent = `※ ${session.department}는 나군 부서로, 최종 평가 시 ×1.1 적용됩니다.`;
+    }
+}
+
+function renderMyAppeals() {
+    const myAppeals = ScoreDataStore.getAppeals({ reporterId: session.userId });
+    const tbody = document.getElementById('myAppealsList');
+    
+    if (myAppeals.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="5" class="text-center py-3 text-muted">검토 요청 내역이 없습니다</td></tr>';
+        return;
+    }
+    
+    const qualityLabels = {
+        'TOP_ARTICLE': '🏅 면톱',
+        'EXCLUSIVE': '⭐ 단독',
+        'FEATURE': '💡 기획',
+        'S_GRADE': '🏆 S등급'
+    };
+    
+    tbody.innerHTML = myAppeals.map(a => {
+        const statusClass = a.status === 'SUBMITTED' ? 'bg-warning text-dark' : 
+                           (a.status === 'APPROVED' ? 'bg-success' : 'bg-danger');
+        const statusText = a.status === 'SUBMITTED' ? '대기중' : 
+                          (a.status === 'APPROVED' ? '승인' : '반려');
+        
+        return `
+            <tr>
+                <td class="text-truncate" style="max-width:200px;">${escapeHtml(a.articleTitle)}</td>
+                <td>${qualityLabels[a.qualityType] || a.qualityType}</td>
+                <td><span class="badge ${statusClass}">${statusText}</span></td>
+                <td><small>${a.reviewedAt ? a.reviewedAt.slice(0, 10) : '-'}</small></td>
+                <td><small class="text-muted">${a.managerComment || '-'}</small></td>
+            </tr>
+        `;
+    }).join('');
+}
+
+function applyFeatureFlags() {
+    const flags = ScoreDataStore.getFeatureFlags();
+    
+    // 본인 점수 표시 여부
+    if (!flags.SHOW_MY_SCORE) {
+        document.getElementById('totalScore').textContent = '-';
+        document.getElementById('avgScore').textContent = '-';
+        document.querySelectorAll('.score-cell').forEach(el => el.textContent = '-');
+    }
+    
+    // 전월 대비 표시 여부
+    if (!flags.SHOW_PREVIOUS_MONTH) {
+        document.getElementById('scoreChange').style.display = 'none';
+    }
+    
+    // 부서 평균 표시
+    if (flags.SHOW_DEPT_AVERAGE) {
+        document.getElementById('deptAvgCard').style.display = 'block';
+        // 부서 평균 계산
+        calculateDeptAverage();
+    }
+    
+    // 부서 내 순위 표시
+    if (flags.SHOW_DEPT_RANKING) {
+        document.getElementById('deptRankCard').style.display = 'block';
+        calculateDeptRanking();
+    }
+}
+
+// 부서 평균 계산
+function calculateDeptAverage() {
+    if (!allData || !usersData) return;
+    
+    const evals = ScoreDataStore.getEvals();
+    const deptReporters = usersData.filter(u => u.department === session.department && u.role !== 'admin' && u.role !== 'manager');
+    
+    let totalDeptScore = 0;
+    let reporterCount = 0;
+    
+    deptReporters.forEach(user => {
+        const reporter = allData.reporters.find(r => r.name === user.name);
+        if (reporter && reporter.articles) {
+            let reporterScore = 0;
+            reporter.articles.forEach(a => {
+                const evalData = {
+                    page: a.page || 15,
+                    charCount: a.char_count || 0,
+                    isTopArticle: evals[a.nsid]?.isTopArticle || false,
+                    isExclusive: evals[a.nsid]?.isExclusive || false,
+                    isFeature: evals[a.nsid]?.isFeature || false,
+                    isSGrade: evals[a.nsid]?.isSGrade || false
+                };
+                reporterScore += calculateArticleScore(evalData).totalScore;
+            });
+            totalDeptScore += reporterScore;
+            reporterCount++;
+        }
+    });
+    
+    const avg = reporterCount > 0 ? (totalDeptScore / reporterCount).toFixed(1) : '0';
+    document.getElementById('deptAvg').textContent = avg;
+}
+
+// 부서 내 순위 계산
+function calculateDeptRanking() {
+    if (!allData || !usersData) return;
+    
+    const evals = ScoreDataStore.getEvals();
+    const deptReporters = usersData.filter(u => u.department === session.department && u.role !== 'admin' && u.role !== 'manager');
+    
+    const scores = [];
+    
+    deptReporters.forEach(user => {
+        const reporter = allData.reporters.find(r => r.name === user.name);
+        if (reporter && reporter.articles) {
+            let reporterScore = 0;
+            reporter.articles.forEach(a => {
+                const evalData = {
+                    page: a.page || 15,
+                    charCount: a.char_count || 0,
+                    isTopArticle: evals[a.nsid]?.isTopArticle || false,
+                    isExclusive: evals[a.nsid]?.isExclusive || false,
+                    isFeature: evals[a.nsid]?.isFeature || false,
+                    isSGrade: evals[a.nsid]?.isSGrade || false
+                };
+                reporterScore += calculateArticleScore(evalData).totalScore;
+            });
+            scores.push({ name: user.name, score: reporterScore });
+        }
+    });
+    
+    // 점수 내림차순 정렬
+    scores.sort((a, b) => b.score - a.score);
+    
+    // 내 순위 찾기
+    const myRank = scores.findIndex(s => s.name === session.name) + 1;
+    const totalCount = scores.length;
+    
+    document.getElementById('deptRank').textContent = myRank > 0 ? `${myRank}위/${totalCount}명` : '-';
+}
+
+function openAppealModal(nsid, title, page, charCount, score) {
+    document.getElementById('appealNsid').value = nsid;
+    document.getElementById('appealTitle').value = title;
+    document.getElementById('appealArticleInfo').innerHTML = `
+        <strong>${title}</strong><br>
+        <small class="text-muted">${page}면, ${charCount.toLocaleString()}자, 현재 ${score}점</small>
+    `;
+    
+    // 폼 초기화
+    document.querySelectorAll('input[name="appealType"]').forEach(r => r.checked = false);
+    document.getElementById('appealReason').value = '';
+    document.getElementById('charCount').textContent = '0';
+    
+    new bootstrap.Modal(document.getElementById('appealModal')).show();
+}
+
+// 글자수 카운트
+document.getElementById('appealReason').addEventListener('input', function() {
+    document.getElementById('charCount').textContent = this.value.length;
+});
+
+function submitAppeal() {
+    const nsid = document.getElementById('appealNsid').value;
+    const title = document.getElementById('appealTitle').value;
+    const qualityType = document.querySelector('input[name="appealType"]:checked')?.value;
+    const reason = document.getElementById('appealReason').value.trim();
+    
+    if (!qualityType) {
+        showToast('요청 유형을 선택해주세요', 'warning');
+        return;
+    }
+    if (!reason) {
+        showToast('소명 사유를 입력해주세요', 'warning');
+        return;
+    }
+    
+    ScoreDataStore.createAppeal({
+        reporterId: session.userId,
+        reporterName: session.name,
+        department: session.department,
+        nsid: nsid,
+        articleTitle: title,
+        appealType: 'QUALITY_APPEAL',
+        qualityType: qualityType,
+        reason: reason
+    });
+    
+    bootstrap.Modal.getInstance(document.getElementById('appealModal')).hide();
+    renderMyArticles();
+    renderMyAppeals();
+    showToast('검토 요청이 제출되었습니다');
+}
+
+function escapeHtml(t) {
+    const d = document.createElement('div');
+    d.textContent = t || '';
+    return d.innerHTML;
+}
+
+function showToast(msg, type = 'success') {
+    const t = document.getElementById('toast');
+    t.className = `toast align-items-center text-bg-${type} border-0`;
+    document.getElementById('toastMsg').textContent = msg;
+    new bootstrap.Toast(t).show();
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>사원 관리 아키텍처 - KPI</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+            font-family: 'Pretendard', -apple-system, sans-serif; 
+            background: linear-gradient(135deg, #f5f7fa 0%, #e2e8f0 100%);
+            min-height: 100vh;
+            padding: 2rem;
+        }
+        .container { max-width: 1000px; margin: 0 auto; }
+        h1 { text-align: center; color: #2c5282; margin-bottom: 2rem; }
+        
+        .architecture {
+            background: white;
+            border-radius: 16px;
+            padding: 2rem;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+        }
+        
+        .flow {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 1rem;
+            flex-wrap: wrap;
+            margin: 2rem 0;
+        }
+        
+        .box {
+            padding: 1.5rem 2rem;
+            border-radius: 12px;
+            text-align: center;
+            min-width: 150px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+        
+        .box-browser { background: linear-gradient(135deg, #667eea, #764ba2); color: white; }
+        .box-lambda { background: linear-gradient(135deg, #f093fb, #f5576c); color: white; }
+        .box-s3 { background: linear-gradient(135deg, #4facfe, #00f2fe); color: white; }
+        .box-cloudfront { background: linear-gradient(135deg, #43e97b, #38f9d7); color: #333; }
+        
+        .box .icon { font-size: 2rem; margin-bottom: 0.5rem; }
+        .box .title { font-weight: 700; font-size: 1.1rem; }
+        .box .subtitle { font-size: 0.8rem; opacity: 0.9; margin-top: 0.25rem; }
+        
+        .arrow {
+            font-size: 2rem;
+            color: #2c5282;
+        }
+        
+        .step-list {
+            background: #f7fafc;
+            border-radius: 12px;
+            padding: 1.5rem 2rem;
+            margin-top: 2rem;
+        }
+        
+        .step-list h3 { color: #2c5282; margin-bottom: 1rem; }
+        
+        .step {
+            display: flex;
+            align-items: flex-start;
+            margin-bottom: 1rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        .step:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
+        
+        .step-num {
+            background: #2c5282;
+            color: white;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 0.9rem;
+            margin-right: 1rem;
+            flex-shrink: 0;
+        }
+        
+        .step-content { flex: 1; }
+        .step-title { font-weight: 600; color: #1a202c; }
+        .step-desc { font-size: 0.9rem; color: #718096; margin-top: 0.25rem; }
+        
+        .code-box {
+            background: #2d3748;
+            color: #e2e8f0;
+            padding: 1rem;
+            border-radius: 8px;
+            font-family: 'Consolas', monospace;
+            font-size: 0.85rem;
+            margin-top: 0.5rem;
+            overflow-x: auto;
+        }
+        
+        .endpoint {
+            background: #ebf4ff;
+            border-left: 4px solid #2c5282;
+            padding: 1rem;
+            margin-top: 1.5rem;
+            border-radius: 0 8px 8px 0;
+        }
+        .endpoint-title { font-weight: 600; color: #2c5282; }
+        .endpoint-url { font-family: monospace; font-size: 0.85rem; color: #718096; word-break: break-all; }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1>🏗️ 사원 관리 시스템 아키텍처</h1>
+    
+    <div class="architecture">
+        <!-- 아키텍처 다이어그램 -->
+        <div class="flow">
+            <div class="box box-browser">
+                <div class="icon">🖥️</div>
+                <div class="title">admin.html</div>
+                <div class="subtitle">사원 정보 수정</div>
+            </div>
+            
+            <div class="arrow">→</div>
+            
+            <div class="box box-lambda">
+                <div class="icon">⚡</div>
+                <div class="title">Lambda</div>
+                <div class="subtitle">kpi-users-api</div>
+            </div>
+            
+            <div class="arrow">→</div>
+            
+            <div class="box box-s3">
+                <div class="icon">🗄️</div>
+                <div class="title">S3</div>
+                <div class="subtitle">users.json 저장</div>
+            </div>
+            
+            <div class="arrow">→</div>
+            
+            <div class="box box-cloudfront">
+                <div class="icon">🌐</div>
+                <div class="title">CloudFront</div>
+                <div class="subtitle">캐시 무효화</div>
+            </div>
+        </div>
+        
+        <!-- 단계별 설명 -->
+        <div class="step-list">
+            <h3>📋 저장 프로세스</h3>
+            
+            <div class="step">
+                <div class="step-num">1</div>
+                <div class="step-content">
+                    <div class="step-title">사원 정보 수정</div>
+                    <div class="step-desc">admin.html에서 부서, 직급, 권한 변경 후 "변경사항 저장" 클릭</div>
+                </div>
+            </div>
+            
+            <div class="step">
+                <div class="step-num">2</div>
+                <div class="step-content">
+                    <div class="step-title">Lambda API 호출</div>
+                    <div class="step-desc">POST 요청으로 전체 users 배열 전송</div>
+                    <div class="code-box">
+POST https://aesyomxdaohdy3tykjsbzo6nr40zfnap.lambda-url.us-east-1.on.aws/
+Body: { "users": [...] }
+                    </div>
+                </div>
+            </div>
+            
+            <div class="step">
+                <div class="step-num">3</div>
+                <div class="step-content">
+                    <div class="step-title">S3에 저장</div>
+                    <div class="step-desc">Lambda가 users.json을 S3 버킷에 덮어쓰기</div>
+                    <div class="code-box">s3://kpi.sedaily.ai/users.json</div>
+                </div>
+            </div>
+            
+            <div class="step">
+                <div class="step-num">4</div>
+                <div class="step-content">
+                    <div class="step-title">CloudFront 캐시 무효화</div>
+                    <div class="step-desc">변경된 users.json이 즉시 반영되도록 캐시 삭제</div>
+                    <div class="code-box">Invalidation: /users.json</div>
+                </div>
+            </div>
+            
+            <div class="step">
+                <div class="step-num">5</div>
+                <div class="step-content">
+                    <div class="step-title">완료</div>
+                    <div class="step-desc">다음 로그인부터 변경된 사원 정보 적용</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- API 엔드포인트 -->
+        <div class="endpoint">
+            <div class="endpoint-title">🔗 Lambda Function URL</div>
+            <div class="endpoint-url">https://aesyomxdaohdy3tykjsbzo6nr40zfnap.lambda-url.us-east-1.on.aws/</div>
+        </div>
+        
+        <!-- AWS 리소스 -->
+        <div class="step-list" style="margin-top: 1.5rem;">
+            <h3>☁️ AWS 리소스</h3>
+            <table style="width:100%; font-size:0.9rem;">
+                <tr style="border-bottom:1px solid #ddd;">
+                    <td style="padding:0.5rem 0; font-weight:600;">Lambda</td>
+                    <td>kpi-users-api</td>
+                </tr>
+                <tr style="border-bottom:1px solid #ddd;">
+                    <td style="padding:0.5rem 0; font-weight:600;">S3 Bucket</td>
+                    <td>kpi.sedaily.ai</td>
+                </tr>
+                <tr style="border-bottom:1px solid #ddd;">
+                    <td style="padding:0.5rem 0; font-weight:600;">CloudFront</td>
+                    <td>E1DJQD9MHS4VRO</td>
+                </tr>
+                <tr>
+                    <td style="padding:0.5rem 0; font-weight:600;">IAM Role</td>
+                    <td>kpi-lambda-role</td>
+                </tr>
+            </table>
+        </div>
+    </div>
+</div>
+</body>
+</html>

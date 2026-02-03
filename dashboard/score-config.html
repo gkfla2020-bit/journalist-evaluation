@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>가중치 설정 - S-CORE</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+    <style>
+        body { background: #f5f7fa; font-family: 'Pretendard', -apple-system, sans-serif; }
+        .container-main { max-width: 1400px; margin: 0 auto; padding: 1.5rem; }
+        .header { background: linear-gradient(135deg, #1a365d 0%, #2c5282 50%, #2b6cb0 100%); color: white; padding: 1.5rem; border-radius: 12px; margin-bottom: 1.5rem; }
+        .card { border: none; border-radius: 12px; box-shadow: 0 2px 12px rgba(0,0,0,0.08); margin-bottom: 1.5rem; }
+        .card-header { background: #2c5282; color: white; font-weight: 600; border-radius: 12px 12px 0 0 !important; padding: 1rem 1.5rem; }
+        .nav-menu { background: white; border-radius: 12px; padding: 1rem; margin-bottom: 1.5rem; box-shadow: 0 2px 12px rgba(0,0,0,0.08); }
+        .nav-menu a { color: #2c5282; text-decoration: none; padding: 0.5rem 1rem; border-radius: 8px; margin-right: 0.5rem; transition: all 0.2s; }
+        .nav-menu a:hover, .nav-menu a.active { background: #2c5282; color: white; }
+        .toast-container { position: fixed; top: 20px; right: 20px; z-index: 9999; }
+        .weight-input { width: 80px; text-align: center; font-weight: 600; }
+        .test-pass { color: #10b981; }
+        .test-fail { color: #ef4444; }
+        .matrix-cell { text-align: center; font-weight: 600; }
+        .btn-outline-light:hover { background: rgba(255,255,255,0.15); }
+    </style>
+</head>
+<body>
+<div class="container-main">
+
+<!-- 토스트 -->
+<div class="toast-container">
+    <div id="toast" class="toast align-items-center text-bg-success border-0" role="alert">
+        <div class="d-flex">
+            <div class="toast-body" id="toastMsg"></div>
+            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+        </div>
+    </div>
+</div>
+
+<!-- 헤더 -->
+<div class="header">
+    <div class="d-flex justify-content-between align-items-center">
+        <div>
+            <h1 style="font-size:1.8rem; margin-bottom:0.25rem;"><i class="bi bi-bar-chart-fill me-2"></i>S-CORE</h1>
+            <div style="opacity:0.9;">기자 지면 기여도 평가 시스템</div>
+        </div>
+        <div class="text-end">
+            <small id="userInfo" class="me-2"></small>
+            <button class="btn btn-sm btn-outline-light" onclick="logout()"><i class="bi bi-box-arrow-right"></i> 로그아웃</button>
+        </div>
+    </div>
+</div>
+
+<!-- 네비게이션 -->
+<div class="nav-menu" id="navMenu">
+    <a href="home.html" id="nav-home"><i class="bi bi-house-door me-1"></i>대시보드</a>
+    <a href="score-dashboard.html"><i class="bi bi-speedometer2 me-1"></i>부서 대시보드</a>
+    <a href="list.html"><i class="bi bi-people me-1"></i>기자 목록</a>
+    <a href="score-eval.html"><i class="bi bi-clipboard-check me-1"></i>기사 평가</a>
+    <a href="score-appeals.html"><i class="bi bi-chat-left-text me-1"></i>소명 관리</a>
+    <a href="score-config.html" class="active"><i class="bi bi-sliders me-1"></i>가중치 설정</a>
+    <a href="admin.html" id="nav-admin"><i class="bi bi-gear me-1"></i>사원 관리</a>
+</div>
+
+<!-- 점수 공식 안내 -->
+<div class="card">
+    <div class="card-header"><i class="bi bi-info-circle me-2"></i>점수 산출 공식</div>
+    <div class="card-body">
+        <div class="alert alert-primary mb-0">
+            <strong>기사 점수 = (면 가중치 × 분량 가중치 × 기본 점수) + 품질 가점</strong>
+            <div class="mt-2 small">
+                최대 점수: <strong>20점</strong> | 최저 점수: <strong>1.7점</strong> | 품질 가점 상한: <strong>10점</strong>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <!-- 면 가중치 -->
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header"><i class="bi bi-newspaper me-2"></i>면 가중치</div>
+            <div class="card-body">
+                <table class="table table-sm">
+                    <thead><tr><th>게재 면</th><th>가중치</th></tr></thead>
+                    <tbody>
+                        <tr><td>1면</td><td><input type="number" class="form-control weight-input" id="pw1" step="0.05" min="0" max="2"></td></tr>
+                        <tr><td>2~3면</td><td><input type="number" class="form-control weight-input" id="pw3" step="0.05" min="0" max="2"></td></tr>
+                        <tr><td>4~5면</td><td><input type="number" class="form-control weight-input" id="pw5" step="0.05" min="0" max="2"></td></tr>
+                        <tr><td>6~10면</td><td><input type="number" class="form-control weight-input" id="pw10" step="0.05" min="0" max="2"></td></tr>
+                        <tr><td>11~20면</td><td><input type="number" class="form-control weight-input" id="pw20" step="0.05" min="0" max="2"></td></tr>
+                        <tr><td>21~32면</td><td><input type="number" class="form-control weight-input" id="pw32" step="0.05" min="0" max="2"></td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 분량 가중치 -->
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header"><i class="bi bi-file-text me-2"></i>분량 가중치</div>
+            <div class="card-body">
+                <table class="table table-sm">
+                    <thead><tr><th>글자 수</th><th>가중치</th></tr></thead>
+                    <tbody>
+                        <tr><td>2,000자 이상</td><td><input type="number" class="form-control weight-input" id="lw2000" step="0.05" min="0" max="2"></td></tr>
+                        <tr><td>1,200~1,999자</td><td><input type="number" class="form-control weight-input" id="lw1200" step="0.05" min="0" max="2"></td></tr>
+                        <tr><td>600~1,199자</td><td><input type="number" class="form-control weight-input" id="lw600" step="0.05" min="0" max="2"></td></tr>
+                        <tr><td>600자 미만</td><td><input type="number" class="form-control weight-input" id="lw0" step="0.05" min="0" max="2"></td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <!-- 품질 가점 -->
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header"><i class="bi bi-star me-2"></i>품질 가점</div>
+            <div class="card-body">
+                <table class="table table-sm">
+                    <thead><tr><th>항목</th><th>가점</th></tr></thead>
+                    <tbody>
+                        <tr><td>🏅 면톱</td><td><input type="number" class="form-control weight-input" id="qbTop" step="1" min="0" max="10"></td></tr>
+                        <tr><td>⭐ 단독/특종</td><td><input type="number" class="form-control weight-input" id="qbExclusive" step="1" min="0" max="10"></td></tr>
+                        <tr><td>💡 기획</td><td><input type="number" class="form-control weight-input" id="qbFeature" step="1" min="0" max="10"></td></tr>
+                        <tr><td>🏆 S등급</td><td><input type="number" class="form-control weight-input" id="qbSGrade" step="1" min="0" max="10"></td></tr>
+                    </tbody>
+                </table>
+                <div class="small text-muted mt-2">* 품질 가점 합계 상한: 10점</div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 기본 설정 -->
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header"><i class="bi bi-gear me-2"></i>기본 설정</div>
+            <div class="card-body">
+                <table class="table table-sm">
+                    <thead><tr><th>항목</th><th>값</th></tr></thead>
+                    <tbody>
+                        <tr><td>기본 점수</td><td><input type="number" class="form-control weight-input" id="baseScore" step="1" min="1" max="20"></td></tr>
+                        <tr><td>가점 상한</td><td><input type="number" class="form-control weight-input" id="bonusCap" step="1" min="1" max="20"></td></tr>
+                        <tr><td>최대 점수</td><td><input type="number" class="form-control weight-input" id="maxScore" step="1" min="1" max="30"></td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 저장 버튼 -->
+<div class="d-flex justify-content-between mb-4">
+    <button class="btn btn-outline-secondary" onclick="resetToDefault()"><i class="bi bi-arrow-counterclockwise me-1"></i>기본값 복원</button>
+    <button class="btn btn-primary btn-lg" onclick="saveConfig()"><i class="bi bi-save me-1"></i>설정 저장</button>
+</div>
+
+<!-- 테스트 케이스 검증 -->
+<div class="card">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <span><i class="bi bi-check-circle me-2"></i>테스트 케이스 검증</span>
+        <button class="btn btn-sm btn-light" onclick="runTests()"><i class="bi bi-play me-1"></i>테스트 실행</button>
+    </div>
+    <div class="card-body p-0">
+        <table class="table table-sm mb-0">
+            <thead class="table-light">
+                <tr><th>케이스</th><th>면</th><th>글자수</th><th>면톱</th><th>단독</th><th>기획</th><th>S등급</th><th>예상</th><th>실제</th><th>결과</th></tr>
+            </thead>
+            <tbody id="testResults">
+                <tr><td colspan="10" class="text-center text-muted py-3">테스트 실행 버튼을 클릭하세요</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- 점수 매트릭스 미리보기 -->
+<div class="card">
+    <div class="card-header"><i class="bi bi-table me-2"></i>점수 매트릭스 미리보기 (품질 가점 제외)</div>
+    <div class="card-body p-0">
+        <table class="table table-bordered table-sm mb-0">
+            <thead class="table-dark">
+                <tr><th>면 \ 글자수</th><th>2,000자↑</th><th>1,200~1,999자</th><th>600~1,199자</th><th>600자↓</th></tr>
+            </thead>
+            <tbody id="matrixPreview"></tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Feature Flags -->
+<div class="card">
+    <div class="card-header"><i class="bi bi-toggles me-2"></i>Feature Flags (점수 공개 정책)</div>
+    <div class="card-body">
+        <div class="row">
+            <div class="col-md-6">
+                <div class="form-check form-switch mb-2">
+                    <input class="form-check-input" type="checkbox" id="flagMyScore" checked>
+                    <label class="form-check-label" for="flagMyScore">본인 점수 표시</label>
+                </div>
+                <div class="form-check form-switch mb-2">
+                    <input class="form-check-input" type="checkbox" id="flagPrevMonth" checked>
+                    <label class="form-check-label" for="flagPrevMonth">전월 대비 표시</label>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="form-check form-switch mb-2">
+                    <input class="form-check-input" type="checkbox" id="flagDeptAvg">
+                    <label class="form-check-label" for="flagDeptAvg">부서 평균 표시 (Phase 2)</label>
+                </div>
+                <div class="form-check form-switch mb-2">
+                    <input class="form-check-input" type="checkbox" id="flagDeptRank">
+                    <label class="form-check-label" for="flagDeptRank">부서 내 순위 표시</label>
+                </div>
+            </div>
+        </div>
+        <button class="btn btn-sm btn-outline-primary mt-2" onclick="saveFeatureFlags()"><i class="bi bi-save me-1"></i>Flag 저장</button>
+    </div>
+</div>
+
+<!-- 변경 이력 -->
+<div class="card">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <span><i class="bi bi-clock-history me-2"></i>가중치 변경 이력</span>
+        <button class="btn btn-sm btn-light" onclick="loadHistory()"><i class="bi bi-arrow-clockwise me-1"></i>새로고침</button>
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive" style="max-height:300px; overflow-y:auto;">
+            <table class="table table-sm mb-0">
+                <thead class="table-light sticky-top">
+                    <tr><th>일시</th><th>변경자</th><th>변경 내용</th><th>사유</th></tr>
+                </thead>
+                <tbody id="historyList">
+                    <tr><td colspan="4" class="text-center py-3 text-muted">변경 이력이 없습니다</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="score.js"></script>
+<script src="score-data.js"></script>
+<script>
+// 로그인 체크 - admin만 접근 가능
+const session = JSON.parse(localStorage.getItem('kpi_session') || 'null');
+if (!session || session.role !== 'admin') {
+    location.href = 'login.html';
+}
+document.getElementById('userInfo').textContent = session.role === 'admin' ? '관리자님' : `${session.name}님`;
+// score-config.html은 admin 전용이므로 네비게이션 숨김 처리 불필요
+
+function logout() {
+    localStorage.removeItem('kpi_session');
+    location.href = 'login.html';
+}
+
+// 설정 로드
+function loadConfig() {
+    const config = getScoreConfig();
+    
+    // 면 가중치
+    document.getElementById('pw1').value = config.PAGE_WEIGHTS[1];
+    document.getElementById('pw3').value = config.PAGE_WEIGHTS[3];
+    document.getElementById('pw5').value = config.PAGE_WEIGHTS[5];
+    document.getElementById('pw10').value = config.PAGE_WEIGHTS[10];
+    document.getElementById('pw20').value = config.PAGE_WEIGHTS[20];
+    document.getElementById('pw32').value = config.PAGE_WEIGHTS[32];
+    
+    // 분량 가중치
+    document.getElementById('lw2000').value = config.LENGTH_WEIGHTS[2000];
+    document.getElementById('lw1200').value = config.LENGTH_WEIGHTS[1200];
+    document.getElementById('lw600').value = config.LENGTH_WEIGHTS[600];
+    document.getElementById('lw0').value = config.LENGTH_WEIGHTS[0];
+    
+    // 품질 가점
+    document.getElementById('qbTop').value = config.QUALITY_BONUS.isTopArticle;
+    document.getElementById('qbExclusive').value = config.QUALITY_BONUS.isExclusive;
+    document.getElementById('qbFeature').value = config.QUALITY_BONUS.isFeature;
+    document.getElementById('qbSGrade').value = config.QUALITY_BONUS.isSGrade;
+    
+    // 기본 설정
+    document.getElementById('baseScore').value = config.BASE_SCORE;
+    document.getElementById('bonusCap').value = config.QUALITY_BONUS_CAP;
+    document.getElementById('maxScore').value = config.MAX_SCORE;
+    
+    updateMatrix();
+}
+
+// 설정 저장
+function saveConfig() {
+    const config = {
+        BASE_SCORE: parseFloat(document.getElementById('baseScore').value),
+        QUALITY_BONUS_CAP: parseFloat(document.getElementById('bonusCap').value),
+        MAX_SCORE: parseFloat(document.getElementById('maxScore').value),
+        PAGE_WEIGHTS: {
+            1: parseFloat(document.getElementById('pw1').value),
+            3: parseFloat(document.getElementById('pw3').value),
+            5: parseFloat(document.getElementById('pw5').value),
+            10: parseFloat(document.getElementById('pw10').value),
+            20: parseFloat(document.getElementById('pw20').value),
+            32: parseFloat(document.getElementById('pw32').value)
+        },
+        LENGTH_WEIGHTS: {
+            2000: parseFloat(document.getElementById('lw2000').value),
+            1200: parseFloat(document.getElementById('lw1200').value),
+            600: parseFloat(document.getElementById('lw600').value),
+            0: parseFloat(document.getElementById('lw0').value)
+        },
+        QUALITY_BONUS: {
+            isTopArticle: parseFloat(document.getElementById('qbTop').value),
+            isExclusive: parseFloat(document.getElementById('qbExclusive').value),
+            isFeature: parseFloat(document.getElementById('qbFeature').value),
+            isSGrade: parseFloat(document.getElementById('qbSGrade').value)
+        }
+    };
+    
+    const reason = prompt('변경 사유를 입력하세요 (선택):') || '';
+    ScoreDataStore.saveConfig(config, session.userId, session.name, reason);
+    showToast('설정이 저장되었습니다');
+    updateMatrix();
+    loadHistory();
+}
+
+// 기본값 복원
+function resetToDefault() {
+    if (!confirm('기본값으로 복원하시겠습니까?')) return;
+    localStorage.removeItem('score_config');
+    loadConfig();
+    showToast('기본값으로 복원되었습니다');
+}
+
+// 테스트 실행
+function runTests() {
+    const testCases = [
+        { page: 1, charCount: 2100, isTopArticle: true, isExclusive: true, isFeature: true, isSGrade: true, expected: 20.0 },
+        { page: 1, charCount: 2000, isTopArticle: true, isExclusive: true, isFeature: false, isSGrade: false, expected: 17.0 },
+        { page: 3, charCount: 1500, isTopArticle: true, isExclusive: false, isFeature: true, isSGrade: false, expected: 13.0 },
+        { page: 5, charCount: 1500, isTopArticle: true, isExclusive: false, isFeature: false, isSGrade: false, expected: 6.9 },
+        { page: 10, charCount: 1300, isTopArticle: false, isExclusive: false, isFeature: false, isSGrade: false, expected: 3.9 },
+        { page: 15, charCount: 1000, isTopArticle: false, isExclusive: false, isFeature: false, isSGrade: false, expected: 2.2 },
+        { page: 30, charCount: 400, isTopArticle: false, isExclusive: false, isFeature: false, isSGrade: false, expected: 1.7 }
+    ];
+    
+    const tbody = document.getElementById('testResults');
+    tbody.innerHTML = testCases.map((tc, i) => {
+        const result = calculateArticleScore(tc);
+        const passed = result.totalScore === tc.expected;
+        return `
+            <tr>
+                <td>TC-0${i+1}</td>
+                <td>${tc.page}</td>
+                <td>${tc.charCount}</td>
+                <td>${tc.isTopArticle ? 'Y' : 'N'}</td>
+                <td>${tc.isExclusive ? 'Y' : 'N'}</td>
+                <td>${tc.isFeature ? 'Y' : 'N'}</td>
+                <td>${tc.isSGrade ? 'Y' : 'N'}</td>
+                <td>${tc.expected}</td>
+                <td>${result.totalScore}</td>
+                <td class="${passed ? 'test-pass' : 'test-fail'} fw-bold">${passed ? '✅ PASS' : '❌ FAIL'}</td>
+            </tr>
+        `;
+    }).join('');
+}
+
+// 매트릭스 업데이트
+function updateMatrix() {
+    const config = getScoreConfig();
+    const pages = [
+        { label: '1면', weight: config.PAGE_WEIGHTS[1] },
+        { label: '2~3면', weight: config.PAGE_WEIGHTS[3] },
+        { label: '4~5면', weight: config.PAGE_WEIGHTS[5] },
+        { label: '6~10면', weight: config.PAGE_WEIGHTS[10] },
+        { label: '11~20면', weight: config.PAGE_WEIGHTS[20] },
+        { label: '21~32면', weight: config.PAGE_WEIGHTS[32] }
+    ];
+    const lengths = [
+        config.LENGTH_WEIGHTS[2000],
+        config.LENGTH_WEIGHTS[1200],
+        config.LENGTH_WEIGHTS[600],
+        config.LENGTH_WEIGHTS[0]
+    ];
+    
+    const tbody = document.getElementById('matrixPreview');
+    tbody.innerHTML = pages.map(p => {
+        const cells = lengths.map(l => {
+            const score = Math.round(p.weight * l * config.BASE_SCORE * 10) / 10;
+            return `<td class="matrix-cell">${score}</td>`;
+        }).join('');
+        return `<tr><td class="fw-bold">${p.label}</td>${cells}</tr>`;
+    }).join('');
+}
+
+// 입력 변경 시 매트릭스 업데이트
+document.querySelectorAll('.weight-input').forEach(input => {
+    input.addEventListener('change', updateMatrix);
+});
+
+function showToast(msg, type = 'success') {
+    const t = document.getElementById('toast');
+    t.className = `toast align-items-center text-bg-${type} border-0`;
+    document.getElementById('toastMsg').textContent = msg;
+    new bootstrap.Toast(t).show();
+}
+
+// Feature Flags 로드
+function loadFeatureFlags() {
+    const flags = ScoreDataStore.getFeatureFlags();
+    document.getElementById('flagMyScore').checked = flags.SHOW_MY_SCORE;
+    document.getElementById('flagPrevMonth').checked = flags.SHOW_PREVIOUS_MONTH;
+    document.getElementById('flagDeptAvg').checked = flags.SHOW_DEPT_AVERAGE;
+    document.getElementById('flagDeptRank').checked = flags.SHOW_DEPT_RANKING;
+}
+
+// Feature Flags 저장
+function saveFeatureFlags() {
+    const flags = {
+        SHOW_MY_SCORE: document.getElementById('flagMyScore').checked,
+        SHOW_PREVIOUS_MONTH: document.getElementById('flagPrevMonth').checked,
+        SHOW_DEPT_AVERAGE: document.getElementById('flagDeptAvg').checked,
+        SHOW_DEPT_RANKING: document.getElementById('flagDeptRank').checked
+    };
+    ScoreDataStore.saveFeatureFlags(flags);
+    showToast('Feature Flags가 저장되었습니다');
+}
+
+// 변경 이력 로드
+function loadHistory() {
+    const history = ScoreDataStore.getConfigHistory();
+    const tbody = document.getElementById('historyList');
+    
+    if (history.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="4" class="text-center py-3 text-muted">변경 이력이 없습니다</td></tr>';
+        return;
+    }
+    
+    tbody.innerHTML = history.slice(0, 20).map(h => {
+        const changesText = h.changes.map(c => `${c.field}: ${c.oldValue} → ${c.newValue}`).join(', ');
+        return `
+            <tr>
+                <td><small>${h.changedAt.slice(0, 16).replace('T', ' ')}</small></td>
+                <td>${h.changedByName || h.changedBy}</td>
+                <td><small class="text-truncate d-inline-block" style="max-width:200px;" title="${changesText}">${changesText}</small></td>
+                <td><small class="text-muted">${h.reason || '-'}</small></td>
+            </tr>
+        `;
+    }).join('');
+}
+
+// 초기 로드
+loadConfig();
+loadFeatureFlags();
+loadHistory();
+</script>
+</body>
+</html>

@@ -379,10 +379,8 @@ function redirectByRole(user) {
     if (user.role === 'admin') {
         location.href = 'home.html';
     } else if (user.role === 'manager') {
-        // 부장은 부서 대시보드로
-        location.href = 'score-dashboard.html';
+        location.href = 'list.html?dept=' + encodeURIComponent(user.department);
     } else {
-        // 기자는 본인 상세 페이지로 (점수 + 검토요청 포함)
         location.href = 'reporter.html?name=' + encodeURIComponent(user.name);
     }
 }

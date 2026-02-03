@@ -61,10 +61,8 @@
 
 <!-- 네비게이션 -->
 <div class="nav-menu" id="navMenu">
-    <a href="home.html" id="navHome"><i class="bi bi-house-door me-1"></i>대시보드</a>
+    <a href="home.html"><i class="bi bi-house-door me-1"></i>대시보드</a>
     <a href="list.html"><i class="bi bi-people me-1"></i>기자 목록</a>
-    <a href="score-eval.html" id="navScoreEval"><i class="bi bi-clipboard-check me-1"></i>기사 평가</a>
-    <a href="score-appeals.html" id="navAppeals"><i class="bi bi-chat-left-text me-1"></i>소명 관리</a>
     <span class="float-end">
         <small id="userInfo" class="me-2 text-muted"></small>
         <button class="btn btn-sm btn-outline-secondary" onclick="logout()"><i class="bi bi-box-arrow-right"></i> 로그아웃</button>
@@ -99,7 +97,6 @@
     <li class="nav-item"><button class="nav-link" data-period="quarterly" type="button">분기별</button></li>
     <li class="nav-item"><button class="nav-link" data-period="halfyear" type="button">반기별</button></li>
     <li class="nav-item"><button class="nav-link" data-period="all" type="button">전체</button></li>
-    <li class="nav-item" id="myScoreTab" style="display:none;"><button class="nav-link" data-period="myscore" type="button">내 점수</button></li>
 </ul>
 
 <!-- 날짜 네비게이션 -->
@@ -126,51 +123,10 @@
         <button class="btn btn-primary" onclick="window.print()"><i class="bi bi-printer me-1"></i>인쇄</button>
     </div>
 </div>
-
-<!-- 검토요청 모달 (기자용) -->
-<div class="modal fade" id="appealModal" tabindex="-1">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header" style="background: linear-gradient(135deg, #1a365d 0%, #2c5282 100%); color: white;">
-                <h5 class="modal-title"><i class="bi bi-chat-left-text me-2"></i>검토 요청</h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body">
-                <div class="mb-3">
-                    <label class="form-label fw-bold">기사 제목</label>
-                    <p id="appealArticleTitle" class="text-muted"></p>
-                </div>
-                <div class="mb-3">
-                    <label class="form-label fw-bold">요청 유형</label>
-                    <select class="form-select" id="appealType">
-                        <option value="">선택하세요</option>
-                        <option value="EXCLUSIVE">단독 인정 요청</option>
-                        <option value="FEATURE">기획/특종 인정 요청</option>
-                        <option value="S_GRADE">S등급 인정 요청</option>
-                        <option value="TOP_ARTICLE">톱기사 인정 요청</option>
-                        <option value="OTHER">기타</option>
-                    </select>
-                </div>
-                <div class="mb-3">
-                    <label class="form-label fw-bold">요청 사유</label>
-                    <textarea class="form-control" id="appealReason" rows="4" placeholder="검토 요청 사유를 상세히 작성해주세요..."></textarea>
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">취소</button>
-                <button type="button" class="btn btn-primary" onclick="submitAppeal()"><i class="bi bi-send me-1"></i>요청 제출</button>
-            </div>
-        </div>
-    </div>
-</div>
-<input type="hidden" id="appealNsid" value="">
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>
-<!-- S-CORE 점수 모듈 -->
-<script src="score.js"></script>
-<script src="score-data.js"></script>
 <script>
 // 로그인 체크
 const session = JSON.parse(localStorage.getItem('kpi_session') || 'null');
@@ -211,14 +167,6 @@ if (isReporter) {
     // 하단 기자목록 버튼 숨기기
     const backBtn = document.getElementById('backToListBtn');
     if (backBtn) backBtn.style.display = 'none';
-    // 기사평가, 소명관리 링크 숨기기
-    const navScoreEval = document.getElementById('navScoreEval');
-    const navAppeals = document.getElementById('navAppeals');
-    if (navScoreEval) navScoreEval.style.display = 'none';
-    if (navAppeals) navAppeals.style.display = 'none';
-    // "내 점수" 탭 표시
-    const myScoreTab = document.getElementById('myScoreTab');
-    if (myScoreTab) myScoreTab.style.display = 'block';
 } else if (isManager) {
     // manager는 대시보드 링크 숨기고 부서 기자목록으로 연결
     document.getElementById('navMenu').innerHTML = `
@@ -272,15 +220,6 @@ document.querySelectorAll('.nav-link').forEach(btn => {
         this.classList.add('active');
         currentPeriod = this.dataset.period;
         selectedDate = new Date(); // 탭 변경시 오늘 날짜로 리셋
-        
-        // 날짜 네비게이션 표시/숨김
-        const dateNav = document.getElementById('dateNav');
-        if (currentPeriod === 'myscore') {
-            dateNav.style.display = 'none';
-        } else {
-            dateNav.style.display = 'flex';
-        }
-        
         renderContent();
         updateNavText();
     });
@@ -444,12 +383,6 @@ function updateStats() {
 
 // 컨텐츠 렌더링
 function renderContent() {
-    // ========== "내 점수" 탭 (기자 전용) ==========
-    if (currentPeriod === 'myscore' && isReporter) {
-        renderMyScorePage();
-        return;
-    }
-    
     // 기간별 필터링 적용
     const articles = getFilteredArticles();
     
@@ -478,7 +411,7 @@ function renderContent() {
         }
     });
     
-    // ========== Admin/Manager/Reporter 공통 UI ==========
+    // 기자 로그인 시 4개, admin/manager는 6개 통계 표시
     const colClass = canEvaluate ? 'col-md-2' : 'col-md-3';
     
     let html = `
@@ -488,8 +421,10 @@ function renderContent() {
             <div class="${colClass}"><div class="stat-box"><div class="value">${stats.total_chars.toLocaleString()}</div><div class="label">글자수</div></div></div>
             <div class="${colClass}"><div class="stat-box"><div class="value" style="color:#dc3545;">${stats.scoop_count}</div><div class="label">특종</div></div></div>
             <div class="${colClass}"><div class="stat-box"><div class="value" style="color:#fd7e14;">${stats.exclusive_count}</div><div class="label">단독</div></div></div>
+            ${canEvaluate ? `
             <div class="${colClass}"><div class="stat-box"><div class="value" style="color:#dc3545; font-weight:700;">${stats.s_grade}</div><div class="label">S등급</div></div></div>
             <div class="${colClass}"><div class="stat-box"><div class="value" style="color:#fd7e14;">${stats.a_grade}</div><div class="label">A등급</div></div></div>
+            ` : ''}
         </div>
         
         <!-- 일별 기사수 추이 -->
@@ -734,31 +669,30 @@ function formatDate(d) {
     return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
 }
 
-// 기사 테이블 렌더링 (Admin/Manager용)
+// 기사 테이블 렌더링
 function renderArticleTable(articles) {
     if (articles.length === 0) {
         return '<div class="p-4 text-muted text-center">기사가 없습니다</div>';
     }
     
-    // 기자는 평가 컬럼 숨김
-    if (isReporter) {
-        return renderReporterTable(articles);
-    }
+    // 기자 본인은 평가 컬럼 숨김, admin/manager만 평가 가능
+    const showEvalCols = canEvaluate;
     
-    // admin/manager용 평가 테이블
     let html = `
         <table class="table table-hover mb-0" style="font-size:0.85rem;">
             <thead class="table-light">
                 <tr>
                     <th style="width:10%">날짜</th>
-                    <th style="width:26%">제목</th>
+                    <th style="width:${showEvalCols ? '26%' : '50%'}">제목</th>
                     <th style="width:8%">면</th>
                     <th style="width:10%">글자수</th>
+                    ${showEvalCols ? `
                     <th style="width:10%">위치</th>
                     <th style="width:10%">취재유형</th>
                     <th style="width:10%">기사성격</th>
                     <th style="width:10%">임팩트</th>
                     <th style="width:6%">저장</th>
+                    ` : ''}
                 </tr>
             </thead>
             <tbody>
@@ -773,8 +707,9 @@ function renderArticleTable(articles) {
             <tr ${isHighlight} data-nsid="${article.nsid}">
                 <td>${article.pub_date ? article.pub_date.slice(5) : '-'}</td>
                 <td><a href="${article.url || '#'}" target="_blank" class="text-decoration-none fw-bold">${escapeHtml(article.title || '')}</a></td>
-                <td><span class="page-badge ${pageClass}">${article.paper_number || '-'}</span> <button type="button" class="btn btn-link btn-sm p-0 text-muted edit-page" title="수정"><i class="bi bi-pencil" style="font-size:0.7rem;"></i></button></td>
-                <td>${article.char_count ? article.char_count.toLocaleString() : '-'} <button type="button" class="btn btn-link btn-sm p-0 text-muted edit-chars" title="수정"><i class="bi bi-pencil" style="font-size:0.7rem;"></i></button></td>
+                <td><span class="page-badge ${pageClass}">${article.paper_number || '-'}</span>${showEvalCols ? ' <button type="button" class="btn btn-link btn-sm p-0 text-muted edit-page" title="수정"><i class="bi bi-pencil" style="font-size:0.7rem;"></i></button>' : ''}</td>
+                <td>${article.char_count ? article.char_count.toLocaleString() : '-'}${showEvalCols ? ' <button type="button" class="btn btn-link btn-sm p-0 text-muted edit-chars" title="수정"><i class="bi bi-pencil" style="font-size:0.7rem;"></i></button>' : ''}</td>
+                ${showEvalCols ? `
                 <td>
                     <select class="form-select form-select-sm eval-position" style="width:85px;">
                         <option value="">선택</option>
@@ -782,7 +717,7 @@ function renderArticleTable(articles) {
                         <option value="톱" ${!article.is_auto_top && article.position === '톱' ? 'selected' : ''}>톱</option>
                         <option value="사이드(좌)" ${article.position === '사이드(좌)' ? 'selected' : ''}>사이드(좌)</option>
                         <option value="사이드(우)" ${article.position === '사이드(우)' ? 'selected' : ''}>사이드(우)</option>
-                        <option value="하단" ${article.position === '하단' ? 'selected' : ''}>하단</option>
+                        <option value="하단" ${article.position === '하단' ? 'selected' : ''}>하단</option>>
                         <option value="기타" ${article.position === '기타' ? 'selected' : ''}>기타</option>
                     </select>
                 </td>
@@ -823,85 +758,8 @@ function renderArticleTable(articles) {
                     <button type="button" class="btn btn-sm ${isSaved ? 'btn-success' : 'btn-outline-primary'} save-btn">
                         <i class="bi bi-${isSaved ? 'check2' : 'save'}"></i>
                     </button>
+                ` : ''}
                 </td>
-            </tr>
-        `;
-    });
-    
-    html += '</tbody></table>';
-    return html;
-}
-
-// 기자용 테이블 (평가 없이 조회만)
-function renderReporterTable(articles) {
-    // Feature Flags 가져오기
-    const flags = ScoreDataStore ? ScoreDataStore.getFeatureFlags() : { SHOW_MY_SCORE: true };
-    
-    // 작업지시서 6.2 형식: 기사제목 | 면 | 점수 | 배지 | 액션
-    let html = `
-        <table class="table table-hover mb-0" style="font-size:0.9rem;">
-            <thead class="table-light">
-                <tr>
-                    <th style="width:45%">기사 제목</th>
-                    <th style="width:10%; text-align:center;">면</th>
-                    <th style="width:12%; text-align:center;">점수</th>
-                    <th style="width:20%; text-align:center;">배지</th>
-                    <th style="width:13%; text-align:center;">액션</th>
-                </tr>
-            </thead>
-            <tbody>
-    `;
-    
-    articles.forEach(article => {
-        // 점수 계산
-        const evalData = ScoreDataStore ? ScoreDataStore.getEval(article.nsid) : null;
-        const scoreInput = {
-            page: article.paper_number || 10,
-            charCount: article.char_count || 0,
-            isTopArticle: evalData?.isTopArticle || article.is_auto_top || false,
-            isExclusive: evalData?.isExclusive || article.coverage_type === '단독' || false,
-            isFeature: evalData?.isFeature || article.coverage_type === '특종' || article.coverage_type === '기획발굴' || false,
-            isSGrade: evalData?.isSGrade || article.impact_grade === 'S' || false
-        };
-        const scoreResult = calculateArticleScore(scoreInput);
-        
-        // Feature Flag: 점수 표시 여부
-        const scoreDisplay = flags.SHOW_MY_SCORE ? scoreResult.totalScore + '점' : '-';
-        const scoreColor = flags.SHOW_MY_SCORE ? 
-            (scoreResult.totalScore >= 15 ? '#dc3545' : (scoreResult.totalScore >= 10 ? '#fd7e14' : '#2c5282')) : '#718096';
-        
-        // 배지 생성
-        let badges = '';
-        if (scoreInput.isTopArticle) badges += '<span class="badge bg-warning text-dark me-1">🏅면톱</span>';
-        if (scoreInput.isExclusive) badges += '<span class="badge bg-primary me-1">⭐단독</span>';
-        if (scoreInput.isFeature) badges += '<span class="badge bg-info me-1">💡기획</span>';
-        if (scoreInput.isSGrade) badges += '<span class="badge bg-danger me-1">🏆S급</span>';
-        
-        // 검토요청 상태 확인
-        const appeals = ScoreDataStore ? ScoreDataStore.getAppeals({ reporterId: session.userId }) : [];
-        const existingAppeal = appeals.find(a => a.nsid === article.nsid);
-        let actionHtml = '';
-        if (existingAppeal) {
-            const statusBadge = existingAppeal.status === 'SUBMITTED' ? '<span class="badge bg-secondary">검토중</span>' :
-                               existingAppeal.status === 'APPROVED' ? '<span class="badge bg-success">승인됨</span>' :
-                               '<span class="badge bg-danger">반려됨</span>';
-            actionHtml = statusBadge;
-        } else {
-            actionHtml = `<button class="btn btn-sm btn-outline-secondary appeal-btn" data-nsid="${article.nsid}" data-title="${escapeHtml(article.title || '')}">검토요청</button>`;
-        }
-        
-        const isHighlight = article.paper_number >= 1 && article.paper_number <= 3 ? 'style="background:#fffbeb;"' : '';
-        
-        html += `
-            <tr ${isHighlight}>
-                <td>
-                    <a href="${article.url || '#'}" target="_blank" class="text-decoration-none fw-bold">${escapeHtml(article.title || '')}</a>
-                    <br><small class="text-muted">${article.pub_date || ''}</small>
-                </td>
-                <td style="text-align:center; font-weight:600;">${article.paper_number || '-'}면</td>
-                <td style="text-align:center; font-weight:700; color:${scoreColor};">${scoreDisplay}</td>
-                <td style="text-align:center;">${badges || '<span class="text-muted">-</span>'}</td>
-                <td style="text-align:center;">${actionHtml}</td>
             </tr>
         `;
     });
@@ -914,19 +772,6 @@ function renderReporterTable(articles) {
 <script>
 // 저장 버튼 이벤트 바인딩
 function bindSaveEvents() {
-    // 검토요청 버튼 (기자용)
-    document.querySelectorAll('.appeal-btn').forEach(btn => {
-        btn.addEventListener('click', function() {
-            const nsid = this.dataset.nsid;
-            const title = this.dataset.title;
-            document.getElementById('appealNsid').value = nsid;
-            document.getElementById('appealArticleTitle').textContent = title;
-            document.getElementById('appealType').value = '';
-            document.getElementById('appealReason').value = '';
-            new bootstrap.Modal(document.getElementById('appealModal')).show();
-        });
-    });
-    
     // 저장 버튼
     document.querySelectorAll('.save-btn').forEach(btn => {
         btn.addEventListener('click', async function() {
@@ -1243,252 +1088,6 @@ async function loadSavedPosition() {
             document.getElementById('positionText').textContent = positions[reporterName];
         }
     }
-}
-
-// ========== "내 점수" 페이지 렌더링 (기자 전용) ==========
-function renderMyScorePage() {
-    if (!reporterData || !reporterData.articles) {
-        document.getElementById('mainContent').innerHTML = '<div class="p-4 text-center text-muted">데이터가 없습니다</div>';
-        return;
-    }
-    
-    // Feature Flags 가져오기
-    const flags = ScoreDataStore ? ScoreDataStore.getFeatureFlags() : {
-        SHOW_MY_SCORE: true,
-        SHOW_PREVIOUS_MONTH: true,
-        SHOW_DEPT_AVERAGE: false,
-        SHOW_DEPT_RANKING: false
-    };
-    
-    // 날짜 네비게이션 숨기기
-    document.getElementById('dateNav').style.display = 'none';
-    
-    // 전체 기사 대상
-    const articles = reporterData.articles;
-    
-    let totalScore = 0;
-    const articleCards = articles.map(article => {
-        const evalData = ScoreDataStore ? ScoreDataStore.getEval(article.nsid) : null;
-        const scoreInput = {
-            page: article.paper_number || 10,
-            charCount: article.char_count || 0,
-            isTopArticle: evalData?.isTopArticle || article.is_auto_top || false,
-            isExclusive: evalData?.isExclusive || article.coverage_type === '단독' || false,
-            isFeature: evalData?.isFeature || article.coverage_type === '특종' || article.coverage_type === '기획발굴' || false,
-            isSGrade: evalData?.isSGrade || article.impact_grade === 'S' || false
-        };
-        const scoreResult = calculateArticleScore(scoreInput);
-        totalScore += scoreResult.totalScore;
-        
-        // 배지 생성
-        let badges = '';
-        if (article.is_auto_top || scoreInput.isTopArticle) badges += '<span class="badge bg-warning text-dark me-1">🏅면톱</span>';
-        if (scoreInput.isExclusive || article.coverage_type === '단독') badges += '<span class="badge bg-primary me-1">⭐단독</span>';
-        if (scoreInput.isFeature || article.coverage_type === '특종' || article.coverage_type === '기획발굴') badges += '<span class="badge bg-info me-1">📰기획</span>';
-        if (scoreInput.isSGrade || article.impact_grade === 'S') badges += '<span class="badge bg-danger me-1">🔥S급</span>';
-        
-        // 검토요청 상태 확인
-        const appeals = ScoreDataStore ? ScoreDataStore.getAppeals({ reporterId: session.userId }) : [];
-        const existingAppeal = appeals.find(a => a.nsid === article.nsid);
-        let actionHtml = '';
-        if (existingAppeal) {
-            const statusBadge = existingAppeal.status === 'SUBMITTED' ? '<span class="badge bg-secondary">검토중</span>' :
-                               existingAppeal.status === 'APPROVED' ? '<span class="badge bg-success">승인됨</span>' :
-                               '<span class="badge bg-danger">반려됨</span>';
-            actionHtml = statusBadge;
-        } else {
-            actionHtml = `<button class="btn btn-sm btn-outline-secondary appeal-btn" data-nsid="${article.nsid}" data-title="${escapeHtml(article.title || '')}">검토요청</button>`;
-        }
-        
-        // Feature Flag: 점수 표시 여부
-        const scoreDisplay = flags.SHOW_MY_SCORE ? scoreResult.totalScore + '점' : '-';
-        const scoreColor = flags.SHOW_MY_SCORE ? 
-            (scoreResult.totalScore >= 15 ? '#dc3545' : (scoreResult.totalScore >= 10 ? '#fd7e14' : '#2c5282')) : '#718096';
-        
-        return `
-            <div class="article-card" style="display:flex; align-items:center; padding:1rem; border-bottom:1px solid #e2e8f0;">
-                <div style="flex:1; min-width:0;">
-                    <a href="${article.url || '#'}" target="_blank" class="text-decoration-none fw-bold text-dark" style="display:block; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${escapeHtml(article.title || '제목없음')}</a>
-                    <small class="text-muted">${article.pub_date || ''}</small>
-                </div>
-                <div style="width:50px; text-align:center; font-weight:600; color:#4a5568;">${article.paper_number || '-'}면</div>
-                <div style="width:70px; text-align:center; font-weight:700; color:${scoreColor};">${scoreDisplay}</div>
-                <div style="width:150px; text-align:center;">${badges || '<span class="text-muted">-</span>'}</div>
-                <div style="width:90px; text-align:center;">${actionHtml}</div>
-            </div>
-        `;
-    }).join('');
-    
-    // Feature Flag: 총점 표시 여부
-    const totalScoreDisplay = flags.SHOW_MY_SCORE ? totalScore.toFixed(1) : '-';
-    
-    // Feature Flag: 부서 평균/순위 계산
-    let deptStatsHtml = '';
-    if (flags.SHOW_DEPT_AVERAGE || flags.SHOW_DEPT_RANKING) {
-        const deptStats = calculateDeptStats();
-        if (flags.SHOW_DEPT_AVERAGE && deptStats.deptAvg !== null) {
-            deptStatsHtml += `
-                <div style="display:inline-block; margin-left:2rem; padding:0.5rem 1rem; background:rgba(255,255,255,0.15); border-radius:8px;">
-                    <div style="font-size:0.75rem; opacity:0.8;">부서 평균</div>
-                    <div style="font-size:1.2rem; font-weight:700;">${deptStats.deptAvg.toFixed(1)}</div>
-                </div>
-            `;
-        }
-        if (flags.SHOW_DEPT_RANKING && deptStats.myRank !== null) {
-            deptStatsHtml += `
-                <div style="display:inline-block; margin-left:1rem; padding:0.5rem 1rem; background:rgba(255,255,255,0.15); border-radius:8px;">
-                    <div style="font-size:0.75rem; opacity:0.8;">부서 내 순위</div>
-                    <div style="font-size:1.2rem; font-weight:700;">${deptStats.myRank}위/${deptStats.totalCount}명</div>
-                </div>
-            `;
-        }
-    }
-    
-    document.getElementById('mainContent').innerHTML = `
-        <div class="card">
-            <div class="card-header" style="background: linear-gradient(135deg, #1a365d 0%, #2c5282 100%); color: white;">
-                <div class="d-flex justify-content-between align-items-center">
-                    <span><i class="bi bi-star-fill me-2"></i>나의 기사 점수</span>
-                    <span class="badge bg-light text-dark">${articles.length}건</span>
-                </div>
-            </div>
-            <div class="card-body p-0">
-                <!-- 총점 헤더 -->
-                <div style="background:#ebf4ff; padding:1.5rem; border-bottom:2px solid #2c5282;">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                            <div style="font-size:0.9rem; color:#4a5568; margin-bottom:0.25rem;">총점</div>
-                            <span style="font-size:2.5rem; font-weight:700; color:${flags.SHOW_MY_SCORE ? '#dc3545' : '#718096'};">${totalScoreDisplay}</span>
-                            <span style="font-size:1.2rem; color:#4a5568;"> Point</span>
-                            ${deptStatsHtml}
-                        </div>
-                        <div class="text-end">
-                            <div class="text-muted small mb-1">
-                                <i class="bi bi-info-circle me-1"></i>나군 부서는 최종 평가 시 ×1.1 적용
-                            </div>
-                            <div class="text-muted small">
-                                조회 기간: ${allData.period_start} ~ ${allData.period_end}
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- 기사 헤더 -->
-                <div style="display:flex; padding:0.75rem 1rem; background:#f7fafc; font-weight:600; font-size:0.85rem; color:#4a5568; border-bottom:1px solid #e2e8f0;">
-                    <div style="flex:1;">기사 제목</div>
-                    <div style="width:50px; text-align:center;">면</div>
-                    <div style="width:70px; text-align:center;">점수</div>
-                    <div style="width:150px; text-align:center;">배지</div>
-                    <div style="width:90px; text-align:center;">액션</div>
-                </div>
-                
-                <!-- 기사 목록 -->
-                <div style="max-height:500px; overflow-y:auto;">
-                    ${articleCards || '<div class="p-4 text-center text-muted">기사가 없습니다</div>'}
-                </div>
-                
-                <!-- 안내 문구 -->
-                <div style="background:#fffbeb; padding:0.75rem 1rem; border-top:1px solid #e2e8f0; font-size:0.85rem; color:#744210;">
-                    <i class="bi bi-lightbulb me-1"></i>누락된 성과가 있다면 <strong>[검토요청]</strong>을 눌러 소명해 주세요.
-                </div>
-            </div>
-        </div>
-    `;
-    
-    // 이벤트 바인딩
-    bindSaveEvents();
-}
-
-// 부서 통계 계산 (부서 평균, 순위)
-function calculateDeptStats() {
-    if (!allData || !allData.reporters) return { deptAvg: null, myRank: null, totalCount: 0 };
-    
-    // 현재 기자의 부서 찾기 (session에서)
-    const myDept = session.department;
-    if (!myDept) return { deptAvg: null, myRank: null, totalCount: 0 };
-    
-    const evals = ScoreDataStore ? ScoreDataStore.getEvals() : {};
-    const scores = [];
-    
-    // 같은 부서 기자들의 점수 계산
-    allData.reporters.forEach(reporter => {
-        // users.json에서 부서 확인 필요 - 여기서는 간단히 처리
-        // 실제로는 users.json을 로드해서 확인해야 함
-        if (!reporter.articles) return;
-        
-        let reporterScore = 0;
-        reporter.articles.forEach(article => {
-            const evalData = evals[article.nsid] || {};
-            const scoreInput = {
-                page: article.paper_number || 10,
-                charCount: article.char_count || 0,
-                isTopArticle: evalData.isTopArticle || article.is_auto_top || false,
-                isExclusive: evalData.isExclusive || article.coverage_type === '단독' || false,
-                isFeature: evalData.isFeature || article.coverage_type === '특종' || article.coverage_type === '기획발굴' || false,
-                isSGrade: evalData.isSGrade || article.impact_grade === 'S' || false
-            };
-            reporterScore += calculateArticleScore(scoreInput).totalScore;
-        });
-        scores.push({ name: reporter.name, score: reporterScore });
-    });
-    
-    if (scores.length === 0) return { deptAvg: null, myRank: null, totalCount: 0 };
-    
-    // 부서 평균
-    const totalDeptScore = scores.reduce((sum, s) => sum + s.score, 0);
-    const deptAvg = totalDeptScore / scores.length;
-    
-    // 내 순위
-    scores.sort((a, b) => b.score - a.score);
-    const myRank = scores.findIndex(s => s.name === reporterName) + 1;
-    
-    return {
-        deptAvg: deptAvg,
-        myRank: myRank > 0 ? myRank : null,
-        totalCount: scores.length
-    };
-}
-
-// 검토요청 제출 (기자용)
-function submitAppeal() {
-    const nsid = document.getElementById('appealNsid').value;
-    const qualityType = document.getElementById('appealType').value;
-    const reason = document.getElementById('appealReason').value.trim();
-    const title = document.getElementById('appealArticleTitle').textContent;
-    
-    if (!qualityType) {
-        alert('요청 유형을 선택해주세요.');
-        return;
-    }
-    if (!reason) {
-        alert('요청 사유를 입력해주세요.');
-        return;
-    }
-    
-    // 기사 정보 찾기
-    const article = reporterData.articles.find(a => a.nsid === nsid);
-    
-    // ScoreDataStore에 저장
-    if (typeof ScoreDataStore !== 'undefined') {
-        ScoreDataStore.createAppeal({
-            nsid: nsid,
-            articleTitle: title,
-            reporterId: session.userId,
-            reporterName: session.name,
-            department: session.department || '',
-            qualityType: qualityType,
-            reason: reason,
-            pubDate: article ? article.pub_date : '',
-            page: article ? article.paper_number : 0
-        });
-    }
-    
-    // 모달 닫기
-    bootstrap.Modal.getInstance(document.getElementById('appealModal')).hide();
-    showToast('검토 요청이 제출되었습니다');
-    
-    // 테이블 다시 렌더링
-    renderContent();
 }
 
 // 초기 로드

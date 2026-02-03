@@ -3,7 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>기자 목록 - S-CORE</title>
+    <title>기자 목록 - KPI</title>
+    <!-- Preconnect & Preload for faster loading -->
     <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
     <link rel="preload" href="data.json" as="fetch" crossorigin>
     <link rel="preload" href="users.json" as="fetch" crossorigin>
@@ -48,8 +49,8 @@
 <div class="header">
     <div class="d-flex justify-content-between align-items-center">
         <div>
-            <h1 style="font-size:1.8rem; margin-bottom:0.25rem;"><i class="bi bi-bar-chart-fill me-2"></i>S-CORE</h1>
-            <div style="opacity:0.9;">기자 지면 기여도 평가 시스템</div>
+            <h1 style="font-size:1.8rem; margin-bottom:0.25rem;"><i class="bi bi-bar-chart-fill me-2"></i>KPI</h1>
+            <div style="opacity:0.9;">기자 지면 정보 정량평가 시스템</div>
         </div>
         <div class="text-end">
             <small id="userInfo" class="me-2"></small>
@@ -60,13 +61,9 @@
 
 <!-- 네비게이션 -->
 <div class="nav-menu" id="navMenu">
-    <a href="home.html" id="nav-home"><i class="bi bi-house-door me-1"></i>대시보드</a>
-    <a href="score-dashboard.html"><i class="bi bi-speedometer2 me-1"></i>부서 대시보드</a>
+    <a href="home.html" id="navHome"><i class="bi bi-house-door me-1"></i>대시보드</a>
     <a href="list.html" class="active"><i class="bi bi-people me-1"></i>기자 목록</a>
-    <a href="score-eval.html"><i class="bi bi-clipboard-check me-1"></i>기사 평가</a>
-    <a href="score-appeals.html"><i class="bi bi-chat-left-text me-1"></i>소명 관리</a>
-    <a href="score-config.html" id="nav-config"><i class="bi bi-sliders me-1"></i>가중치 설정</a>
-    <a href="admin.html" id="nav-admin"><i class="bi bi-gear me-1"></i>사원 관리</a>
+    <a href="admin.html" id="navAdmin"><i class="bi bi-gear me-1"></i>사원 관리</a>
 </div>
 
 <!-- 부서 필터 (admin만 표시) -->
@@ -210,13 +207,12 @@ if (session.role !== 'admin' && session.role !== 'manager') {
     location.href = 'login.html';
 }
 
-document.getElementById('userInfo').textContent = session.role === 'admin' ? '관리자님' : `${session.name}님`;
+document.getElementById('userInfo').textContent = session ? `${session.name}님 (${session.role === 'admin' ? '관리자' : session.department})` : '';
 
-// Manager는 대시보드, 가중치설정, 사원관리 숨김
+// manager는 대시보드, 사원관리 링크 숨김
 if (session.role === 'manager') {
-    document.getElementById('nav-home').style.display = 'none';
-    document.getElementById('nav-config').style.display = 'none';
-    document.getElementById('nav-admin').style.display = 'none';
+    document.getElementById('navHome').style.display = 'none';
+    document.getElementById('navAdmin').style.display = 'none';
 }
 
 function logout() {

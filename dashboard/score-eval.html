@@ -1,0 +1,485 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>기사 평가 - S-CORE</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+    <style>
+        body { background: #f5f7fa; font-family: 'Pretendard', -apple-system, sans-serif; }
+        .container-main { max-width: 1400px; margin: 0 auto; padding: 1.5rem; }
+        .header { background: linear-gradient(135deg, #1a365d 0%, #2c5282 50%, #2b6cb0 100%); color: white; padding: 1.5rem; border-radius: 12px; margin-bottom: 1.5rem; }
+        .card { border: none; border-radius: 12px; box-shadow: 0 2px 12px rgba(0,0,0,0.08); margin-bottom: 1.5rem; }
+        .card-header { background: #2c5282; color: white; font-weight: 600; border-radius: 12px 12px 0 0 !important; padding: 1rem 1.5rem; }
+        .nav-menu { background: white; border-radius: 12px; padding: 1rem; margin-bottom: 1.5rem; box-shadow: 0 2px 12px rgba(0,0,0,0.08); }
+        .nav-menu a { color: #2c5282; text-decoration: none; padding: 0.5rem 1rem; border-radius: 8px; margin-right: 0.5rem; transition: all 0.2s; }
+        .nav-menu a:hover, .nav-menu a.active { background: #2c5282; color: white; }
+        .stat-card { background: white; border-radius: 12px; padding: 1.5rem; text-align: center; box-shadow: 0 2px 12px rgba(0,0,0,0.08); }
+        .stat-card .value { font-size: 2.5rem; font-weight: 700; color: #2c5282; }
+        .stat-card .label { font-size: 0.9rem; color: #718096; margin-top: 0.5rem; }
+        .quality-btn { 
+            padding: 0.25rem 0.5rem; border-radius: 6px; font-size: 0.75rem; font-weight: 600;
+            border: 2px solid #e2e8f0; background: white; color: #718096; cursor: pointer;
+            transition: all 0.2s; margin-right: 0.25rem;
+        }
+        .quality-btn:hover { border-color: #2c5282; color: #2c5282; }
+        .quality-btn.active { background: #2c5282; border-color: #2c5282; color: white; }
+        .quality-btn.top.active { background: #f59e0b; border-color: #f59e0b; }
+        .quality-btn.exclusive.active { background: #ef4444; border-color: #ef4444; }
+        .quality-btn.feature.active { background: #8b5cf6; border-color: #8b5cf6; }
+        .quality-btn.sgrade.active { background: #10b981; border-color: #10b981; }
+        .score-cell { font-weight: 700; font-size: 1.1rem; }
+        .score-high { color: #ef4444; }
+        .score-mid { color: #f59e0b; }
+        .score-low { color: #718096; }
+        .page-badge { display: inline-block; width: 32px; height: 32px; line-height: 32px; text-align: center; border-radius: 8px; font-weight: 700; font-size: 0.9rem; }
+        .page-1 { background: #ffd700; color: #333; }
+        .page-main { background: #2b6cb0; color: white; }
+        .page-other { background: #718096; color: white; }
+        .toast-container { position: fixed; top: 20px; right: 20px; z-index: 9999; }
+        .info-box { background: #ebf4ff; border-left: 4px solid #2c5282; padding: 1rem; border-radius: 0 8px 8px 0; margin-bottom: 1rem; }
+        tr.confirmed { background: #f7fafc; opacity: 0.7; }
+        .btn-outline-light:hover { background: rgba(255,255,255,0.15); }
+    </style>
+</head>
+<body>
+<div class="container-main">
+
+<!-- 토스트 -->
+<div class="toast-container">
+    <div id="toast" class="toast align-items-center text-bg-success border-0" role="alert">
+        <div class="d-flex">
+            <div class="toast-body" id="toastMsg"></div>
+            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+        </div>
+    </div>
+</div>
+
+<!-- 헤더 -->
+<div class="header">
+    <div class="d-flex justify-content-between align-items-center">
+        <div>
+            <h1 style="font-size:1.8rem; margin-bottom:0.25rem;"><i class="bi bi-bar-chart-fill me-2"></i>S-CORE</h1>
+            <div style="opacity:0.9;">기자 지면 기여도 평가 시스템</div>
+        </div>
+        <div class="text-end">
+            <small id="userInfo" class="me-2"></small>
+            <button class="btn btn-sm btn-outline-light" onclick="logout()"><i class="bi bi-box-arrow-right"></i> 로그아웃</button>
+        </div>
+    </div>
+</div>
+
+<!-- 네비게이션 -->
+<div class="nav-menu" id="navMenu">
+    <a href="home.html" id="nav-home"><i class="bi bi-house-door me-1"></i>대시보드</a>
+    <a href="score-dashboard.html"><i class="bi bi-speedometer2 me-1"></i>부서 대시보드</a>
+    <a href="list.html"><i class="bi bi-people me-1"></i>기자 목록</a>
+    <a href="score-eval.html" class="active"><i class="bi bi-clipboard-check me-1"></i>기사 평가</a>
+    <a href="score-appeals.html"><i class="bi bi-chat-left-text me-1"></i>소명 관리</a>
+    <a href="score-config.html" id="nav-config"><i class="bi bi-sliders me-1"></i>가중치 설정</a>
+    <a href="admin.html" id="nav-admin"><i class="bi bi-gear me-1"></i>사원 관리</a>
+</div>
+
+<!-- 필터 -->
+<div class="card">
+    <div class="card-body">
+        <div class="row g-3 align-items-center">
+            <div class="col-md-3">
+                <label class="form-label fw-bold">부서</label>
+                <select class="form-select" id="deptFilter" onchange="filterArticles()">
+                    <option value="">전체 부서</option>
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label class="form-label fw-bold">날짜</label>
+                <input type="date" class="form-control" id="dateFilter" onchange="filterArticles()">
+            </div>
+            <div class="col-md-3">
+                <label class="form-label fw-bold">기자 검색</label>
+                <input type="text" class="form-control" id="searchInput" placeholder="기자명..." oninput="filterArticles()">
+            </div>
+            <div class="col-md-3">
+                <label class="form-label fw-bold">상태</label>
+                <select class="form-select" id="statusFilter" onchange="filterArticles()">
+                    <option value="">전체</option>
+                    <option value="PENDING">미확정</option>
+                    <option value="CONFIRMED">확정</option>
+                </select>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 요약 통계 -->
+<div class="row g-3 mb-4">
+    <div class="col-md-3">
+        <div class="stat-card">
+            <div class="value" id="totalArticles">0</div>
+            <div class="label">총 기사 수</div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="stat-card">
+            <div class="value" id="pendingCount">0</div>
+            <div class="label">미확정</div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="stat-card">
+            <div class="value" id="confirmedCount">0</div>
+            <div class="label">확정 완료</div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="stat-card">
+            <div class="value" id="totalScore">0</div>
+            <div class="label">총점</div>
+        </div>
+    </div>
+</div>
+
+<!-- 안내 -->
+<div class="info-box">
+    <i class="bi bi-lightbulb me-2"></i>
+    <strong>Max-Auto, Min-Manual:</strong> 대부분의 기사는 자동 점수 그대로 확정됩니다. 특별한 가치가 있는 기사만 가점 버튼을 눌러주세요.
+</div>
+
+<!-- 기사 목록 -->
+<div class="card">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <span><i class="bi bi-newspaper me-2"></i>기사 평가 목록</span>
+        <div>
+            <button class="btn btn-sm btn-warning me-2" onclick="confirmSelected()"><i class="bi bi-check me-1"></i>선택 확정</button>
+            <button class="btn btn-sm btn-light" onclick="confirmAll()"><i class="bi bi-check-all me-1"></i>전체 확정</button>
+        </div>
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th style="width:3%"><input type="checkbox" id="selectAll" onchange="toggleSelectAll()"></th>
+                        <th style="width:5%">면</th>
+                        <th style="width:25%">기사 제목</th>
+                        <th style="width:8%">기자</th>
+                        <th style="width:8%">부서</th>
+                        <th style="width:7%">글자수</th>
+                        <th style="width:6%">자동</th>
+                        <th style="width:20%">품질 가점</th>
+                        <th style="width:6%">최종</th>
+                        <th style="width:6%">상태</th>
+                    </tr>
+                </thead>
+                <tbody id="articleList">
+                    <tr><td colspan="10" class="text-center py-4 text-muted">데이터 로딩중...</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- 점수 매트릭스 참고 -->
+<div class="card">
+    <div class="card-header"><i class="bi bi-table me-2"></i>점수 매트릭스 (참고)</div>
+    <div class="card-body">
+        <table class="table table-bordered table-sm text-center mb-0">
+            <thead class="table-dark">
+                <tr><th>면 \ 글자수</th><th>2,000자↑</th><th>1,200~1,999자</th><th>600~1,199자</th><th>600자↓</th></tr>
+            </thead>
+            <tbody>
+                <tr><td class="fw-bold">1면</td><td>10.0</td><td>7.0</td><td>5.5</td><td>5.5</td></tr>
+                <tr><td class="fw-bold">2~3면</td><td>8.5</td><td>6.0</td><td>4.7</td><td>4.7</td></tr>
+                <tr><td class="fw-bold">4~5면</td><td>7.0</td><td>4.9</td><td>3.9</td><td>3.9</td></tr>
+                <tr><td class="fw-bold">6~10면</td><td>5.5</td><td>3.9</td><td>3.0</td><td>3.0</td></tr>
+                <tr><td class="fw-bold">11~20면</td><td>4.0</td><td>2.8</td><td>2.2</td><td>2.2</td></tr>
+                <tr><td class="fw-bold">21~32면</td><td>3.0</td><td>2.1</td><td>1.7</td><td>1.7</td></tr>
+            </tbody>
+        </table>
+        <div class="small text-muted mt-2">
+            품질 가점: 면톱 +2점, 단독/특종 +5점, 기획 +5점, S등급 +3점 (상한 10점)
+        </div>
+    </div>
+</div>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="score.js"></script>
+<script src="score-data.js"></script>
+<script>
+// 로그인 체크
+const session = JSON.parse(localStorage.getItem('kpi_session') || 'null');
+if (!session || (session.role !== 'admin' && session.role !== 'manager')) {
+    location.href = 'login.html';
+}
+
+document.getElementById('userInfo').textContent = session.role === 'admin' ? '관리자님' : `${session.name}님`;
+
+// Manager는 대시보드, 가중치설정, 사원관리 숨김
+if (session.role === 'manager') {
+    document.getElementById('nav-home').style.display = 'none';
+    document.getElementById('nav-config').style.display = 'none';
+    document.getElementById('nav-admin').style.display = 'none';
+}
+
+function logout() {
+    localStorage.removeItem('kpi_session');
+    location.href = 'login.html';
+}
+
+let allData = null;
+let usersData = [];
+
+const EVAL_STORAGE_KEY = 'score_article_evals';
+
+// 초기 로드
+document.addEventListener('DOMContentLoaded', async () => {
+    // 서버 동기화 (SYNC_ENABLED가 true일 때만)
+    if (ScoreDataStore.SYNC_ENABLED) {
+        await ScoreDataStore.loadFromServer();
+        await ScoreDataStore.retryPendingSync();
+    }
+    
+    // 오늘 날짜 기본값
+    const today = new Date().toISOString().slice(0, 10);
+    document.getElementById('dateFilter').value = today;
+    
+    // 데이터 로드
+    const [dataRes, usersRes] = await Promise.all([
+        fetch('data.json?t=' + Date.now()),
+        fetch('users.json?t=' + Date.now())
+    ]);
+    allData = await dataRes.json();
+    usersData = await usersRes.json();
+    
+    // 부서 필터 채우기
+    const depts = [...new Set(usersData.map(u => u.department).filter(d => d && d !== '전체'))];
+    depts.sort();
+    const deptFilter = document.getElementById('deptFilter');
+    depts.forEach(d => {
+        deptFilter.innerHTML += `<option value="${d}">${d}</option>`;
+    });
+    
+    // manager는 자기 부서만
+    if (session.role === 'manager') {
+        deptFilter.value = session.department;
+        deptFilter.disabled = true;
+    }
+    
+    filterArticles();
+});
+
+// 기사 필터링
+function filterArticles() {
+    if (!allData) return;
+    
+    const deptFilter = document.getElementById('deptFilter').value;
+    const dateFilter = document.getElementById('dateFilter').value;
+    const searchInput = document.getElementById('searchInput').value.toLowerCase();
+    const statusFilter = document.getElementById('statusFilter').value;
+    
+    // 모든 기사 추출
+    let articles = [];
+    const evals = ScoreDataStore.getEvals();
+    allData.reporters.forEach(r => {
+        const userInfo = usersData.find(u => u.name === r.name);
+        r.articles.forEach(a => {
+            articles.push({
+                ...a,
+                reporter_name: r.name,
+                department: userInfo ? userInfo.department : '-',
+                // 평가 데이터 병합
+                ...(evals[a.nsid] || {})
+            });
+        });
+    });
+    
+    // 필터 적용
+    if (dateFilter) {
+        articles = articles.filter(a => a.pub_date === dateFilter);
+    }
+    if (deptFilter) {
+        articles = articles.filter(a => a.department === deptFilter);
+    }
+    if (searchInput) {
+        articles = articles.filter(a => a.reporter_name.toLowerCase().includes(searchInput));
+    }
+    if (statusFilter) {
+        articles = articles.filter(a => (a.status || 'PENDING') === statusFilter);
+    }
+    
+    // 면 순으로 정렬
+    articles.sort((a, b) => (a.page || 99) - (b.page || 99));
+    
+    renderArticles(articles);
+}
+
+// 기사 목록 렌더링
+function renderArticles(articles) {
+    const tbody = document.getElementById('articleList');
+    
+    if (articles.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="10" class="text-center py-4 text-muted">해당 조건의 기사가 없습니다</td></tr>';
+        updateStats([]);
+        return;
+    }
+    
+    tbody.innerHTML = articles.map(article => {
+        // 면 정보 (없으면 기본값)
+        const page = article.page || 15;
+        const charCount = article.char_count || 0;
+        
+        // 점수 계산
+        const evalData = {
+            page: page,
+            charCount: charCount,
+            isTopArticle: article.isTopArticle || false,
+            isExclusive: article.isExclusive || false,
+            isFeature: article.isFeature || false,
+            isSGrade: article.isSGrade || false
+        };
+        const score = calculateArticleScore(evalData);
+        
+        const pageClass = page === 1 ? 'page-1' : (page <= 5 ? 'page-main' : 'page-other');
+        const scoreClass = score.totalScore >= 10 ? 'score-high' : (score.totalScore >= 5 ? 'score-mid' : 'score-low');
+        const isConfirmed = article.status === 'CONFIRMED';
+        const nsid = article.nsid || article.url;
+        
+        return `
+            <tr class="${isConfirmed ? 'confirmed' : ''}" data-nsid="${nsid}">
+                <td><input type="checkbox" class="article-check" ${isConfirmed ? 'disabled' : ''}></td>
+                <td><span class="page-badge ${pageClass}">${page}</span></td>
+                <td>
+                    <div class="fw-bold text-truncate" style="max-width:300px;" title="${escapeHtml(article.title)}">${escapeHtml(article.title)}</div>
+                    <small class="text-muted">${article.pub_date}</small>
+                </td>
+                <td>${article.reporter_name}</td>
+                <td><small>${article.department}</small></td>
+                <td>${charCount.toLocaleString()}</td>
+                <td>${score.baseScore}</td>
+                <td>
+                    <button class="quality-btn top ${article.isTopArticle ? 'active' : ''}" 
+                            onclick="toggleQuality('${nsid}', 'isTopArticle')" ${isConfirmed ? 'disabled' : ''}>면톱</button>
+                    <button class="quality-btn exclusive ${article.isExclusive ? 'active' : ''}" 
+                            onclick="toggleQuality('${nsid}', 'isExclusive')" ${isConfirmed ? 'disabled' : ''}>단독</button>
+                    <button class="quality-btn feature ${article.isFeature ? 'active' : ''}" 
+                            onclick="toggleQuality('${nsid}', 'isFeature')" ${isConfirmed ? 'disabled' : ''}>기획</button>
+                    <button class="quality-btn sgrade ${article.isSGrade ? 'active' : ''}" 
+                            onclick="toggleQuality('${nsid}', 'isSGrade')" ${isConfirmed ? 'disabled' : ''}>S등급</button>
+                    ${score.qualityBonus > 0 ? `<span class="badge bg-success ms-1">+${score.qualityBonus}</span>` : ''}
+                </td>
+                <td class="score-cell ${scoreClass}">${score.totalScore}</td>
+                <td>
+                    <span class="badge ${isConfirmed ? 'bg-success' : 'bg-warning text-dark'}">
+                        ${isConfirmed ? '확정' : '미확정'}
+                    </span>
+                </td>
+            </tr>
+        `;
+    }).join('');
+    
+    updateStats(articles);
+}
+
+// 통계 업데이트
+function updateStats(articles) {
+    const pending = articles.filter(a => (a.status || 'PENDING') === 'PENDING').length;
+    const confirmed = articles.filter(a => a.status === 'CONFIRMED').length;
+    
+    let totalScore = 0;
+    articles.forEach(a => {
+        const evalData = {
+            page: a.page || 15,
+            charCount: a.char_count || 0,
+            isTopArticle: a.isTopArticle || false,
+            isExclusive: a.isExclusive || false,
+            isFeature: a.isFeature || false,
+            isSGrade: a.isSGrade || false
+        };
+        totalScore += calculateArticleScore(evalData).totalScore;
+    });
+    
+    document.getElementById('totalArticles').textContent = articles.length;
+    document.getElementById('pendingCount').textContent = pending;
+    document.getElementById('confirmedCount').textContent = confirmed;
+    document.getElementById('totalScore').textContent = totalScore.toFixed(1);
+}
+
+// 품질 가점 토글 (확정된 기사는 수정 불가)
+function toggleQuality(nsid, field) {
+    // 확정 상태 확인
+    if (ScoreDataStore.isConfirmed(nsid)) {
+        showToast('확정된 기사는 수정할 수 없습니다', 'warning');
+        return;
+    }
+    
+    const evals = ScoreDataStore.getEvals();
+    const current = evals[nsid] || {};
+    ScoreDataStore.saveEval(nsid, { [field]: !current[field] });
+    filterArticles();
+    showToast('저장되었습니다');
+}
+
+// 전체 선택
+function toggleSelectAll() {
+    const checked = document.getElementById('selectAll').checked;
+    document.querySelectorAll('.article-check:not(:disabled)').forEach(cb => cb.checked = checked);
+}
+
+// 선택 확정
+function confirmSelected() {
+    const selected = document.querySelectorAll('.article-check:checked');
+    if (selected.length === 0) {
+        showToast('선택된 기사가 없습니다', 'warning');
+        return;
+    }
+    
+    let confirmedCount = 0;
+    selected.forEach(cb => {
+        const row = cb.closest('tr');
+        const nsid = row.dataset.nsid;
+        
+        // 이미 확정된 기사는 스킵
+        if (!ScoreDataStore.isConfirmed(nsid)) {
+            ScoreDataStore.confirmArticle(nsid, session.userId, session.name);
+            confirmedCount++;
+        }
+    });
+    
+    filterArticles();
+    showToast(`${confirmedCount}건 확정되었습니다`);
+}
+
+// 전체 확정
+function confirmAll() {
+    if (!confirm('현재 필터된 미확정 기사를 모두 확정하시겠습니까?')) return;
+    
+    let confirmedCount = 0;
+    document.querySelectorAll('tr[data-nsid]').forEach(row => {
+        const nsid = row.dataset.nsid;
+        if (!ScoreDataStore.isConfirmed(nsid)) {
+            ScoreDataStore.confirmArticle(nsid, session.userId, session.name);
+            confirmedCount++;
+        }
+    });
+    
+    filterArticles();
+    showToast(`${confirmedCount}건 확정되었습니다`);
+}
+
+function escapeHtml(t) {
+    const d = document.createElement('div');
+    d.textContent = t || '';
+    return d.innerHTML;
+}
+
+function showToast(msg, type = 'success') {
+    const t = document.getElementById('toast');
+    t.className = `toast align-items-center text-bg-${type} border-0`;
+    document.getElementById('toastMsg').textContent = msg;
+    new bootstrap.Toast(t).show();
+}
+</script>
+</body>
+</html>

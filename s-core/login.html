@@ -3,8 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>로그인 - 서울경제 KPI</title>
-    <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+    <title>로그인 - S-CORE</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
     <style>
@@ -15,8 +14,6 @@
             font-family: 'Pretendard', -apple-system, 'Malgun Gothic', sans-serif;
             background: #f5f7fa;
         }
-        
-        /* 왼쪽 브랜딩 영역 */
         .brand-section {
             flex: 1;
             background: linear-gradient(135deg, #1a365d 0%, #2c5282 50%, #2b6cb0 100%);
@@ -44,32 +41,21 @@
         }
         .brand-content { position: relative; z-index: 1; text-align: center; color: white; }
         .brand-logo {
-            width: 80px;
-            height: 80px;
+            width: 100px;
+            height: 100px;
             background: rgba(255,255,255,0.15);
-            border-radius: 20px;
+            border-radius: 24px;
             display: flex;
             align-items: center;
             justify-content: center;
             margin: 0 auto 1.5rem;
             backdrop-filter: blur(10px);
         }
-        .brand-logo i { font-size: 2.5rem; }
-        .brand-title { font-size: 2rem; font-weight: 700; margin-bottom: 0.5rem; letter-spacing: -0.5px; }
+        .brand-logo i { font-size: 3rem; }
+        .brand-title { font-size: 2.5rem; font-weight: 700; margin-bottom: 0.5rem; letter-spacing: 2px; }
         .brand-subtitle { font-size: 1rem; opacity: 0.85; margin-bottom: 2rem; }
-        .brand-company {
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
-            padding: 1rem 1.5rem;
-            background: rgba(255,255,255,0.1);
-            border-radius: 12px;
-            backdrop-filter: blur(10px);
-        }
-        .brand-company img { height: 28px; filter: brightness(0) invert(1); }
-        .brand-company span { font-size: 1.1rem; font-weight: 500; letter-spacing: 2px; }
         .brand-features {
-            margin-top: 3rem;
+            margin-top: 2rem;
             display: flex;
             flex-direction: column;
             gap: 1rem;
@@ -78,7 +64,7 @@
             display: flex;
             align-items: center;
             gap: 1rem;
-            padding: 0.75rem 1rem;
+            padding: 0.75rem 1.25rem;
             background: rgba(255,255,255,0.08);
             border-radius: 10px;
             font-size: 0.9rem;
@@ -92,8 +78,6 @@
             align-items: center;
             justify-content: center;
         }
-        
-        /* 오른쪽 로그인 영역 */
         .login-section {
             width: 480px;
             display: flex;
@@ -103,20 +87,9 @@
             background: white;
         }
         .login-header { margin-bottom: 2rem; }
-        .login-header h2 {
-            font-size: 1.75rem;
-            font-weight: 700;
-            color: #1a202c;
-            margin-bottom: 0.5rem;
-        }
+        .login-header h2 { font-size: 1.75rem; font-weight: 700; color: #1a202c; margin-bottom: 0.5rem; }
         .login-header p { color: #718096; font-size: 0.95rem; }
-        
-        .form-label {
-            font-weight: 600;
-            color: #4a5568;
-            font-size: 0.9rem;
-            margin-bottom: 0.5rem;
-        }
+        .form-label { font-weight: 600; color: #4a5568; font-size: 0.9rem; margin-bottom: 0.5rem; }
         .form-control {
             padding: 0.875rem 1rem;
             border: 2px solid #e2e8f0;
@@ -124,12 +97,7 @@
             font-size: 1rem;
             transition: all 0.2s;
         }
-        .form-control:focus {
-            border-color: #2b6cb0;
-            box-shadow: 0 0 0 3px rgba(43, 108, 176, 0.15);
-        }
-        .form-control::placeholder { color: #a0aec0; }
-        
+        .form-control:focus { border-color: #2b6cb0; box-shadow: 0 0 0 3px rgba(43, 108, 176, 0.15); }
         .input-group-text {
             background: #f7fafc;
             border: 2px solid #e2e8f0;
@@ -137,14 +105,8 @@
             border-radius: 10px 0 0 10px;
             color: #718096;
         }
-        .input-group .form-control {
-            border-left: none;
-            border-radius: 0 10px 10px 0;
-        }
-        .input-group:focus-within .input-group-text {
-            border-color: #2b6cb0;
-        }
-        
+        .input-group .form-control { border-left: none; border-radius: 0 10px 10px 0; }
+        .input-group:focus-within .input-group-text { border-color: #2b6cb0; }
         .btn-login {
             background: linear-gradient(135deg, #2b6cb0 0%, #2c5282 100%);
             border: none;
@@ -154,31 +116,11 @@
             border-radius: 10px;
             transition: all 0.3s;
         }
-        .btn-login:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 20px rgba(43, 108, 176, 0.35);
-        }
-        .btn-login:active { transform: translateY(0); }
-        
-        .alert {
-            border-radius: 10px;
-            border: none;
-            padding: 1rem;
-        }
-        .alert-danger {
-            background: #fff5f5;
-            color: #c53030;
-        }
-        
-        .login-footer {
-            margin-top: 2rem;
-            padding-top: 1.5rem;
-            border-top: 1px solid #e2e8f0;
-            text-align: center;
-        }
+        .btn-login:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(43, 108, 176, 0.35); }
+        .alert { border-radius: 10px; border: none; padding: 1rem; }
+        .alert-danger { background: #fff5f5; color: #c53030; }
+        .login-footer { margin-top: 2rem; padding-top: 1.5rem; border-top: 1px solid #e2e8f0; text-align: center; }
         .login-footer p { color: #a0aec0; font-size: 0.85rem; }
-        
-        /* 테스트 계정 안내 */
         .test-accounts {
             margin-top: 1.5rem;
             padding: 1rem;
@@ -186,79 +128,47 @@
             border-radius: 10px;
             border: 1px solid #e2e8f0;
         }
-        .test-accounts-title {
-            font-size: 0.8rem;
-            color: #718096;
-            margin-bottom: 0.75rem;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-        .test-account-item {
-            display: flex;
-            align-items: center;
-            padding: 0.5rem 0;
-            border-bottom: 1px solid #e2e8f0;
-            font-size: 0.85rem;
-        }
+        .test-accounts-title { font-size: 0.8rem; color: #718096; margin-bottom: 0.75rem; display: flex; align-items: center; gap: 0.5rem; }
+        .test-account-item { display: flex; align-items: center; padding: 0.5rem 0; border-bottom: 1px solid #e2e8f0; font-size: 0.85rem; }
         .test-account-item:last-child { border-bottom: none; }
-        .test-account-item .badge {
-            width: 60px;
-            font-size: 0.7rem;
-            padding: 4px 8px;
-        }
+        .test-account-item .badge { width: 60px; font-size: 0.7rem; padding: 4px 8px; }
         .test-account-item .info { flex: 1; margin-left: 0.75rem; color: #4a5568; }
         .test-account-item .pw { color: #a0aec0; font-family: monospace; }
-        
-        /* 반응형 */
         @media (max-width: 992px) {
             body { flex-direction: column; }
-            .brand-section { 
-                padding: 2rem; 
-                min-height: auto;
-            }
+            .brand-section { padding: 2rem; min-height: auto; }
             .brand-features { display: none; }
             .login-section { width: 100%; }
         }
-        
-        @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
-        .spin { display: inline-block; animation: spin 1s linear infinite; }
     </style>
 </head>
 <body>
 
-<!-- 왼쪽 브랜딩 영역 -->
 <div class="brand-section">
     <div class="brand-content">
         <div class="brand-logo">
-            <i class="bi bi-bar-chart-line-fill"></i>
+            <i class="bi bi-trophy-fill"></i>
         </div>
-        <h1 class="brand-title">KPI System</h1>
-        <p class="brand-subtitle">기자 지면 정보 정량평가 시스템</p>
-        
-        <a href="guide.html" class="brand-company" style="text-decoration:none; cursor:pointer; transition: all 0.2s; color: white;">
-            <i class="bi bi-book" style="font-size:1.5rem;"></i>
-            <span>사용 설명서</span>
-        </a>
+        <h1 class="brand-title">S-CORE</h1>
+        <p class="brand-subtitle">기자 지면 기여도 점수 산출 시스템</p>
         
         <div class="brand-features">
             <div class="brand-feature">
-                <i class="bi bi-graph-up-arrow"></i>
-                <span>기자별 실적 자동 집계</span>
+                <i class="bi bi-calculator"></i>
+                <span>면·분량 기반 자동 점수 산출</span>
             </div>
             <div class="brand-feature">
-                <i class="bi bi-clipboard-check"></i>
-                <span>정량/정성 평가 통합 관리</span>
+                <i class="bi bi-check2-square"></i>
+                <span>품질 가점 체크박스 입력</span>
             </div>
             <div class="brand-feature">
                 <i class="bi bi-shield-check"></i>
-                <span>권한 기반 접근 제어</span>
+                <span>Max-Auto, Min-Manual 철학</span>
             </div>
         </div>
     </div>
 </div>
 
-<!-- 오른쪽 로그인 영역 -->
 <div class="login-section">
     <div class="login-header">
         <h2>로그인</h2>
@@ -282,77 +192,61 @@
                 <input type="password" class="form-control" id="password" placeholder="비밀번호를 입력하세요" required>
             </div>
         </div>
-        <button type="submit" class="btn btn-primary btn-login w-100">
-            로그인
-        </button>
+        <button type="submit" class="btn btn-primary btn-login w-100">로그인</button>
     </form>
     
-    <div class="test-accounts" id="testAccountInfo" style="display:none;">
+    <div class="test-accounts">
         <div class="test-accounts-title">
             <i class="bi bi-info-circle"></i>
             테스트 계정 안내
         </div>
         <div class="test-account-item">
-            <span class="badge bg-danger">관리자</span>
+            <span class="badge bg-danger">Admin</span>
             <span class="info">admin (관리자)</span>
             <span class="pw">1234</span>
         </div>
         <div class="test-account-item">
-            <span class="badge bg-primary">부장</span>
-            <span class="info">80486 (서일범)</span>
+            <span class="badge bg-primary">Manager</span>
+            <span class="info">80486 (서일범 부장)</span>
             <span class="pw">1234</span>
         </div>
         <div class="test-account-item">
-            <span class="badge bg-secondary">기자</span>
-            <span class="info">211010 (주재현)</span>
+            <span class="badge bg-secondary">Reporter</span>
+            <span class="info">211010 (주재현 기자)</span>
             <span class="pw">1234</span>
         </div>
     </div>
     
     <div class="login-footer">
-        <p>© 2026 서울경제신문. All rights reserved.</p>
+        <p>© 2026 서울경제신문. S-CORE v1.0</p>
     </div>
 </div>
 
 <script>
-let USERS = [];
-let usersLoaded = false;
+// 테스트용 사용자 데이터
+const USERS = [
+    { id: 'admin', name: '관리자', role: 'admin', department: '전체', password: '1234' },
+    { id: '80486', name: '서일범', role: 'manager', department: '경제부', password: '1234' },
+    { id: '10579', name: '이철균', role: 'manager', department: '편집국', password: '1234' },
+    { id: '211010', name: '주재현', role: 'reporter', department: '경제부', password: '1234' },
+    { id: '200101', name: '김기자', role: 'reporter', department: '경제부', password: '1234' },
+    { id: '200102', name: '이기자', role: 'reporter', department: '산업부', password: '1234' }
+];
 
-const usersPromise = fetch('users.json?t=' + Date.now())
-    .then(res => res.json())
-    .then(data => { USERS = data; usersLoaded = true; })
-    .catch(() => {});
-
-document.addEventListener('DOMContentLoaded', async () => {
-    const session = localStorage.getItem('kpi_session');
+document.addEventListener('DOMContentLoaded', () => {
+    const session = localStorage.getItem('score_session');
     if (session) {
         const user = JSON.parse(session);
         redirectByRole(user);
-        return;
-    }
-    await usersPromise;
-    
-    // 로컬에서만 테스트 계정 표시
-    if (location.hostname === 'localhost' || location.hostname === '127.0.0.1') {
-        document.getElementById('testAccountInfo').style.display = 'block';
     }
 });
 
-document.getElementById('loginForm').addEventListener('submit', async function(e) {
+document.getElementById('loginForm').addEventListener('submit', function(e) {
     e.preventDefault();
     
     const userId = document.getElementById('userId').value.trim();
     const password = document.getElementById('password').value;
     const alertBox = document.getElementById('alertBox');
-    const submitBtn = this.querySelector('button[type="submit"]');
-    
-    if (!usersLoaded) {
-        submitBtn.disabled = true;
-        submitBtn.innerHTML = '<i class="bi bi-arrow-repeat spin me-2"></i>로딩중...';
-        await usersPromise;
-        submitBtn.disabled = false;
-        submitBtn.innerHTML = '로그인';
-    }
     
     const user = USERS.find(u => u.id === userId);
     if (!user || user.password !== password) {
@@ -368,22 +262,19 @@ document.getElementById('loginForm').addEventListener('submit', async function(e
         name: user.name,
         role: user.role,
         department: user.department,
-        position: user.position,
         loginTime: new Date().toISOString()
     };
-    localStorage.setItem('kpi_session', JSON.stringify(session));
+    localStorage.setItem('score_session', JSON.stringify(session));
     redirectByRole(session);
 });
 
 function redirectByRole(user) {
     if (user.role === 'admin') {
-        location.href = 'home.html';
+        location.href = 'admin.html';
     } else if (user.role === 'manager') {
-        // 부장은 부서 대시보드로
-        location.href = 'score-dashboard.html';
+        location.href = 'manager.html';
     } else {
-        // 기자는 본인 상세 페이지로 (점수 + 검토요청 포함)
-        location.href = 'reporter.html?name=' + encodeURIComponent(user.name);
+        location.href = 'reporter.html';
     }
 }
 </script>

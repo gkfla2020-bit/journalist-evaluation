@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>소명 관리 - S-CORE</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+    <style>
+        body { background: #f5f7fa; font-family: 'Pretendard', -apple-system, sans-serif; }
+        .container-main { max-width: 1400px; margin: 0 auto; padding: 1.5rem; }
+        .header { background: linear-gradient(135deg, #1a365d 0%, #2c5282 50%, #2b6cb0 100%); color: white; padding: 1.5rem; border-radius: 12px; margin-bottom: 1.5rem; }
+        .card { border: none; border-radius: 12px; box-shadow: 0 2px 12px rgba(0,0,0,0.08); margin-bottom: 1.5rem; }
+        .card-header { background: #2c5282; color: white; font-weight: 600; border-radius: 12px 12px 0 0 !important; padding: 1rem 1.5rem; }
+        .nav-menu { background: white; border-radius: 12px; padding: 1rem; margin-bottom: 1.5rem; box-shadow: 0 2px 12px rgba(0,0,0,0.08); }
+        .nav-menu a { color: #2c5282; text-decoration: none; padding: 0.5rem 1rem; border-radius: 8px; margin-right: 0.5rem; transition: all 0.2s; }
+        .nav-menu a:hover, .nav-menu a.active { background: #2c5282; color: white; }
+        .stat-card { background: white; border-radius: 12px; padding: 1.5rem; text-align: center; box-shadow: 0 2px 12px rgba(0,0,0,0.08); }
+        .stat-card .value { font-size: 2.5rem; font-weight: 700; color: #2c5282; }
+        .stat-card .label { font-size: 0.9rem; color: #718096; margin-top: 0.5rem; }
+        .toast-container { position: fixed; top: 20px; right: 20px; z-index: 9999; }
+        .status-submitted { background: #fef3c7; color: #92400e; }
+        .status-approved { background: #d1fae5; color: #065f46; }
+        .status-rejected { background: #fee2e2; color: #991b1b; }
+        .quality-badge { padding: 0.25rem 0.5rem; border-radius: 6px; font-size: 0.75rem; font-weight: 600; }
+        .quality-top { background: #fef3c7; color: #92400e; }
+        .quality-exclusive { background: #fee2e2; color: #991b1b; }
+        .quality-feature { background: #ede9fe; color: #5b21b6; }
+        .quality-sgrade { background: #d1fae5; color: #065f46; }
+        .btn-outline-light:hover { background: rgba(255,255,255,0.15); }
+    </style>
+</head>
+<body>
+<div class="container-main">
+
+<!-- 토스트 -->
+<div class="toast-container">
+    <div id="toast" class="toast align-items-center text-bg-success border-0" role="alert">
+        <div class="d-flex">
+            <div class="toast-body" id="toastMsg"></div>
+            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+        </div>
+    </div>
+</div>
+
+<!-- 헤더 -->
+<div class="header">
+    <div class="d-flex justify-content-between align-items-center">
+        <div>
+            <h1 style="font-size:1.8rem; margin-bottom:0.25rem;"><i class="bi bi-bar-chart-fill me-2"></i>S-CORE</h1>
+            <div style="opacity:0.9;">기자 지면 기여도 평가 시스템</div>
+        </div>
+        <div class="text-end">
+            <small id="userInfo" class="me-2"></small>
+            <button class="btn btn-sm btn-outline-light" onclick="logout()"><i class="bi bi-box-arrow-right"></i> 로그아웃</button>
+        </div>
+    </div>
+</div>
+
+<!-- 네비게이션 -->
+<div class="nav-menu" id="navMenu">
+    <a href="home.html" id="nav-home"><i class="bi bi-house-door me-1"></i>대시보드</a>
+    <a href="score-dashboard.html"><i class="bi bi-speedometer2 me-1"></i>부서 대시보드</a>
+    <a href="list.html"><i class="bi bi-people me-1"></i>기자 목록</a>
+    <a href="score-eval.html"><i class="bi bi-clipboard-check me-1"></i>기사 평가</a>
+    <a href="score-appeals.html" class="active"><i class="bi bi-chat-left-text me-1"></i>소명 관리</a>
+    <a href="score-config.html" id="nav-config"><i class="bi bi-sliders me-1"></i>가중치 설정</a>
+    <a href="admin.html" id="nav-admin"><i class="bi bi-gear me-1"></i>사원 관리</a>
+</div>
+
+<!-- 요약 통계 -->
+<div class="row g-3 mb-4">
+    <div class="col-md-3">
+        <div class="stat-card">
+            <div class="value" id="totalAppeals">0</div>
+            <div class="label">전체 소명</div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="stat-card">
+            <div class="value text-warning" id="pendingAppeals">0</div>
+            <div class="label">대기중</div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="stat-card">
+            <div class="value text-success" id="approvedAppeals">0</div>
+            <div class="label">승인</div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="stat-card">
+            <div class="value text-danger" id="rejectedAppeals">0</div>
+            <div class="label">반려</div>
+        </div>
+    </div>
+</div>
+
+<!-- 필터 -->
+<div class="card">
+    <div class="card-body">
+        <div class="row g-3 align-items-center">
+            <div class="col-md-4">
+                <label class="form-label fw-bold">상태 필터</label>
+                <select class="form-select" id="statusFilter" onchange="renderAppeals()">
+                    <option value="">전체</option>
+                    <option value="SUBMITTED">대기중</option>
+                    <option value="APPROVED">승인</option>
+                    <option value="REJECTED">반려</option>
+                </select>
+            </div>
+            <div class="col-md-4">
+                <label class="form-label fw-bold">기자 검색</label>
+                <input type="text" class="form-control" id="searchInput" placeholder="기자명..." oninput="renderAppeals()">
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 소명 목록 -->
+<div class="card">
+    <div class="card-header"><i class="bi bi-list-ul me-2"></i>소명 요청 목록</div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th style="width:12%">요청일</th>
+                        <th style="width:10%">기자</th>
+                        <th style="width:25%">기사 제목</th>
+                        <th style="width:10%">요청 유형</th>
+                        <th style="width:23%">소명 사유</th>
+                        <th style="width:10%">상태</th>
+                        <th style="width:10%">액션</th>
+                    </tr>
+                </thead>
+                <tbody id="appealList">
+                    <tr><td colspan="7" class="text-center py-4 text-muted">소명 요청이 없습니다</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+</div>
+
+<!-- 처리 모달 -->
+<div class="modal fade" id="reviewModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title"><i class="bi bi-check-circle me-2"></i>소명 처리</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="reviewAppealId">
+                <div class="mb-3">
+                    <label class="form-label fw-bold">기사 정보</label>
+                    <div id="reviewArticleInfo" class="p-2 bg-light rounded"></div>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label fw-bold">요청 유형</label>
+                    <div id="reviewQualityType"></div>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label fw-bold">소명 사유</label>
+                    <div id="reviewReason" class="p-2 bg-light rounded" style="white-space:pre-wrap;"></div>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label fw-bold">처리 코멘트</label>
+                    <textarea class="form-control" id="reviewComment" rows="3" placeholder="처리 사유를 입력하세요 (선택)"></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">취소</button>
+                <button type="button" class="btn btn-danger" onclick="processAppeal('REJECTED')"><i class="bi bi-x-circle me-1"></i>반려</button>
+                <button type="button" class="btn btn-success" onclick="processAppeal('APPROVED')"><i class="bi bi-check-circle me-1"></i>승인</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="score.js"></script>
+<script src="score-data.js"></script>
+<script>
+// 로그인 체크
+const session = JSON.parse(localStorage.getItem('kpi_session') || 'null');
+if (!session || (session.role !== 'admin' && session.role !== 'manager')) {
+    location.href = 'login.html';
+}
+
+document.getElementById('userInfo').textContent = session.role === 'admin' ? '관리자님' : `${session.name}님`;
+
+// Manager는 대시보드, 가중치설정, 사원관리 숨김
+if (session.role === 'manager') {
+    document.getElementById('nav-home').style.display = 'none';
+    document.getElementById('nav-config').style.display = 'none';
+    document.getElementById('nav-admin').style.display = 'none';
+}
+
+function logout() {
+    localStorage.removeItem('kpi_session');
+    location.href = 'login.html';
+}
+
+const qualityLabels = {
+    'TOP_ARTICLE': { text: '🏅 면톱 +2', class: 'quality-top' },
+    'EXCLUSIVE': { text: '⭐ 단독 +5', class: 'quality-exclusive' },
+    'FEATURE': { text: '💡 기획 +5', class: 'quality-feature' },
+    'S_GRADE': { text: '🏆 S등급 +3', class: 'quality-sgrade' }
+};
+
+function renderAppeals() {
+    const statusFilter = document.getElementById('statusFilter').value;
+    const searchInput = document.getElementById('searchInput').value.toLowerCase();
+    
+    let filter = {};
+    if (statusFilter) filter.status = statusFilter;
+    if (session.role === 'manager') filter.department = session.department;
+    
+    let appeals = ScoreDataStore.getAppeals(filter);
+    
+    if (searchInput) {
+        appeals = appeals.filter(a => a.reporterName.toLowerCase().includes(searchInput));
+    }
+    
+    // 최신순 정렬
+    appeals.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+    
+    // 통계 업데이트
+    const allAppeals = ScoreDataStore.getAppeals(session.role === 'manager' ? { department: session.department } : {});
+    document.getElementById('totalAppeals').textContent = allAppeals.length;
+    document.getElementById('pendingAppeals').textContent = allAppeals.filter(a => a.status === 'SUBMITTED').length;
+    document.getElementById('approvedAppeals').textContent = allAppeals.filter(a => a.status === 'APPROVED').length;
+    document.getElementById('rejectedAppeals').textContent = allAppeals.filter(a => a.status === 'REJECTED').length;
+    
+    const tbody = document.getElementById('appealList');
+    if (appeals.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="7" class="text-center py-4 text-muted">소명 요청이 없습니다</td></tr>';
+        return;
+    }
+    
+    tbody.innerHTML = appeals.map(a => {
+        const quality = qualityLabels[a.qualityType] || { text: a.qualityType, class: '' };
+        const statusClass = a.status === 'SUBMITTED' ? 'status-submitted' : 
+                           (a.status === 'APPROVED' ? 'status-approved' : 'status-rejected');
+        const statusText = a.status === 'SUBMITTED' ? '대기중' : 
+                          (a.status === 'APPROVED' ? '승인' : '반려');
+        
+        return `
+            <tr>
+                <td><small>${a.createdAt.slice(0, 10)}</small></td>
+                <td><strong>${a.reporterName}</strong></td>
+                <td>
+                    <div class="text-truncate" style="max-width:200px;" title="${escapeHtml(a.articleTitle)}">${escapeHtml(a.articleTitle)}</div>
+                </td>
+                <td><span class="quality-badge ${quality.class}">${quality.text}</span></td>
+                <td>
+                    <div class="text-truncate" style="max-width:180px;" title="${escapeHtml(a.reason)}">${escapeHtml(a.reason)}</div>
+                </td>
+                <td><span class="badge ${statusClass}">${statusText}</span></td>
+                <td>
+                    ${a.status === 'SUBMITTED' ? 
+                        `<button class="btn btn-sm btn-outline-primary" onclick="openReviewModal('${a.id}')">처리</button>` :
+                        `<small class="text-muted">${a.managerName || '-'}</small>`
+                    }
+                </td>
+            </tr>
+        `;
+    }).join('');
+}
+
+function openReviewModal(appealId) {
+    const appeals = ScoreDataStore.getAppeals();
+    const appeal = appeals.find(a => a.id === appealId);
+    if (!appeal) return;
+    
+    document.getElementById('reviewAppealId').value = appealId;
+    document.getElementById('reviewArticleInfo').innerHTML = `
+        <strong>${appeal.articleTitle}</strong><br>
+        <small class="text-muted">기자: ${appeal.reporterName}</small>
+    `;
+    
+    const quality = qualityLabels[appeal.qualityType] || { text: appeal.qualityType, class: '' };
+    document.getElementById('reviewQualityType').innerHTML = `<span class="quality-badge ${quality.class}">${quality.text}</span>`;
+    document.getElementById('reviewReason').textContent = appeal.reason;
+    document.getElementById('reviewComment').value = '';
+    
+    new bootstrap.Modal(document.getElementById('reviewModal')).show();
+}
+
+function processAppeal(status) {
+    const appealId = document.getElementById('reviewAppealId').value;
+    const comment = document.getElementById('reviewComment').value.trim();
+    
+    const result = ScoreDataStore.reviewAppeal(appealId, session.userId, session.name, status, comment);
+    
+    bootstrap.Modal.getInstance(document.getElementById('reviewModal')).hide();
+    renderAppeals();
+    
+    if (status === 'APPROVED' && result) {
+        // 승인 시 점수 재계산 결과 표시
+        const evalData = ScoreDataStore.getEval(result.nsid);
+        if (evalData && evalData.calculatedScore) {
+            showToast(`승인되었습니다. 새 점수: ${evalData.calculatedScore}점`, 'success');
+        } else {
+            showToast('승인되었습니다. 가점이 반영되었습니다.', 'success');
+        }
+    } else {
+        showToast('반려되었습니다', 'warning');
+    }
+}
+
+function escapeHtml(t) {
+    const d = document.createElement('div');
+    d.textContent = t || '';
+    return d.innerHTML;
+}
+
+function showToast(msg, type = 'success') {
+    const t = document.getElementById('toast');
+    t.className = `toast align-items-center text-bg-${type} border-0`;
+    document.getElementById('toastMsg').textContent = msg;
+    new bootstrap.Toast(t).show();
+}
+
+// 초기 로드
+document.addEventListener('DOMContentLoaded', async () => {
+    // 서버 동기화 (SYNC_ENABLED가 true일 때만)
+    if (ScoreDataStore.SYNC_ENABLED) {
+        await ScoreDataStore.loadFromServer();
+        await ScoreDataStore.retryPendingSync();
+    }
+    renderAppeals();
+});
+
+renderAppeals();
+</script>
+</body>
+</html>
