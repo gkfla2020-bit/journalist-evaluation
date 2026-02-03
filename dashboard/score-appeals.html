@@ -6,6 +6,7 @@
     <title>소명 관리 - S-CORE</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="common.css" rel="stylesheet">
     <style>
         body { background: #f5f7fa; font-family: 'Pretendard', -apple-system, sans-serif; }
         .container-main { max-width: 1400px; margin: 0 auto; padding: 1.5rem; }
@@ -181,6 +182,7 @@
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="common.js"></script>
 <script src="score.js"></script>
 <script src="score-data.js"></script>
 <script>
@@ -290,25 +292,63 @@ function openReviewModal(appealId) {
     new bootstrap.Modal(document.getElementById('reviewModal')).show();
 }
 
-function processAppeal(status) {
+async function processAppeal(status) {
     const appealId = document.getElementById('reviewAppealId').value;
     const comment = document.getElementById('reviewComment').value.trim();
     
-    const result = ScoreDataStore.reviewAppeal(appealId, session.userId, session.name, status, comment);
+    const approveBtn = document.querySelector('#reviewModal .btn-success');
+    const rejectBtn = document.querySelector('#reviewModal .btn-danger');
+    const targetBtn = status === 'APPROVED' ? approveBtn : rejectBtn;
     
-    bootstrap.Modal.getInstance(document.getElementById('reviewModal')).hide();
-    renderAppeals();
+    SCore.setButtonLoading(targetBtn, true);
+    approveBtn.disabled = true;
+    rejectBtn.disabled = true;
     
-    if (status === 'APPROVED' && result) {
-        // 승인 시 점수 재계산 결과 표시
-        const evalData = ScoreDataStore.getEval(result.nsid);
-        if (evalData && evalData.calculatedScore) {
-            showToast(`승인되었습니다. 새 점수: ${evalData.calculatedScore}점`, 'success');
-        } else {
-            showToast('승인되었습니다. 가점이 반영되었습니다.', 'success');
+    try {
+        const result = ScoreDataStore.reviewAppeal(appealId, session.userId, session.name, status, comment);
+        
+        // Lambda API에 저장 (평가 데이터 + 소명 데이터)
+        const payload = {};
+        
+        // 승인 시 평가 데이터도 저장
+        if (status === 'APPROVED' && result && result.nsid) {
+            const evalData = ScoreDataStore.getEval(result.nsid);
+            if (evalData) {
+                payload[result.nsid] = evalData;
+            }
         }
-    } else {
-        showToast('반려되었습니다', 'warning');
+        
+        // 소명 데이터 저장 (_appeals 키로)
+        const appeals = ScoreDataStore.getAppeals();
+        payload._appeals = appeals;
+        
+        await fetch(EVAL_API_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        });
+        
+        bootstrap.Modal.getInstance(document.getElementById('reviewModal')).hide();
+        renderAppeals();
+        
+        if (status === 'APPROVED' && result) {
+            // 승인 시 점수 재계산 결과 표시
+            const evalData = ScoreDataStore.getEval(result.nsid);
+            if (evalData && evalData.calculatedScore) {
+                SCore.toast(`승인되었습니다. 새 점수: ${evalData.calculatedScore}점`, 'success');
+            } else {
+                SCore.toast('승인되었습니다. 가점이 반영되었습니다.', 'success');
+            }
+        } else {
+            SCore.toast('반려되었습니다', 'warning');
+        }
+    } catch (e) {
+        console.log('서버 저장 실패:', e);
+        SCore.toast('처리에 실패했습니다. 다시 시도해주세요.', 'error');
+    } finally {
+        SCore.setButtonLoading(targetBtn, false);
+        approveBtn.disabled = false;
+        rejectBtn.disabled = false;
     }
 }
 
@@ -319,23 +359,54 @@ function escapeHtml(t) {
 }
 
 function showToast(msg, type = 'success') {
-    const t = document.getElementById('toast');
-    t.className = `toast align-items-center text-bg-${type} border-0`;
-    document.getElementById('toastMsg').textContent = msg;
-    new bootstrap.Toast(t).show();
+    SCore.toast(msg, type === 'danger' ? 'error' : type);
 }
 
 // 초기 로드
-document.addEventListener('DOMContentLoaded', async () => {
-    // 서버 동기화 (SYNC_ENABLED가 true일 때만)
-    if (ScoreDataStore.SYNC_ENABLED) {
-        await ScoreDataStore.loadFromServer();
-        await ScoreDataStore.retryPendingSync();
-    }
-    renderAppeals();
-});
+const EVAL_API_URL = 'https://yyffk7tpfey7s2kv7hoitskxb40aljqw.lambda-url.us-east-1.on.aws/';
 
-renderAppeals();
+document.addEventListener('DOMContentLoaded', async () => {
+    SCore.showLoading('소명 데이터를 불러오는 중...');
+    SCore.showInlineLoading('appealList', 7);
+    
+    try {
+        // Lambda에서 데이터 로드 (appeals는 _appeals 키로 저장)
+        const res = await fetch(EVAL_API_URL + '?t=' + Date.now());
+        if (res.ok) {
+            const serverData = await res.json();
+            
+            // 평가 데이터 병합
+            const localEvals = ScoreDataStore.getEvals();
+            const merged = { ...localEvals };
+            for (const key in serverData) {
+                if (key !== '_appeals' && key !== '_config') {
+                    merged[key] = serverData[key];
+                }
+            }
+            localStorage.setItem(ScoreDataStore.EVALS_KEY, JSON.stringify(merged));
+            
+            // 소명 데이터 병합
+            if (serverData._appeals) {
+                const localAppeals = JSON.parse(localStorage.getItem(ScoreDataStore.APPEALS_KEY) || '[]');
+                const serverAppeals = serverData._appeals;
+                const mergedAppeals = ScoreDataStore.mergeAppeals(localAppeals, serverAppeals);
+                localStorage.setItem(ScoreDataStore.APPEALS_KEY, JSON.stringify(mergedAppeals));
+            }
+        }
+        
+        renderAppeals();
+    } catch (e) {
+        console.log('서버 데이터 로드 실패, localStorage 사용');
+        SCore.showError('appealList', {
+            title: '소명 목록을 불러올 수 없습니다',
+            message: SCore.getErrorMessage(e),
+            retryCallback: 'location.reload()',
+            colspan: 7
+        });
+    } finally {
+        SCore.hideLoading();
+    }
+});
 </script>
 </body>
 </html>

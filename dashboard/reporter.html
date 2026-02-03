@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>기자 상세 - KPI 시스템</title>
+    <title>기자 상세 - S-CORE</title>
     <!-- Preconnect & Preload for faster loading -->
     <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
     <link rel="preload" href="data.json" as="fetch" crossorigin>
@@ -1477,7 +1477,7 @@ function calculateDeptStats() {
 }
 
 // 검토요청 제출 (기자용)
-function submitAppeal() {
+async function submitAppeal() {
     const nsid = document.getElementById('appealNsid').value;
     const qualityType = document.getElementById('appealType').value;
     const reason = document.getElementById('appealReason').value.trim();
@@ -1508,6 +1508,18 @@ function submitAppeal() {
             pubDate: article ? article.pub_date : '',
             page: article ? article.paper_number : 0
         });
+        
+        // Lambda API에도 저장
+        try {
+            const appeals = ScoreDataStore.getAppeals();
+            await fetch(EVAL_API_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ _appeals: appeals })
+            });
+        } catch (e) {
+            console.log('서버 저장 실패:', e);
+        }
     }
     
     // 모달 닫기

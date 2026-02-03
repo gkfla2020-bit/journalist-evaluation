@@ -6,6 +6,7 @@
     <title>내 점수 - S-CORE</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="common.css" rel="stylesheet">
     <style>
         body { background: #f5f7fa; font-family: 'Pretendard', -apple-system, sans-serif; }
         .container-main { max-width: 1200px; margin: 0 auto; padding: 1.5rem; }
@@ -157,27 +158,22 @@
 <div class="card">
     <div class="card-body">
         <h6 class="fw-bold mb-3"><i class="bi bi-question-circle me-2"></i>점수 산출 방식</h6>
-        <p class="mb-2">기사 점수 = (면 가중치 × 분량 가중치 × 10) + 품질 가점</p>
+        <p class="mb-2">기사 점수 = (면 가중치 × 분량 가중치 × <span id="infoBaseScore">10</span>) + 품질 가점</p>
         <div class="row">
             <div class="col-md-6">
-                <small class="text-muted">
-                    <strong>면 가중치:</strong> 1면(1.0), 2~3면(0.85), 4~5면(0.70), 6~10면(0.55), 11~20면(0.40), 21~32면(0.30)
+                <small class="text-muted" id="infoPageWeights">
+                    <strong>면 가중치:</strong> 로딩중...
                 </small>
             </div>
             <div class="col-md-6">
-                <small class="text-muted">
-                    <strong>분량 가중치:</strong> 2,000자↑(1.0), 1,200~1,999자(0.70), 600자↓(0.55)
+                <small class="text-muted" id="infoLengthWeights">
+                    <strong>분량 가중치:</strong> 로딩중...
                 </small>
             </div>
         </div>
-        <div class="mt-2">
+        <div class="mt-2" id="infoQualityBonus">
             <small class="text-muted">
-                <strong>품질 가점:</strong> 
-                <span class="badge-quality badge-top">🏅 면톱 +2</span>
-                <span class="badge-quality badge-exclusive">⭐ 단독 +5</span>
-                <span class="badge-quality badge-feature">💡 기획 +5</span>
-                <span class="badge-quality badge-sgrade">🏆 S등급 +3</span>
-                (상한 10점)
+                <strong>품질 가점:</strong> 로딩중...
             </small>
         </div>
     </div>
@@ -234,6 +230,7 @@
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="common.js"></script>
 <script src="score.js"></script>
 <script src="score-data.js"></script>
 <script>
@@ -246,21 +243,27 @@ if (!session) {
 document.getElementById('reporterInfo').textContent = `${session.name} 기자 (${session.department})`;
 document.getElementById('navDetail').href = `reporter.html?name=${encodeURIComponent(session.name)}`;
 
+const EVAL_API_URL = 'https://yyffk7tpfey7s2kv7hoitskxb40aljqw.lambda-url.us-east-1.on.aws/';
+
 let allData = null;
 let usersData = [];
 
-// 부서 정보
-const DEPARTMENTS = {
-    '정치부': { group: '가군', weight: 1.0 },
-    '경제부': { group: '가군', weight: 1.0 },
-    '산업부': { group: '가군', weight: 1.0 },
-    '금융부': { group: '가군', weight: 1.0 },
-    '사회부': { group: '가군', weight: 1.0 },
-    '문화부': { group: '나군', weight: 1.1 },
-    '생활부': { group: '나군', weight: 1.1 },
-    '스포츠부': { group: '나군', weight: 1.1 },
-    '편집부': { group: '나군', weight: 1.1 }
-};
+// 부서 정보 (Config에서 로드 가능하도록 확장 가능)
+function getDeptConfig() {
+    const saved = localStorage.getItem('score_dept_config');
+    if (saved) return JSON.parse(saved);
+    return {
+        '정치부': { group: '가군', weight: 1.0 },
+        '경제부': { group: '가군', weight: 1.0 },
+        '산업부': { group: '가군', weight: 1.0 },
+        '금융부': { group: '가군', weight: 1.0 },
+        '사회부': { group: '가군', weight: 1.0 },
+        '문화부': { group: '나군', weight: 1.1 },
+        '생활부': { group: '나군', weight: 1.1 },
+        '스포츠부': { group: '나군', weight: 1.1 },
+        '편집부': { group: '나군', weight: 1.1 }
+    };
+}
 
 function logout() {
     localStorage.removeItem('kpi_session');
@@ -269,17 +272,104 @@ function logout() {
 
 // 초기 로드
 document.addEventListener('DOMContentLoaded', async () => {
-    const [dataRes, usersRes] = await Promise.all([
-        fetch('data.json?t=' + Date.now()),
-        fetch('users.json?t=' + Date.now())
-    ]);
-    allData = await dataRes.json();
-    usersData = await usersRes.json();
+    SCore.showLoading('내 기사 정보를 불러오는 중...');
+    SCore.showInlineLoading('articleList', 6);
     
-    renderMyArticles();
-    renderMyAppeals();
-    applyFeatureFlags();
+    try {
+        // Lambda에서 평가/소명 데이터 로드
+        try {
+            const evalRes = await fetch(EVAL_API_URL + '?t=' + Date.now());
+            if (evalRes.ok) {
+                const serverData = await evalRes.json();
+                
+                // 평가 데이터 병합
+                const localEvals = ScoreDataStore.getEvals();
+                const mergedEvals = { ...localEvals };
+                for (const key in serverData) {
+                    if (key !== '_appeals' && key !== '_config' && key !== '_featureFlags') {
+                        mergedEvals[key] = serverData[key];
+                    }
+                }
+                localStorage.setItem(ScoreDataStore.EVALS_KEY, JSON.stringify(mergedEvals));
+                
+                // 소명 데이터 병합
+                if (serverData._appeals) {
+                    const localAppeals = JSON.parse(localStorage.getItem(ScoreDataStore.APPEALS_KEY) || '[]');
+                    const mergedAppeals = ScoreDataStore.mergeAppeals(localAppeals, serverData._appeals);
+                    localStorage.setItem(ScoreDataStore.APPEALS_KEY, JSON.stringify(mergedAppeals));
+                }
+                
+                // Feature Flags 로드
+                if (serverData._featureFlags) {
+                    localStorage.setItem(ScoreDataStore.FEATURE_FLAGS_KEY, JSON.stringify(serverData._featureFlags));
+                }
+                
+                // Config 로드
+                if (serverData._config) {
+                    localStorage.setItem(ScoreDataStore.CONFIG_KEY, JSON.stringify(serverData._config));
+                }
+            }
+        } catch (e) {
+            console.log('서버 데이터 로드 실패, localStorage 사용:', e);
+        }
+        
+        const [dataRes, usersRes] = await Promise.all([
+            fetch('data.json?t=' + Date.now()),
+            fetch('users.json?t=' + Date.now())
+        ]);
+        
+        if (!dataRes.ok || !usersRes.ok) throw new Error('데이터 로드 실패');
+        
+        allData = await dataRes.json();
+        usersData = await usersRes.json();
+        
+        renderScoreInfo();
+        renderMyArticles();
+        renderMyAppeals();
+        applyFeatureFlags();
+    } catch (err) {
+        console.error(err);
+        SCore.showError('articleList', {
+            title: '기사 목록을 불러올 수 없습니다',
+            message: SCore.getErrorMessage(err),
+            retryCallback: 'location.reload()',
+            colspan: 6
+        });
+    } finally {
+        SCore.hideLoading();
+    }
 });
+
+// 점수 산출 방식 정보 동적 렌더링
+function renderScoreInfo() {
+    const config = getScoreConfig();
+    
+    // 기본 점수
+    document.getElementById('infoBaseScore').textContent = config.BASE_SCORE;
+    
+    // 면 가중치
+    const pw = config.PAGE_WEIGHTS;
+    document.getElementById('infoPageWeights').innerHTML = 
+        `<strong>면 가중치:</strong> 1면(${pw[1]}), 2~3면(${pw[3]}), 4~5면(${pw[5]}), 6~10면(${pw[10]}), 11~20면(${pw[20]}), 21~32면(${pw[32]})`;
+    
+    // 분량 가중치
+    const lw = config.LENGTH_WEIGHTS;
+    document.getElementById('infoLengthWeights').innerHTML = 
+        `<strong>분량 가중치:</strong> 2,000자↑(${lw[2000]}), 1,200~1,999자(${lw[1200]}), 600자↓(${lw[600] || lw[0]})`;
+    
+    // 품질 가점
+    const qb = config.QUALITY_BONUS;
+    document.getElementById('infoQualityBonus').innerHTML = `
+        <small class="text-muted">
+            <strong>품질 가점:</strong> 
+            <span class="badge-quality badge-top">🏅 면톱 +${qb.isTopArticle}</span>
+            <span class="badge-quality badge-exclusive">⭐ 단독 +${qb.isExclusive}</span>
+            <span class="badge-quality badge-feature">💡 기획 +${qb.isFeature}</span>
+            <span class="badge-quality badge-sgrade">🏆 S등급 +${qb.isSGrade}</span>
+            (상한 ${config.QUALITY_BONUS_CAP}점)
+        </small>
+    `;
+}
 
 function renderMyArticles() {
     if (!allData) return;
@@ -378,10 +468,11 @@ function renderMyArticles() {
     }
     
     // 부서 가중치 안내
-    const deptInfo = DEPARTMENTS[session.department];
+    const deptConfig = getDeptConfig();
+    const deptInfo = deptConfig[session.department];
     if (deptInfo && deptInfo.group === '나군') {
         document.getElementById('deptWeightInfo').style.display = 'block';
-        document.getElementById('deptWeightText').textContent = `※ ${session.department}는 나군 부서로, 최종 평가 시 ×1.1 적용됩니다.`;
+        document.getElementById('deptWeightText').textContent = `※ ${session.department}는 나군 부서로, 최종 평가 시 ×${deptInfo.weight} 적용됩니다.`;
     }
 }
 
@@ -541,36 +632,54 @@ document.getElementById('appealReason').addEventListener('input', function() {
     document.getElementById('charCount').textContent = this.value.length;
 });
 
-function submitAppeal() {
+async function submitAppeal() {
     const nsid = document.getElementById('appealNsid').value;
     const title = document.getElementById('appealTitle').value;
     const qualityType = document.querySelector('input[name="appealType"]:checked')?.value;
     const reason = document.getElementById('appealReason').value.trim();
     
     if (!qualityType) {
-        showToast('요청 유형을 선택해주세요', 'warning');
+        SCore.toast('요청 유형을 선택해주세요', 'warning');
         return;
     }
     if (!reason) {
-        showToast('소명 사유를 입력해주세요', 'warning');
+        SCore.toast('소명 사유를 입력해주세요', 'warning');
         return;
     }
     
-    ScoreDataStore.createAppeal({
-        reporterId: session.userId,
-        reporterName: session.name,
-        department: session.department,
-        nsid: nsid,
-        articleTitle: title,
-        appealType: 'QUALITY_APPEAL',
-        qualityType: qualityType,
-        reason: reason
-    });
+    const submitBtn = document.querySelector('#appealModal .btn-primary');
+    SCore.setButtonLoading(submitBtn, true);
     
-    bootstrap.Modal.getInstance(document.getElementById('appealModal')).hide();
-    renderMyArticles();
-    renderMyAppeals();
-    showToast('검토 요청이 제출되었습니다');
+    try {
+        ScoreDataStore.createAppeal({
+            reporterId: session.userId,
+            reporterName: session.name,
+            department: session.department,
+            nsid: nsid,
+            articleTitle: title,
+            appealType: 'QUALITY_APPEAL',
+            qualityType: qualityType,
+            reason: reason
+        });
+        
+        // Lambda API에도 저장
+        const appeals = ScoreDataStore.getAppeals();
+        await fetch(EVAL_API_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ _appeals: appeals })
+        });
+        
+        bootstrap.Modal.getInstance(document.getElementById('appealModal')).hide();
+        renderMyArticles();
+        renderMyAppeals();
+        SCore.toast('검토 요청이 제출되었습니다', 'success');
+    } catch (e) {
+        console.log('서버 저장 실패:', e);
+        SCore.toast('검토 요청 제출에 실패했습니다. 다시 시도해주세요.', 'error');
+    } finally {
+        SCore.setButtonLoading(submitBtn, false);
+    }
 }
 
 function escapeHtml(t) {
@@ -580,10 +689,7 @@ function escapeHtml(t) {
 }
 
 function showToast(msg, type = 'success') {
-    const t = document.getElementById('toast');
-    t.className = `toast align-items-center text-bg-${type} border-0`;
-    document.getElementById('toastMsg').textContent = msg;
-    new bootstrap.Toast(t).show();
+    SCore.toast(msg, type === 'danger' ? 'error' : type);
 }
 </script>
 </body>

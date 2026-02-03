@@ -9,6 +9,7 @@
     <link rel="preload" href="users.json" as="fetch" crossorigin>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="common.css" rel="stylesheet">
     <style>
         body { background: #f5f7fa; font-family: 'Pretendard', -apple-system, sans-serif; }
         .container-main { max-width: 1400px; margin: 0 auto; padding: 1.5rem; }
@@ -158,10 +159,10 @@
                     <tr>
                         <th style="width:5%">#</th>
                         <th style="width:15%">기자명</th>
-                        <th style="width:15%" id="deptCol">부서</th>
+                        <th style="width:15%" id="deptCol" class="hide-mobile">부서</th>
                         <th style="width:12%">기사 수</th>
-                        <th style="width:15%">총 글자수</th>
-                        <th style="width:15%">평균 글자수</th>
+                        <th style="width:15%" class="hide-mobile">총 글자수</th>
+                        <th style="width:15%" class="hide-mobile">평균 글자수</th>
                         <th style="width:13%">상세</th>
                     </tr>
                 </thead>
@@ -185,6 +186,7 @@
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>
+<script src="common.js"></script>
 <script>
 // 로그인 체크
 const session = JSON.parse(localStorage.getItem('kpi_session') || 'null');
@@ -294,8 +296,12 @@ function filterByDept() {
 
 // 데이터 로드
 async function loadData() {
+    SCore.showLoading('기자 목록을 불러오는 중...');
+    SCore.showInlineLoading('reporterList', 7);
+    
     try {
         const res = await fetch('data.json?t=' + Date.now());
+        if (!res.ok) throw new Error(res.status.toString());
         allData = await res.json();
         
         document.getElementById('dataRange').textContent = `${allData.period_start} ~ ${allData.period_end}`;
@@ -309,7 +315,14 @@ async function loadData() {
         searchInput.addEventListener('input', handleSearch);
     } catch (err) {
         console.error(err);
-        document.getElementById('reporterList').innerHTML = '<tr><td colspan="7" class="text-center py-4 text-danger">데이터 로드 실패</td></tr>';
+        SCore.showError('reporterList', {
+            title: '기자 목록을 불러올 수 없습니다',
+            message: SCore.getErrorMessage(err),
+            retryCallback: 'loadData()',
+            colspan: 7
+        });
+    } finally {
+        SCore.hideLoading();
     }
 }
 
@@ -466,10 +479,10 @@ function renderTable(reporters) {
         <tr class="reporter-row" onclick="location.href='reporter.html?name=${encodeURIComponent(r.name)}'">
             <td>${i + 1}</td>
             <td><strong>${escapeHtml(r.name)}</strong></td>
-            <td><span class="dept-badge">${escapeHtml(r.department)}</span></td>
+            <td class="hide-mobile"><span class="dept-badge">${escapeHtml(r.department)}</span></td>
             <td>${r.article_count}</td>
-            <td>${r.total_chars.toLocaleString()}</td>
-            <td>${r.avg_chars.toLocaleString()}</td>
+            <td class="hide-mobile">${r.total_chars.toLocaleString()}</td>
+            <td class="hide-mobile">${r.avg_chars.toLocaleString()}</td>
             <td><button class="btn btn-sm btn-outline-primary">상세보기</button></td>
         </tr>
     `).join('');
@@ -509,29 +522,28 @@ function escapeHtml(t) {
 // 동기화
 async function syncData() {
     const btn = document.getElementById('syncBtn');
-    btn.disabled = true;
-    btn.innerHTML = '<i class="bi bi-arrow-repeat spin me-1"></i>동기화 중...';
+    SCore.setButtonLoading(btn, true);
+    
     try {
         const res = await fetch('https://3pxmyosj2eunachemenbx4b6ay0dzqvd.lambda-url.us-east-1.on.aws/');
+        if (!res.ok) throw new Error(res.status.toString());
         const result = await res.json();
+        
         if (result.success) {
-            showToast(`동기화 완료! ${result.total_articles}건`, 'success');
+            SCore.toast(`동기화 완료! ${result.total_articles}건의 기사가 업데이트되었습니다.`, 'success');
             setTimeout(() => location.reload(), 1500);
         } else {
-            showToast('동기화 실패: ' + (result.error || '오류'), 'danger');
+            throw new Error(result.error || '동기화 실패');
         }
     } catch (e) {
-        showToast('동기화 실패: 네트워크 오류', 'danger');
+        SCore.toast(e, 'error');
+    } finally {
+        SCore.setButtonLoading(btn, false);
     }
-    btn.disabled = false;
-    btn.innerHTML = '<i class="bi bi-cloud-download me-1"></i>데이터 동기화';
 }
 
 function showToast(msg, type = 'success') {
-    const t = document.getElementById('toast');
-    t.className = `toast align-items-center text-bg-${type} border-0`;
-    document.getElementById('toastMsg').textContent = msg;
-    new bootstrap.Toast(t).show();
+    SCore.toast(msg, type === 'danger' ? 'error' : type);
 }
 
 function handleSearch() {

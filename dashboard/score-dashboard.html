@@ -6,6 +6,7 @@
     <title>부서 대시보드 - S-CORE</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="common.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js" defer></script>
     <style>
         body { background: #f5f7fa; font-family: 'Pretendard', -apple-system, sans-serif; }
@@ -161,6 +162,7 @@
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="common.js"></script>
 <script src="score.js"></script>
 <script src="score-data.js"></script>
 <script>
@@ -171,6 +173,8 @@ if (!session || (session.role !== 'admin' && session.role !== 'manager')) {
 }
 
 let targetDept = session.role === 'manager' ? session.department : (new URLSearchParams(location.search).get('dept') || '');
+
+const EVAL_API_URL = 'https://yyffk7tpfey7s2kv7hoitskxb40aljqw.lambda-url.us-east-1.on.aws/';
 
 document.getElementById('userInfo').textContent = session.role === 'admin' ? '관리자님' : `${session.name}님`;
 
@@ -191,11 +195,41 @@ let usersData = [];
 let dailyChart = null;
 
 document.addEventListener('DOMContentLoaded', async () => {
-    // 서버 동기화 (SYNC_ENABLED가 true일 때만)
-    if (typeof ScoreDataStore !== 'undefined' && ScoreDataStore.SYNC_ENABLED) {
-        await ScoreDataStore.loadFromServer();
+    SCore.showLoading('대시보드 데이터를 불러오는 중...');
+    
+    try {
+        // Lambda에서 평가 데이터 로드
+        try {
+            const evalRes = await fetch(EVAL_API_URL + '?t=' + Date.now());
+            if (evalRes.ok) {
+                const serverData = await evalRes.json();
+                
+                // 평가 데이터 병합
+                const localEvals = ScoreDataStore.getEvals();
+                const mergedEvals = { ...localEvals };
+                for (const key in serverData) {
+                    if (key !== '_appeals' && key !== '_config' && key !== '_featureFlags') {
+                        mergedEvals[key] = serverData[key];
+                    }
+                }
+                localStorage.setItem(ScoreDataStore.EVALS_KEY, JSON.stringify(mergedEvals));
+                
+                // Config 로드 (가중치 설정)
+                if (serverData._config) {
+                    localStorage.setItem(ScoreDataStore.CONFIG_KEY, JSON.stringify(serverData._config));
+                }
+            }
+        } catch (e) {
+            console.log('서버 데이터 로드 실패, localStorage 사용:', e);
+        }
+        
+        await loadData();
+    } catch (err) {
+        console.error(err);
+        SCore.toast('데이터를 불러오는데 실패했습니다.', 'error');
+    } finally {
+        SCore.hideLoading();
     }
-    loadData();
 });
 
 // 부서 탭 클릭
@@ -209,11 +243,17 @@ function selectDept(dept) {
 }
 
 async function loadData() {
+    SCore.showInlineLoading('topReporters', 4);
+    SCore.showInlineLoading('dailyChange', 3);
+    
     try {
         const [dataRes, usersRes] = await Promise.all([
             fetch('data.json?t=' + Date.now()),
             fetch('users.json?t=' + Date.now())
         ]);
+        
+        if (!dataRes.ok || !usersRes.ok) throw new Error('데이터 로드 실패');
+        
         allData = await dataRes.json();
         usersData = await usersRes.json();
         
@@ -222,6 +262,12 @@ async function loadData() {
         renderDashboard();
     } catch (err) {
         console.error(err);
+        SCore.showError('topReporters', {
+            title: '데이터를 불러올 수 없습니다',
+            message: SCore.getErrorMessage(err),
+            retryCallback: 'loadData()',
+            colspan: 4
+        });
     }
 }
 

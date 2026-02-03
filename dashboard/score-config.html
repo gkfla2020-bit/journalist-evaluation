@@ -6,6 +6,7 @@
     <title>가중치 설정 - S-CORE</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="common.css" rel="stylesheet">
     <style>
         body { background: #f5f7fa; font-family: 'Pretendard', -apple-system, sans-serif; }
         .container-main { max-width: 1400px; margin: 0 auto; padding: 1.5rem; }
@@ -242,6 +243,7 @@
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="common.js"></script>
 <script src="score.js"></script>
 <script src="score-data.js"></script>
 <script>
@@ -253,10 +255,35 @@ if (!session || session.role !== 'admin') {
 document.getElementById('userInfo').textContent = session.role === 'admin' ? '관리자님' : `${session.name}님`;
 // score-config.html은 admin 전용이므로 네비게이션 숨김 처리 불필요
 
+const EVAL_API_URL = 'https://yyffk7tpfey7s2kv7hoitskxb40aljqw.lambda-url.us-east-1.on.aws/';
+
 function logout() {
     localStorage.removeItem('kpi_session');
     location.href = 'login.html';
 }
+
+// 초기 로드 시 서버에서 설정 가져오기
+(async function() {
+    SCore.showLoading('설정을 불러오는 중...');
+    
+    try {
+        const res = await fetch(EVAL_API_URL + '?t=' + Date.now());
+        if (res.ok) {
+            const serverData = await res.json();
+            if (serverData._config) {
+                localStorage.setItem(ScoreDataStore.CONFIG_KEY, JSON.stringify(serverData._config));
+            }
+        }
+    } catch (e) {
+        console.log('서버 설정 로드 실패, localStorage 사용');
+    } finally {
+        SCore.hideLoading();
+    }
+    
+    loadConfig();
+    loadFeatureFlags();
+    loadHistory();
+})();
 
 // 설정 로드
 function loadConfig() {
@@ -291,7 +318,7 @@ function loadConfig() {
 }
 
 // 설정 저장
-function saveConfig() {
+async function saveConfig() {
     const config = {
         BASE_SCORE: parseFloat(document.getElementById('baseScore').value),
         QUALITY_BONUS_CAP: parseFloat(document.getElementById('bonusCap').value),
@@ -319,10 +346,29 @@ function saveConfig() {
     };
     
     const reason = prompt('변경 사유를 입력하세요 (선택):') || '';
-    ScoreDataStore.saveConfig(config, session.userId, session.name, reason);
-    showToast('설정이 저장되었습니다');
-    updateMatrix();
-    loadHistory();
+    
+    const saveBtn = document.querySelector('[onclick="saveConfig()"]');
+    SCore.setButtonLoading(saveBtn, true);
+    
+    try {
+        ScoreDataStore.saveConfig(config, session.userId, session.name, reason);
+        
+        // Lambda API에도 저장
+        await fetch(EVAL_API_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ _config: config })
+        });
+        
+        SCore.toast('설정이 저장되었습니다', 'success');
+        updateMatrix();
+        loadHistory();
+    } catch (e) {
+        console.log('서버 저장 실패:', e);
+        SCore.toast('설정 저장에 실패했습니다. 다시 시도해주세요.', 'error');
+    } finally {
+        SCore.setButtonLoading(saveBtn, false);
+    }
 }
 
 // 기본값 복원
@@ -398,62 +444,6 @@ function updateMatrix() {
 document.querySelectorAll('.weight-input').forEach(input => {
     input.addEventListener('change', updateMatrix);
 });
-
-function showToast(msg, type = 'success') {
-    const t = document.getElementById('toast');
-    t.className = `toast align-items-center text-bg-${type} border-0`;
-    document.getElementById('toastMsg').textContent = msg;
-    new bootstrap.Toast(t).show();
-}
-
-// Feature Flags 로드
-function loadFeatureFlags() {
-    const flags = ScoreDataStore.getFeatureFlags();
-    document.getElementById('flagMyScore').checked = flags.SHOW_MY_SCORE;
-    document.getElementById('flagPrevMonth').checked = flags.SHOW_PREVIOUS_MONTH;
-    document.getElementById('flagDeptAvg').checked = flags.SHOW_DEPT_AVERAGE;
-    document.getElementById('flagDeptRank').checked = flags.SHOW_DEPT_RANKING;
-}
-
-// Feature Flags 저장
-function saveFeatureFlags() {
-    const flags = {
-        SHOW_MY_SCORE: document.getElementById('flagMyScore').checked,
-        SHOW_PREVIOUS_MONTH: document.getElementById('flagPrevMonth').checked,
-        SHOW_DEPT_AVERAGE: document.getElementById('flagDeptAvg').checked,
-        SHOW_DEPT_RANKING: document.getElementById('flagDeptRank').checked
-    };
-    ScoreDataStore.saveFeatureFlags(flags);
-    showToast('Feature Flags가 저장되었습니다');
-}
-
-// 변경 이력 로드
-function loadHistory() {
-    const history = ScoreDataStore.getConfigHistory();
-    const tbody = document.getElementById('historyList');
-    
-    if (history.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="4" class="text-center py-3 text-muted">변경 이력이 없습니다</td></tr>';
-        return;
-    }
-    
-    tbody.innerHTML = history.slice(0, 20).map(h => {
-        const changesText = h.changes.map(c => `${c.field}: ${c.oldValue} → ${c.newValue}`).join(', ');
-        return `
-            <tr>
-                <td><small>${h.changedAt.slice(0, 16).replace('T', ' ')}</small></td>
-                <td>${h.changedByName || h.changedBy}</td>
-                <td><small class="text-truncate d-inline-block" style="max-width:200px;" title="${changesText}">${changesText}</small></td>
-                <td><small class="text-muted">${h.reason || '-'}</small></td>
-            </tr>
-        `;
-    }).join('');
-}
-
-// 초기 로드
-loadConfig();
-loadFeatureFlags();
-loadHistory();
 </script>
 </body>
 </html>

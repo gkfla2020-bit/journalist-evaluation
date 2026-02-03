@@ -6,6 +6,7 @@
     <title>기사 평가 - S-CORE</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="common.css" rel="stylesheet">
     <style>
         body { background: #f5f7fa; font-family: 'Pretendard', -apple-system, sans-serif; }
         .container-main { max-width: 1400px; margin: 0 auto; padding: 1.5rem; }
@@ -163,9 +164,9 @@
                         <th style="width:5%">면</th>
                         <th style="width:25%">기사 제목</th>
                         <th style="width:8%">기자</th>
-                        <th style="width:8%">부서</th>
-                        <th style="width:7%">글자수</th>
-                        <th style="width:6%">자동</th>
+                        <th style="width:8%" class="hide-mobile">부서</th>
+                        <th style="width:7%" class="hide-mobile">글자수</th>
+                        <th style="width:6%" class="hide-mobile">자동</th>
                         <th style="width:20%">품질 가점</th>
                         <th style="width:6%">최종</th>
                         <th style="width:6%">상태</th>
@@ -187,24 +188,16 @@
             <thead class="table-dark">
                 <tr><th>면 \ 글자수</th><th>2,000자↑</th><th>1,200~1,999자</th><th>600~1,199자</th><th>600자↓</th></tr>
             </thead>
-            <tbody>
-                <tr><td class="fw-bold">1면</td><td>10.0</td><td>7.0</td><td>5.5</td><td>5.5</td></tr>
-                <tr><td class="fw-bold">2~3면</td><td>8.5</td><td>6.0</td><td>4.7</td><td>4.7</td></tr>
-                <tr><td class="fw-bold">4~5면</td><td>7.0</td><td>4.9</td><td>3.9</td><td>3.9</td></tr>
-                <tr><td class="fw-bold">6~10면</td><td>5.5</td><td>3.9</td><td>3.0</td><td>3.0</td></tr>
-                <tr><td class="fw-bold">11~20면</td><td>4.0</td><td>2.8</td><td>2.2</td><td>2.2</td></tr>
-                <tr><td class="fw-bold">21~32면</td><td>3.0</td><td>2.1</td><td>1.7</td><td>1.7</td></tr>
-            </tbody>
+            <tbody id="scoreMatrix"></tbody>
         </table>
-        <div class="small text-muted mt-2">
-            품질 가점: 면톱 +2점, 단독/특종 +5점, 기획 +5점, S등급 +3점 (상한 10점)
-        </div>
+        <div class="small text-muted mt-2" id="qualityBonusInfo"></div>
     </div>
 </div>
 
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="common.js"></script>
 <script src="score.js"></script>
 <script src="score-data.js"></script>
 <script>
@@ -233,41 +226,105 @@ let usersData = [];
 
 const EVAL_STORAGE_KEY = 'score_article_evals';
 
+// 점수 매트릭스 동적 생성
+function renderScoreMatrix() {
+    const config = getScoreConfig();
+    const pages = [
+        { label: '1면', weight: config.PAGE_WEIGHTS[1] },
+        { label: '2~3면', weight: config.PAGE_WEIGHTS[3] },
+        { label: '4~5면', weight: config.PAGE_WEIGHTS[5] },
+        { label: '6~10면', weight: config.PAGE_WEIGHTS[10] },
+        { label: '11~20면', weight: config.PAGE_WEIGHTS[20] },
+        { label: '21~32면', weight: config.PAGE_WEIGHTS[32] }
+    ];
+    const lengths = [
+        config.LENGTH_WEIGHTS[2000],
+        config.LENGTH_WEIGHTS[1200],
+        config.LENGTH_WEIGHTS[600],
+        config.LENGTH_WEIGHTS[0]
+    ];
+    
+    const tbody = document.getElementById('scoreMatrix');
+    tbody.innerHTML = pages.map(p => {
+        const cells = lengths.map(l => {
+            const score = Math.round(p.weight * l * config.BASE_SCORE * 10) / 10;
+            return `<td>${score}</td>`;
+        }).join('');
+        return `<tr><td class="fw-bold">${p.label}</td>${cells}</tr>`;
+    }).join('');
+    
+    // 품질 가점 정보
+    const qb = config.QUALITY_BONUS;
+    document.getElementById('qualityBonusInfo').innerHTML = 
+        `품질 가점: 면톱 +${qb.isTopArticle}점, 단독/특종 +${qb.isExclusive}점, 기획 +${qb.isFeature}점, S등급 +${qb.isSGrade}점 (상한 ${config.QUALITY_BONUS_CAP}점)`;
+}
+
 // 초기 로드
+const EVAL_API_URL = 'https://yyffk7tpfey7s2kv7hoitskxb40aljqw.lambda-url.us-east-1.on.aws/';
+
 document.addEventListener('DOMContentLoaded', async () => {
-    // 서버 동기화 (SYNC_ENABLED가 true일 때만)
-    if (ScoreDataStore.SYNC_ENABLED) {
-        await ScoreDataStore.loadFromServer();
-        await ScoreDataStore.retryPendingSync();
+    SCore.showLoading('기사 평가 데이터를 불러오는 중...');
+    SCore.showInlineLoading('articleList', 10);
+    
+    try {
+        // Lambda에서 평가 데이터 로드
+        try {
+            const evalRes = await fetch(EVAL_API_URL + '?t=' + Date.now());
+            if (evalRes.ok) {
+                const serverEvals = await evalRes.json();
+                // localStorage에 병합
+                const localEvals = ScoreDataStore.getEvals();
+                const merged = { ...localEvals, ...serverEvals };
+                localStorage.setItem(ScoreDataStore.EVALS_KEY, JSON.stringify(merged));
+            }
+        } catch (e) {
+            console.log('서버 평가 데이터 로드 실패, localStorage 사용');
+        }
+        
+        // 오늘 날짜 기본값
+        const today = new Date().toISOString().slice(0, 10);
+        document.getElementById('dateFilter').value = today;
+        
+        // 데이터 로드
+        const [dataRes, usersRes] = await Promise.all([
+            fetch('data.json?t=' + Date.now()),
+            fetch('users.json?t=' + Date.now())
+        ]);
+        
+        if (!dataRes.ok || !usersRes.ok) throw new Error('데이터 로드 실패');
+        
+        allData = await dataRes.json();
+        usersData = await usersRes.json();
+        
+        // 부서 필터 채우기
+        const depts = [...new Set(usersData.map(u => u.department).filter(d => d && d !== '전체'))];
+        depts.sort();
+        const deptFilter = document.getElementById('deptFilter');
+        depts.forEach(d => {
+            deptFilter.innerHTML += `<option value="${d}">${d}</option>`;
+        });
+        
+        // manager는 자기 부서만
+        if (session.role === 'manager') {
+            deptFilter.value = session.department;
+            deptFilter.disabled = true;
+        }
+        
+        // 점수 매트릭스 렌더링
+        renderScoreMatrix();
+        
+        filterArticles();
+    } catch (err) {
+        console.error(err);
+        SCore.showError('articleList', {
+            title: '기사 목록을 불러올 수 없습니다',
+            message: SCore.getErrorMessage(err),
+            retryCallback: 'location.reload()',
+            colspan: 10
+        });
+    } finally {
+        SCore.hideLoading();
     }
-    
-    // 오늘 날짜 기본값
-    const today = new Date().toISOString().slice(0, 10);
-    document.getElementById('dateFilter').value = today;
-    
-    // 데이터 로드
-    const [dataRes, usersRes] = await Promise.all([
-        fetch('data.json?t=' + Date.now()),
-        fetch('users.json?t=' + Date.now())
-    ]);
-    allData = await dataRes.json();
-    usersData = await usersRes.json();
-    
-    // 부서 필터 채우기
-    const depts = [...new Set(usersData.map(u => u.department).filter(d => d && d !== '전체'))];
-    depts.sort();
-    const deptFilter = document.getElementById('deptFilter');
-    depts.forEach(d => {
-        deptFilter.innerHTML += `<option value="${d}">${d}</option>`;
-    });
-    
-    // manager는 자기 부서만
-    if (session.role === 'manager') {
-        deptFilter.value = session.department;
-        deptFilter.disabled = true;
-    }
-    
-    filterArticles();
 });
 
 // 기사 필터링
@@ -355,9 +412,9 @@ function renderArticles(articles) {
                     <small class="text-muted">${article.pub_date}</small>
                 </td>
                 <td>${article.reporter_name}</td>
-                <td><small>${article.department}</small></td>
-                <td>${charCount.toLocaleString()}</td>
-                <td>${score.baseScore}</td>
+                <td class="hide-mobile"><small>${article.department}</small></td>
+                <td class="hide-mobile">${charCount.toLocaleString()}</td>
+                <td class="hide-mobile">${score.baseScore}</td>
                 <td>
                     <button class="quality-btn top ${article.isTopArticle ? 'active' : ''}" 
                             onclick="toggleQuality('${nsid}', 'isTopArticle')" ${isConfirmed ? 'disabled' : ''}>면톱</button>
@@ -407,7 +464,7 @@ function updateStats(articles) {
 }
 
 // 품질 가점 토글 (확정된 기사는 수정 불가)
-function toggleQuality(nsid, field) {
+async function toggleQuality(nsid, field) {
     // 확정 상태 확인
     if (ScoreDataStore.isConfirmed(nsid)) {
         showToast('확정된 기사는 수정할 수 없습니다', 'warning');
@@ -416,7 +473,24 @@ function toggleQuality(nsid, field) {
     
     const evals = ScoreDataStore.getEvals();
     const current = evals[nsid] || {};
-    ScoreDataStore.saveEval(nsid, { [field]: !current[field] });
+    const newValue = !current[field];
+    
+    // localStorage 저장
+    ScoreDataStore.saveEval(nsid, { [field]: newValue });
+    
+    // Lambda API에도 저장 (비동기)
+    try {
+        const payload = {};
+        payload[nsid] = { ...current, [field]: newValue, updatedAt: new Date().toISOString() };
+        await fetch(EVAL_API_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        });
+    } catch (e) {
+        console.log('서버 저장 실패:', e);
+    }
+    
     filterArticles();
     showToast('저장되었습니다');
 }
@@ -428,7 +502,7 @@ function toggleSelectAll() {
 }
 
 // 선택 확정
-function confirmSelected() {
+async function confirmSelected() {
     const selected = document.querySelectorAll('.article-check:checked');
     if (selected.length === 0) {
         showToast('선택된 기사가 없습니다', 'warning');
@@ -436,33 +510,69 @@ function confirmSelected() {
     }
     
     let confirmedCount = 0;
+    const payload = {};
+    
     selected.forEach(cb => {
         const row = cb.closest('tr');
         const nsid = row.dataset.nsid;
         
         // 이미 확정된 기사는 스킵
         if (!ScoreDataStore.isConfirmed(nsid)) {
-            ScoreDataStore.confirmArticle(nsid, session.userId, session.name);
-            confirmedCount++;
+            const evalData = ScoreDataStore.confirmArticle(nsid, session.userId, session.name);
+            if (evalData) {
+                payload[nsid] = evalData;
+                confirmedCount++;
+            }
         }
     });
+    
+    // Lambda API에도 저장
+    if (Object.keys(payload).length > 0) {
+        try {
+            await fetch(EVAL_API_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+        } catch (e) {
+            console.log('서버 저장 실패:', e);
+        }
+    }
     
     filterArticles();
     showToast(`${confirmedCount}건 확정되었습니다`);
 }
 
 // 전체 확정
-function confirmAll() {
+async function confirmAll() {
     if (!confirm('현재 필터된 미확정 기사를 모두 확정하시겠습니까?')) return;
     
     let confirmedCount = 0;
+    const payload = {};
+    
     document.querySelectorAll('tr[data-nsid]').forEach(row => {
         const nsid = row.dataset.nsid;
         if (!ScoreDataStore.isConfirmed(nsid)) {
-            ScoreDataStore.confirmArticle(nsid, session.userId, session.name);
-            confirmedCount++;
+            const evalData = ScoreDataStore.confirmArticle(nsid, session.userId, session.name);
+            if (evalData) {
+                payload[nsid] = evalData;
+                confirmedCount++;
+            }
         }
     });
+    
+    // Lambda API에도 저장
+    if (Object.keys(payload).length > 0) {
+        try {
+            await fetch(EVAL_API_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+        } catch (e) {
+            console.log('서버 저장 실패:', e);
+        }
+    }
     
     filterArticles();
     showToast(`${confirmedCount}건 확정되었습니다`);
@@ -475,10 +585,7 @@ function escapeHtml(t) {
 }
 
 function showToast(msg, type = 'success') {
-    const t = document.getElementById('toast');
-    t.className = `toast align-items-center text-bg-${type} border-0`;
-    document.getElementById('toastMsg').textContent = msg;
-    new bootstrap.Toast(t).show();
+    SCore.toast(msg, type === 'danger' ? 'error' : type);
 }
 </script>
 </body>
