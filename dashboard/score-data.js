@@ -13,6 +13,7 @@ const ScoreDataStore = {
     CONFIG_HISTORY_KEY: 'score_config_history',
     FEATURE_FLAGS_KEY: 'score_feature_flags',
     PENALTIES_KEY: 'score_penalties',
+    DEPT_CONFIG_KEY: 'score_dept_config',
     LAST_SYNC_KEY: 'score_last_sync',
 
     // Lambda API 설정 (배포 시 활성화)
@@ -233,6 +234,47 @@ const ScoreDataStore = {
     saveFeatureFlags(flags) {
         localStorage.setItem(this.FEATURE_FLAGS_KEY, JSON.stringify(flags));
         return flags;
+    },
+
+    // ========== 부서 설정 ==========
+    getDeptConfig() {
+        const saved = localStorage.getItem(this.DEPT_CONFIG_KEY);
+        if (saved) return JSON.parse(saved);
+        return {};
+    },
+
+    saveDeptConfig(config) {
+        localStorage.setItem(this.DEPT_CONFIG_KEY, JSON.stringify(config));
+        return config;
+    },
+
+    /**
+     * 표시 가능한 부서 목록 반환
+     * @param {Array} allDepartments - 전체 부서 목록
+     * @returns {Array} visible=true인 부서만 반환
+     */
+    getVisibleDepartments(allDepartments) {
+        const config = this.getDeptConfig();
+        return allDepartments.filter(d => config[d]?.visible !== false);
+    },
+
+    /**
+     * 서버에서 부서 설정 로드
+     */
+    async loadDeptConfigFromServer() {
+        try {
+            const res = await fetch('https://yyffk7tpfey7s2kv7hoitskxb40aljqw.lambda-url.us-east-1.on.aws/?t=' + Date.now());
+            if (res.ok) {
+                const data = await res.json();
+                if (data._deptConfig) {
+                    this.saveDeptConfig(data._deptConfig);
+                    return data._deptConfig;
+                }
+            }
+        } catch (e) {
+            console.log('부서 설정 로드 실패:', e);
+        }
+        return this.getDeptConfig();
     },
 
     // ========== 감점 관리 ==========

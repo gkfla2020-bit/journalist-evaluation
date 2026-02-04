@@ -80,7 +80,8 @@
     <a href="score-penalties.html"><i class="bi bi-exclamation-triangle me-1"></i>감점 관리</a>
     <a href="score-appeals.html"><i class="bi bi-chat-left-text me-1"></i>소명 관리</a>
     <a href="score-config.html" id="nav-config"><i class="bi bi-sliders me-1"></i>가중치 설정</a>
-    <a href="admin.html" id="nav-admin"><i class="bi bi-gear me-1"></i>사원 관리</a>
+    <a href="admin.html" id="nav-admin"><i class="bi bi-person-gear me-1"></i>사원 관리</a>
+    <a href="dept-manage.html"><i class="bi bi-building me-1"></i>부서 관리</a>
 </div>
 
 <!-- 필터 -->
@@ -297,11 +298,15 @@ document.addEventListener('DOMContentLoaded', async () => {
         allData = await dataRes.json();
         usersData = await usersRes.json();
         
-        // 부서 필터 채우기
+        // 서버에서 부서 설정 로드
+        const deptConfig = await ScoreDataStore.loadDeptConfigFromServer();
+        
+        // 부서 필터 채우기 (visible=true인 것만)
         const depts = [...new Set(usersData.map(u => u.department).filter(d => d && d !== '전체'))];
         depts.sort();
         const deptFilter = document.getElementById('deptFilter');
         depts.forEach(d => {
+            if (deptConfig[d]?.visible === false) return;
             deptFilter.innerHTML += `<option value="${d}">${d}</option>`;
         });
         
