@@ -1,0 +1,218 @@
+# S-CORE 사용설명서
+## 기자 지면 기여도 평가 시스템
+
+**버전:** 1.0  
+**최종 수정일:** 2026년 2월 4일
+
+---
+
+## 1. 시스템 개요
+
+S-CORE는 서울경제신문 기자들의 지면 기사 기여도를 자동으로 측정하고 평가하는 시스템입니다.
+
+### 핵심 철학
+> **"Max-Auto, Min-Manual"**
+- 게재 면, 글자 수 등은 100% 자동 입력
+- 품질 평가(단독, 기획, S등급)만 부장이 체크
+
+### 점수 산출 공식
+```
+기사 점수 = (면 가중치 × 분량 가중치 × 기본점수 10) + 품질 가점
+```
+- 최대 점수: 20점
+- 최저 점수: 1.7점
+- 품질 가점 상한: 10점
+
+---
+
+## 2. 접속 방법
+
+### 로컬 개발 서버
+```
+http://localhost:8082
+```
+
+### 운영 서버 (CloudFront)
+```
+https://kpi.sedaily.ai
+```
+
+---
+
+## 3. 사용자 역할별 기능
+
+### 3.1 관리자 (Admin)
+- **로그인:** admin / 1234
+- **접근 가능 메뉴:**
+  - 대시보드
+  - 부서 대시보드
+  - 기자 목록
+  - 기사 평가
+  - 감점 관리
+  - 소명 관리
+  - 가중치 설정
+  - 사원 관리
+
+### 3.2 부장 (Manager)
+- **접근 가능 메뉴:**
+  - 대시보드
+  - 부서 대시보드 (본인 부서만)
+  - 기자 목록 (본인 부서만)
+  - 기사 평가 (본인 부서만)
+  - 감점 관리
+  - 소명 관리 (본인 부서만)
+
+### 3.3 기자 (Reporter)
+- **접근 가능 메뉴:**
+  - 내 점수 (score-my.html)
+  - 본인 기사 조회만 가능
+  - 소명 요청 가능
+
+---
+
+## 4. 주요 화면 설명
+
+### 4.1 대시보드 (home.html)
+- 전체 현황 요약
+- 부서별 통계
+- 최근 활동 내역
+
+### 4.2 기사 평가 (score-eval.html)
+- 기사 목록 조회
+- 품질 가점 체크 (면톱, 단독, 기획, S등급)
+- 기사 확정/확정 취소
+
+### 4.3 감점 관리 (score-penalties.html)
+감점 유형 3가지:
+| 유형 | 감점 | 기간 |
+|:---|:---:|:---:|
+| 시말서(부서) | -2점 | 1개월 |
+| 시말서(반복) | -5점 | 1개월 |
+| 편집국장 | -5점 | 6개월 |
+
+### 4.4 소명 관리 (score-appeals.html)
+- 기자가 제출한 소명 요청 목록
+- 승인/반려 처리
+- 승인 시 자동으로 가점 반영
+
+### 4.5 가중치 설정 (score-config.html)
+- 면 가중치 조정
+- 분량 가중치 조정
+- 품질 가점 조정
+- Feature Flags 설정
+
+### 4.6 내 점수 (score-my.html) - 기자 전용
+- 본인 기사 목록
+- 월별 점수 현황
+- 소명 요청 기능
+
+---
+
+## 5. 점수 가중치 기본값
+
+### 면 가중치
+| 게재 면 | 가중치 |
+|:---|:---:|
+| 1면 | 1.00 |
+| 2~3면 | 0.85 |
+| 4~5면 | 0.70 |
+| 6~10면 | 0.55 |
+| 11~20면 | 0.40 |
+| 21~32면 | 0.30 |
+
+### 분량 가중치
+| 글자 수 | 가중치 |
+|:---|:---:|
+| 2,000자 이상 | 1.00 |
+| 1,200~1,999자 | 0.70 |
+| 600자 미만 | 0.55 |
+
+### 품질 가점
+| 항목 | 가점 |
+|:---|:---:|
+| 면톱 | +2점 |
+| 단독/특종 | +5점 |
+| 기획 | +5점 |
+| S등급 | +3점 |
+
+---
+
+## 6. AWS 인프라
+
+### S3 버킷
+- **버킷명:** kpi.sedaily.ai
+- **용도:** 정적 웹 호스팅
+
+### CloudFront
+- **Distribution ID:** E1DJQD9MHS4VRO
+- **도메인:** kpi.sedaily.ai
+
+### Lambda APIs
+| API | URL |
+|:---|:---|
+| 평가 API | https://yyffk7tpfey7s2kv7hoitskxb40aljqw.lambda-url.us-east-1.on.aws/ |
+| 동기화 API | https://3pxmyosj2eunachemenbx4b6ay0dzqvd.lambda-url.us-east-1.on.aws/ |
+| 사원 API | https://aesyomxdaohdy3tykjsbzo6nr40zfnap.lambda-url.us-east-1.on.aws/ |
+
+---
+
+## 7. 배포 방법
+
+### S3 배포
+```bash
+aws s3 sync dashboard/ s3://kpi.sedaily.ai/ --delete
+```
+
+### CloudFront 캐시 무효화
+```bash
+aws cloudfront create-invalidation --distribution-id E1DJQD9MHS4VRO --paths "/*"
+```
+
+### 일괄 배포 (sync_and_deploy.bat)
+```bash
+sync_and_deploy.bat
+```
+
+---
+
+## 8. 로컬 개발 서버 실행
+
+```bash
+python -m http.server 8082 --directory dashboard
+```
+
+또는 `run_server.bat` 실행
+
+---
+
+## 9. 파일 구조
+
+```
+dashboard/
+├── index.html          # 메인 진입점 (로그인 리다이렉트)
+├── login.html          # 로그인 페이지
+├── home.html           # 대시보드
+├── list.html           # 기자 목록
+├── reporter.html       # 기자 상세
+├── admin.html          # 사원 관리
+├── guide.html          # 가이드
+├── handover.html       # 인수인계 문서
+├── score-dashboard.html # 부서 대시보드
+├── score-eval.html     # 기사 평가
+├── score-my.html       # 내 점수 (기자용)
+├── score-appeals.html  # 소명 관리
+├── score-penalties.html # 감점 관리
+├── score-config.html   # 가중치 설정
+├── common.js           # 공통 유틸리티
+├── common.css          # 공통 스타일
+├── score.js            # 점수 계산 모듈
+├── score-data.js       # 데이터 저장소 모듈
+├── data.json           # 기사 데이터
+└── users.json          # 사용자 데이터
+```
+
+---
+
+## 10. 문의
+
+기술 문의: 디지털전략실

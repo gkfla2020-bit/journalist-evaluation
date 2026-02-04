@@ -177,7 +177,7 @@ const SCore = {
     },
 
     // ===== API 호출 래퍼 =====
-    async fetch: async function(url, options = {}) {
+    fetch: async function(url, options = {}) {
         const {
             showLoadingOverlay = false,
             loadingMessage = '데이터를 불러오는 중...',

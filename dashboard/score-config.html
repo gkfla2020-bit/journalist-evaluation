@@ -57,6 +57,7 @@
     <a href="score-dashboard.html"><i class="bi bi-speedometer2 me-1"></i>부서 대시보드</a>
     <a href="list.html"><i class="bi bi-people me-1"></i>기자 목록</a>
     <a href="score-eval.html"><i class="bi bi-clipboard-check me-1"></i>기사 평가</a>
+    <a href="score-penalties.html"><i class="bi bi-exclamation-triangle me-1"></i>감점 관리</a>
     <a href="score-appeals.html"><i class="bi bi-chat-left-text me-1"></i>소명 관리</a>
     <a href="score-config.html" class="active"><i class="bi bi-sliders me-1"></i>가중치 설정</a>
     <a href="admin.html" id="nav-admin"><i class="bi bi-gear me-1"></i>사원 관리</a>
@@ -159,16 +160,16 @@
     <button class="btn btn-primary btn-lg" onclick="saveConfig()"><i class="bi bi-save me-1"></i>설정 저장</button>
 </div>
 
-<!-- 테스트 케이스 검증 -->
+<!-- 점수 계산 예시 -->
 <div class="card">
     <div class="card-header d-flex justify-content-between align-items-center">
-        <span><i class="bi bi-check-circle me-2"></i>테스트 케이스 검증</span>
-        <button class="btn btn-sm btn-light" onclick="runTests()"><i class="bi bi-play me-1"></i>테스트 실행</button>
+        <span><i class="bi bi-calculator me-2"></i>점수 계산 예시</span>
+        <button class="btn btn-sm btn-light" onclick="runTests()"><i class="bi bi-play me-1"></i>계산 실행</button>
     </div>
     <div class="card-body p-0">
         <table class="table table-sm mb-0">
             <thead class="table-light">
-                <tr><th>케이스</th><th>면</th><th>글자수</th><th>면톱</th><th>단독</th><th>기획</th><th>S등급</th><th>예상</th><th>실제</th><th>결과</th></tr>
+                <tr><th>예시</th><th>면</th><th>글자수</th><th>면톱</th><th>단독</th><th>기획</th><th>S등급</th><th colspan="2">계산 점수</th><th>설명</th></tr>
             </thead>
             <tbody id="testResults">
                 <tr><td colspan="10" class="text-center text-muted py-3">테스트 실행 버튼을 클릭하세요</td></tr>
@@ -273,6 +274,9 @@ function logout() {
             if (serverData._config) {
                 localStorage.setItem(ScoreDataStore.CONFIG_KEY, JSON.stringify(serverData._config));
             }
+            if (serverData._featureFlags) {
+                localStorage.setItem(ScoreDataStore.FEATURE_FLAGS_KEY, JSON.stringify(serverData._featureFlags));
+            }
         }
     } catch (e) {
         console.log('서버 설정 로드 실패, localStorage 사용');
@@ -371,42 +375,71 @@ async function saveConfig() {
     }
 }
 
+// 변경 이력 로드
+function loadHistory() {
+    const history = ScoreDataStore.getConfigHistory ? ScoreDataStore.getConfigHistory() : [];
+    const tbody = document.getElementById('historyList');
+    
+    if (history.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="4" class="text-center py-3 text-muted">변경 이력이 없습니다</td></tr>';
+        return;
+    }
+    
+    tbody.innerHTML = history.slice(0, 20).map(h => {
+        const date = new Date(h.changedAt).toLocaleString('ko-KR');
+        // changes는 배열이므로 요약 문자열로 변환
+        let changesText = '설정 변경';
+        if (h.changes && Array.isArray(h.changes) && h.changes.length > 0) {
+            changesText = h.changes.map(c => `${c.field}: ${c.oldValue}→${c.newValue}`).join(', ');
+            if (changesText.length > 50) {
+                changesText = changesText.substring(0, 50) + '...';
+            }
+        }
+        return `
+            <tr>
+                <td><small>${date}</small></td>
+                <td>${h.changedByName || h.changedBy || '-'}</td>
+                <td><small class="text-muted">${changesText}</small></td>
+                <td><small>${h.reason || '-'}</small></td>
+            </tr>
+        `;
+    }).join('');
+}
+
 // 기본값 복원
 function resetToDefault() {
     if (!confirm('기본값으로 복원하시겠습니까?')) return;
     localStorage.removeItem('score_config');
     loadConfig();
-    showToast('기본값으로 복원되었습니다');
+    SCore.toast('기본값으로 복원되었습니다', 'success');
 }
 
-// 테스트 실행
+// 테스트 실행 - 현재 설정 기준 점수 계산 예시
 function runTests() {
     const testCases = [
-        { page: 1, charCount: 2100, isTopArticle: true, isExclusive: true, isFeature: true, isSGrade: true, expected: 20.0 },
-        { page: 1, charCount: 2000, isTopArticle: true, isExclusive: true, isFeature: false, isSGrade: false, expected: 17.0 },
-        { page: 3, charCount: 1500, isTopArticle: true, isExclusive: false, isFeature: true, isSGrade: false, expected: 13.0 },
-        { page: 5, charCount: 1500, isTopArticle: true, isExclusive: false, isFeature: false, isSGrade: false, expected: 6.9 },
-        { page: 10, charCount: 1300, isTopArticle: false, isExclusive: false, isFeature: false, isSGrade: false, expected: 3.9 },
-        { page: 15, charCount: 1000, isTopArticle: false, isExclusive: false, isFeature: false, isSGrade: false, expected: 2.2 },
-        { page: 30, charCount: 400, isTopArticle: false, isExclusive: false, isFeature: false, isSGrade: false, expected: 1.7 }
+        { page: 1, charCount: 2100, isTopArticle: true, isExclusive: true, isFeature: true, isSGrade: true, desc: '1면 2100자 + 모든 가점' },
+        { page: 1, charCount: 2000, isTopArticle: true, isExclusive: true, isFeature: false, isSGrade: false, desc: '1면 2000자 + 면톱/단독' },
+        { page: 3, charCount: 1500, isTopArticle: true, isExclusive: false, isFeature: true, isSGrade: false, desc: '3면 1500자 + 면톱/기획' },
+        { page: 5, charCount: 1500, isTopArticle: true, isExclusive: false, isFeature: false, isSGrade: false, desc: '5면 1500자 + 면톱' },
+        { page: 10, charCount: 1300, isTopArticle: false, isExclusive: false, isFeature: false, isSGrade: false, desc: '10면 1300자 (가점 없음)' },
+        { page: 15, charCount: 1000, isTopArticle: false, isExclusive: false, isFeature: false, isSGrade: false, desc: '15면 1000자 (가점 없음)' },
+        { page: 30, charCount: 400, isTopArticle: false, isExclusive: false, isFeature: false, isSGrade: false, desc: '30면 400자 (가점 없음)' }
     ];
     
     const tbody = document.getElementById('testResults');
     tbody.innerHTML = testCases.map((tc, i) => {
         const result = calculateArticleScore(tc);
-        const passed = result.totalScore === tc.expected;
         return `
             <tr>
-                <td>TC-0${i+1}</td>
+                <td>예시${i+1}</td>
                 <td>${tc.page}</td>
                 <td>${tc.charCount}</td>
                 <td>${tc.isTopArticle ? 'Y' : 'N'}</td>
                 <td>${tc.isExclusive ? 'Y' : 'N'}</td>
                 <td>${tc.isFeature ? 'Y' : 'N'}</td>
                 <td>${tc.isSGrade ? 'Y' : 'N'}</td>
-                <td>${tc.expected}</td>
-                <td>${result.totalScore}</td>
-                <td class="${passed ? 'test-pass' : 'test-fail'} fw-bold">${passed ? '✅ PASS' : '❌ FAIL'}</td>
+                <td colspan="2" class="fw-bold text-primary">${result.totalScore}점</td>
+                <td><small class="text-muted">${tc.desc}</small></td>
             </tr>
         `;
     }).join('');
@@ -438,6 +471,46 @@ function updateMatrix() {
         }).join('');
         return `<tr><td class="fw-bold">${p.label}</td>${cells}</tr>`;
     }).join('');
+}
+
+// Feature Flags 로드
+function loadFeatureFlags() {
+    const flags = ScoreDataStore.getFeatureFlags();
+    document.getElementById('flagMyScore').checked = flags.SHOW_MY_SCORE;
+    document.getElementById('flagPrevMonth').checked = flags.SHOW_PREVIOUS_MONTH;
+    document.getElementById('flagDeptAvg').checked = flags.SHOW_DEPT_AVERAGE;
+    document.getElementById('flagDeptRank').checked = flags.SHOW_DEPT_RANKING;
+}
+
+// Feature Flags 저장
+async function saveFeatureFlags() {
+    const flags = {
+        SHOW_MY_SCORE: document.getElementById('flagMyScore').checked,
+        SHOW_PREVIOUS_MONTH: document.getElementById('flagPrevMonth').checked,
+        SHOW_DEPT_AVERAGE: document.getElementById('flagDeptAvg').checked,
+        SHOW_DEPT_RANKING: document.getElementById('flagDeptRank').checked
+    };
+    
+    const saveBtn = document.querySelector('[onclick="saveFeatureFlags()"]');
+    SCore.setButtonLoading(saveBtn, true);
+    
+    try {
+        ScoreDataStore.saveFeatureFlags(flags);
+        
+        // Lambda API에도 저장
+        await fetch(EVAL_API_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ _featureFlags: flags })
+        });
+        
+        SCore.toast('Feature Flags가 저장되었습니다', 'success');
+    } catch (e) {
+        console.log('서버 저장 실패:', e);
+        SCore.toast('저장에 실패했습니다. 다시 시도해주세요.', 'error');
+    } finally {
+        SCore.setButtonLoading(saveBtn, false);
+    }
 }
 
 // 입력 변경 시 매트릭스 업데이트

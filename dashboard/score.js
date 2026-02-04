@@ -84,6 +84,50 @@ function calculateArticleScore(article) {
     };
 }
 
+/**
+ * 기자의 월별 총점 계산 (감점 포함)
+ * @param {string} reporterId - 기자 ID
+ * @param {string} yearMonth - 'YYYY-MM' 형식
+ * @param {number} articleScore - 기사 점수 합계
+ * @returns {object} { articleScore, penaltyScore, finalScore, penalties }
+ */
+function calculateMonthlyScore(reporterId, yearMonth, articleScore) {
+    // ScoreDataStore가 로드되어 있는지 확인
+    if (typeof ScoreDataStore !== 'undefined' && ScoreDataStore.calculatePenaltyForMonth) {
+        const penaltyResult = ScoreDataStore.calculatePenaltyForMonth(reporterId, yearMonth);
+        const finalScore = Math.max(0, articleScore + penaltyResult.totalPenalty); // 최소 0점
+        
+        return {
+            articleScore: Math.round(articleScore * 10) / 10,
+            penaltyScore: penaltyResult.totalPenalty,
+            finalScore: Math.round(finalScore * 10) / 10,
+            penalties: penaltyResult.penalties
+        };
+    }
+    
+    // ScoreDataStore가 없으면 감점 없이 반환
+    return {
+        articleScore: Math.round(articleScore * 10) / 10,
+        penaltyScore: 0,
+        finalScore: Math.round(articleScore * 10) / 10,
+        penalties: []
+    };
+}
+
+/**
+ * 기자의 감점 여부 확인
+ * @param {string} reporterId - 기자 ID
+ * @param {string} yearMonth - 'YYYY-MM' 형식
+ * @returns {boolean}
+ */
+function hasPenalty(reporterId, yearMonth) {
+    if (typeof ScoreDataStore !== 'undefined' && ScoreDataStore.calculatePenaltyForMonth) {
+        const result = ScoreDataStore.calculatePenaltyForMonth(reporterId, yearMonth);
+        return result.totalPenalty < 0;
+    }
+    return false;
+}
+
 // 테스트 케이스 검증
 function runTestCases() {
     const testCases = [
@@ -113,5 +157,7 @@ if (typeof window !== 'undefined') {
     window.getLengthWeight = getLengthWeight;
     window.calculateQualityBonus = calculateQualityBonus;
     window.calculateArticleScore = calculateArticleScore;
+    window.calculateMonthlyScore = calculateMonthlyScore;
+    window.hasPenalty = hasPenalty;
     window.runTestCases = runTestCases;
 }

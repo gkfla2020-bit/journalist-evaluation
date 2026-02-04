@@ -276,7 +276,7 @@
     <div class="sidebar-logo">
         <i class="bi bi-bar-chart-fill"></i> S-CORE
     </div>
-    <div class="sidebar-subtitle">기자 지면 기여도 평가 시스템<br>사용 설명서 v2.2</div>
+    <div class="sidebar-subtitle">기자 지면 기여도 평가 시스템<br>사용 설명서 v2.3</div>
     
     <div class="nav-section">시작하기</div>
     <a href="#overview" class="nav-link"><i class="bi bi-house"></i> 시스템 개요</a>
@@ -294,6 +294,7 @@
     <a href="#reporter-list" class="nav-link"><i class="bi bi-people"></i> 기자 목록</a>
     <a href="#score-eval" class="nav-link"><i class="bi bi-clipboard-check"></i> 기사 평가</a>
     <a href="#confirm-feature" class="nav-link"><i class="bi bi-check-circle"></i> 확정 기능</a>
+    <a href="#penalties" class="nav-link"><i class="bi bi-exclamation-triangle"></i> 감점 관리</a>
     <a href="#appeals" class="nav-link"><i class="bi bi-chat-left-text"></i> 소명 관리</a>
     <a href="#score-config" class="nav-link"><i class="bi bi-sliders"></i> 가중치 설정</a>
     <a href="#feature-flags" class="nav-link"><i class="bi bi-toggles"></i> Feature Flags</a>
@@ -320,7 +321,7 @@
 <!-- 페이지 헤더 -->
 <div class="page-header">
     <h1><i class="bi bi-book me-2"></i>S-CORE 사용 설명서</h1>
-    <p>서울경제신문 기자 지면 기여도 평가 시스템 완벽 가이드 | v2.2 | 최종 업데이트: 2026년 2월 4일</p>
+    <p>서울경제신문 기자 지면 기여도 평가 시스템 완벽 가이드 | v2.3 | 최종 업데이트: 2026년 2월 4일</p>
 </div>
 
 <!-- ==================== 시스템 개요 ==================== -->
@@ -1210,6 +1211,95 @@
     </div>
 </section>
 
+<!-- ==================== 감점 관리 ==================== -->
+<section id="penalties" class="section">
+    <h2 class="section-title"><i class="bi bi-exclamation-triangle"></i> 감점 관리 (score-penalties.html)</h2>
+    
+    <p>감점 관리 페이지에서는 기자에게 <strong>감점을 등록하고 관리</strong>할 수 있습니다. 감점은 최종 점수 산출 시 반영됩니다.</p>
+    
+    <h5 class="mt-4 mb-3">감점 유형</h5>
+    <table class="custom-table">
+        <thead>
+            <tr><th>유형</th><th>감점</th><th>적용 기간</th><th>설명</th></tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><span class="badge" style="background:#fef3c7;color:#92400e;">시말서(부서)</span></td>
+                <td class="text-danger fw-bold">-2점</td>
+                <td>1개월</td>
+                <td>부서 단위 시말서, 해당 월 한 번만 감점</td>
+            </tr>
+            <tr>
+                <td><span class="badge" style="background:#fee2e2;color:#991b1b;">시말서(반복)</span></td>
+                <td class="text-danger fw-bold">-5점</td>
+                <td>1개월</td>
+                <td>동일 사안 2회 이상 반복 시</td>
+            </tr>
+            <tr>
+                <td><span class="badge" style="background:#fce7f3;color:#9d174d;">편집국장</span></td>
+                <td class="text-danger fw-bold">-5점</td>
+                <td>6개월</td>
+                <td>편집국장 감점, 6개월간 매월 감점</td>
+            </tr>
+        </tbody>
+    </table>
+    
+    <h5 class="mt-4 mb-3">감점 등록 절차</h5>
+    <div class="info-card orange">
+        <ol class="mb-0">
+            <li><strong>감점 관리</strong> 페이지 접속</li>
+            <li><strong>감점 등록</strong> 버튼 클릭</li>
+            <li>대상 기자 선택 (부장은 자기 부서 기자만 선택 가능)</li>
+            <li>감점 유형 선택</li>
+            <li>적용 시작월 선택</li>
+            <li>사유 입력 후 등록</li>
+        </ol>
+    </div>
+    
+    <h5 class="mt-4 mb-3">감점 적용 규칙</h5>
+    <ul>
+        <li><strong>시말서(부서)</strong>: 같은 월에 여러 건이 있어도 한 번만 감점 (-2점)</li>
+        <li><strong>시말서(반복)</strong>: 건별로 감점 적용</li>
+        <li><strong>편집국장</strong>: 등록 시점부터 6개월간 매월 -5점 자동 적용</li>
+        <li>감점은 기사 점수 합계에서 차감되며, 최종 점수는 0점 이하로 내려가지 않음</li>
+    </ul>
+    
+    <h5 class="mt-4 mb-3">권한별 기능</h5>
+    <table class="custom-table">
+        <thead>
+            <tr><th>역할</th><th>감점 등록</th><th>감점 조회</th><th>감점 삭제</th></tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><strong>Admin</strong></td>
+                <td>✅ 전체 기자</td>
+                <td>✅ 전체</td>
+                <td>✅</td>
+            </tr>
+            <tr>
+                <td><strong>Manager (부장)</strong></td>
+                <td>✅ 자기 부서만</td>
+                <td>✅ 자기 부서만</td>
+                <td>✅ 자기 부서만</td>
+            </tr>
+            <tr>
+                <td><strong>Reporter (기자)</strong></td>
+                <td>❌</td>
+                <td>✅ 본인만 (내 점수 페이지)</td>
+                <td>❌</td>
+            </tr>
+        </tbody>
+    </table>
+    
+    <div class="alert-box warning mt-4">
+        <i class="bi bi-exclamation-triangle"></i>
+        <div>
+            <strong>감점 삭제 시 주의</strong><br>
+            삭제된 감점은 점수 계산에서 제외됩니다. 삭제 후에는 복구할 수 없으니 신중하게 처리하세요.
+        </div>
+    </div>
+</section>
+
 <!-- ==================== 확정 기능 ==================== -->
 <section id="confirm-feature" class="section">
     <h2 class="section-title"><i class="bi bi-check-circle"></i> 확정 기능</h2>
@@ -2016,6 +2106,59 @@
     
     <p>S-CORE 시스템의 주요 변경 사항을 기록합니다.</p>
     
+    <h5 class="mt-4 mb-3">v2.3 (2026년 2월 4일)</h5>
+    <div class="info-card green mb-3">
+        <h5><i class="bi bi-plus-circle me-2"></i>신규 기능</h5>
+        <ul class="mb-0">
+            <li><strong>감점 관리 시스템</strong>: 기자별 감점 등록/관리 기능 추가
+                <ul>
+                    <li>시말서(부서): -2점, 1개월간 해당 월 한번만 감점</li>
+                    <li>시말서(반복): -5점, 동일 사안 2회 이상 반복 시, 1개월</li>
+                    <li>편집국장: -5점, 6개월간 매월 감점</li>
+                </ul>
+            </li>
+            <li><strong>감점 관리 페이지</strong>: score-penalties.html 신규 생성
+                <ul>
+                    <li>감점 목록 조회 (부서/유형/상태 필터)</li>
+                    <li>감점 등록 모달 (기자 선택, 유형 선택, 사유 입력)</li>
+                    <li>감점 삭제 기능</li>
+                    <li>통계 대시보드 (활성 감점, 이번 달 적용, 대상 기자 수, 총 감점)</li>
+                </ul>
+            </li>
+            <li><strong>내 점수 페이지 감점 표시</strong>: score-my.html에 본인 감점 내역 표시</li>
+            <li><strong>월별 점수 계산에 감점 반영</strong>: calculateMonthlyScore() 함수 추가</li>
+        </ul>
+    </div>
+    
+    <div class="info-card orange mb-3">
+        <h5><i class="bi bi-pencil me-2"></i>개선 사항</h5>
+        <ul class="mb-0">
+            <li><strong>네비게이션 메뉴 추가</strong>: 모든 관련 페이지에 "감점 관리" 메뉴 추가</li>
+            <li><strong>score-data.js 확장</strong>: 감점 데이터 관리 함수 추가
+                <ul>
+                    <li>getPenalties(), createPenalty(), updatePenalty(), deletePenalty()</li>
+                    <li>calculatePenaltyForMonth() - 월별 감점 계산</li>
+                    <li>getDepartmentPenaltiesForMonth() - 부서별 감점 조회</li>
+                </ul>
+            </li>
+            <li><strong>score.js 확장</strong>: 감점 반영 점수 계산 함수 추가
+                <ul>
+                    <li>calculateMonthlyScore() - 기사 점수 + 감점 = 최종 점수</li>
+                    <li>hasPenalty() - 감점 여부 확인</li>
+                </ul>
+            </li>
+        </ul>
+    </div>
+    
+    <div class="info-card mb-3">
+        <h5><i class="bi bi-file-code me-2"></i>적용된 페이지</h5>
+        <ul class="mb-0">
+            <li>score-penalties.html (감점 관리) - 신규</li>
+            <li>score-my.html (내 점수) - 감점 내역 표시 추가</li>
+            <li>모든 네비게이션 포함 페이지 - 감점 관리 메뉴 추가</li>
+        </ul>
+    </div>
+    
     <h5 class="mt-4 mb-3">v2.2 (2026년 2월 4일)</h5>
     <div class="info-card green mb-3">
         <h5><i class="bi bi-plus-circle me-2"></i>신규 기능</h5>
@@ -2135,6 +2278,11 @@
             </tr>
             <tr>
                 <td><strong>v2.3</strong></td>
+                <td>감점 관리 시스템 (시말서, 편집국장 감점)</td>
+                <td><span class="badge bg-success">완료</span></td>
+            </tr>
+            <tr>
+                <td><strong>v2.4</strong></td>
                 <td>월간 리포트 자동 생성 및 엑셀 내보내기</td>
                 <td><span class="badge bg-warning text-dark">계획중</span></td>
             </tr>

@@ -64,6 +64,7 @@
     <a href="home.html" id="navHome"><i class="bi bi-house-door me-1"></i>대시보드</a>
     <a href="list.html"><i class="bi bi-people me-1"></i>기자 목록</a>
     <a href="score-eval.html" id="navScoreEval"><i class="bi bi-clipboard-check me-1"></i>기사 평가</a>
+    <a href="score-penalties.html" id="navPenalties"><i class="bi bi-exclamation-triangle me-1"></i>감점 관리</a>
     <a href="score-appeals.html" id="navAppeals"><i class="bi bi-chat-left-text me-1"></i>소명 관리</a>
     <span class="float-end">
         <small id="userInfo" class="me-2 text-muted"></small>
@@ -146,7 +147,6 @@
                         <option value="">선택하세요</option>
                         <option value="EXCLUSIVE">단독 인정 요청</option>
                         <option value="FEATURE">기획/특종 인정 요청</option>
-                        <option value="S_GRADE">S등급 인정 요청</option>
                         <option value="TOP_ARTICLE">톱기사 인정 요청</option>
                         <option value="OTHER">기타</option>
                     </select>
@@ -481,6 +481,9 @@ function renderContent() {
     // ========== Admin/Manager/Reporter 공통 UI ==========
     const colClass = canEvaluate ? 'col-md-2' : 'col-md-3';
     
+    // 기자는 S등급/A등급 숨김
+    const showGrades = canEvaluate;
+    
     let html = `
         <!-- KPI 요약 -->
         <div class="row g-3 mb-4">
@@ -488,8 +491,8 @@ function renderContent() {
             <div class="${colClass}"><div class="stat-box"><div class="value">${stats.total_chars.toLocaleString()}</div><div class="label">글자수</div></div></div>
             <div class="${colClass}"><div class="stat-box"><div class="value" style="color:#dc3545;">${stats.scoop_count}</div><div class="label">특종</div></div></div>
             <div class="${colClass}"><div class="stat-box"><div class="value" style="color:#fd7e14;">${stats.exclusive_count}</div><div class="label">단독</div></div></div>
-            <div class="${colClass}"><div class="stat-box"><div class="value" style="color:#dc3545; font-weight:700;">${stats.s_grade}</div><div class="label">S등급</div></div></div>
-            <div class="${colClass}"><div class="stat-box"><div class="value" style="color:#fd7e14;">${stats.a_grade}</div><div class="label">A등급</div></div></div>
+            ${showGrades ? `<div class="${colClass}"><div class="stat-box"><div class="value" style="color:#dc3545; font-weight:700;">${stats.s_grade}</div><div class="label">S등급</div></div></div>` : ''}
+            ${showGrades ? `<div class="${colClass}"><div class="stat-box"><div class="value" style="color:#fd7e14;">${stats.a_grade}</div><div class="label">A등급</div></div></div>` : ''}
         </div>
         
         <!-- 일별 기사수 추이 -->
@@ -658,7 +661,6 @@ function getFilteredArticles() {
             return articles;
         case 'daily': {
             const dateStr = formatDate(baseDate);
-            console.log('Daily filter:', dateStr, 'period_end:', allData.period_end);
             return articles.filter(a => a.pub_date === dateStr);
         }
         case 'weekly': {
@@ -870,12 +872,12 @@ function renderReporterTable(articles) {
         const scoreColor = flags.SHOW_MY_SCORE ? 
             (scoreResult.totalScore >= 15 ? '#dc3545' : (scoreResult.totalScore >= 10 ? '#fd7e14' : '#2c5282')) : '#718096';
         
-        // 배지 생성
+        // 배지 생성 (기자에게는 S등급 숨김)
         let badges = '';
         if (scoreInput.isTopArticle) badges += '<span class="badge bg-warning text-dark me-1">🏅면톱</span>';
         if (scoreInput.isExclusive) badges += '<span class="badge bg-primary me-1">⭐단독</span>';
         if (scoreInput.isFeature) badges += '<span class="badge bg-info me-1">💡기획</span>';
-        if (scoreInput.isSGrade) badges += '<span class="badge bg-danger me-1">🏆S급</span>';
+        // S등급은 기자에게 표시하지 않음
         
         // 검토요청 상태 확인
         const appeals = ScoreDataStore ? ScoreDataStore.getAppeals({ reporterId: session.userId }) : [];

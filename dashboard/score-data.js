@@ -12,6 +12,7 @@ const ScoreDataStore = {
     CONFIG_KEY: 'score_config',
     CONFIG_HISTORY_KEY: 'score_config_history',
     FEATURE_FLAGS_KEY: 'score_feature_flags',
+    PENALTIES_KEY: 'score_penalties',
     LAST_SYNC_KEY: 'score_last_sync',
 
     // Lambda API 설정 (배포 시 활성화)
@@ -234,6 +235,124 @@ const ScoreDataStore = {
         return flags;
     },
 
+    // ========== 감점 관리 ==========
+    
+    /**
+     * 감점 유형:
+     * - DEPT_WARNING: 시말서(부서) -2점, 1개월간 해당 월 한번만 감점
+     * - REPEAT_WARNING: 시말서(반복) -5점, 동일 사안 2회 이상 반복 시, 1개월
+     * - EDITOR_PENALTY: 편집국장 -5점, 6개월간 매월 감점
+     */
+    PENALTY_TYPES: {
+        DEPT_WARNING: { name: '시말서(부서)', score: -2, duration: 1, description: '부서 단위 시말서' },
+        REPEAT_WARNING: { name: '시말서(반복)', score: -5, duration: 1, description: '동일 사안 2회 이상 반복' },
+        EDITOR_PENALTY: { name: '편집국장', score: -5, duration: 6, description: '편집국장 감점 (6개월)' }
+    },
+    
+    getPenalties(filter = {}) {
+        const penalties = JSON.parse(localStorage.getItem(this.PENALTIES_KEY) || '[]');
+        return penalties.filter(p => {
+            if (filter.reporterId && p.reporterId !== filter.reporterId) return false;
+            if (filter.department && p.department !== filter.department) return false;
+            if (filter.status && p.status !== filter.status) return false;
+            if (filter.type && p.type !== filter.type) return false;
+            return true;
+        });
+    },
+    
+    createPenalty(penalty) {
+        const penalties = JSON.parse(localStorage.getItem(this.PENALTIES_KEY) || '[]');
+        penalty.id = 'PEN-' + Date.now();
+        penalty.createdAt = new Date().toISOString();
+        penalty.status = 'ACTIVE';
+        
+        // 적용 시작월 (현재 월)
+        const now = new Date();
+        penalty.startMonth = penalty.startMonth || `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+        
+        // 적용 종료월 계산
+        const typeInfo = this.PENALTY_TYPES[penalty.type];
+        if (typeInfo) {
+            const startDate = new Date(penalty.startMonth + '-01');
+            startDate.setMonth(startDate.getMonth() + typeInfo.duration - 1);
+            penalty.endMonth = `${startDate.getFullYear()}-${String(startDate.getMonth() + 1).padStart(2, '0')}`;
+            penalty.score = typeInfo.score;
+        }
+        
+        penalties.push(penalty);
+        localStorage.setItem(this.PENALTIES_KEY, JSON.stringify(penalties));
+        
+        // Lambda 동기화
+        if (this.SYNC_ENABLED) {
+            this.syncToServer('penalty', penalty.id, penalty);
+        }
+        
+        return penalty;
+    },
+    
+    updatePenalty(penaltyId, updates) {
+        const penalties = JSON.parse(localStorage.getItem(this.PENALTIES_KEY) || '[]');
+        const index = penalties.findIndex(p => p.id === penaltyId);
+        if (index !== -1) {
+            penalties[index] = { ...penalties[index], ...updates, updatedAt: new Date().toISOString() };
+            localStorage.setItem(this.PENALTIES_KEY, JSON.stringify(penalties));
+            return penalties[index];
+        }
+        return null;
+    },
+    
+    deletePenalty(penaltyId) {
+        const penalties = JSON.parse(localStorage.getItem(this.PENALTIES_KEY) || '[]');
+        const index = penalties.findIndex(p => p.id === penaltyId);
+        if (index !== -1) {
+            penalties[index].status = 'DELETED';
+            penalties[index].deletedAt = new Date().toISOString();
+            localStorage.setItem(this.PENALTIES_KEY, JSON.stringify(penalties));
+            return true;
+        }
+        return false;
+    },
+    
+    /**
+     * 특정 기자의 특정 월 감점 합계 계산
+     * @param {string} reporterId - 기자 ID
+     * @param {string} yearMonth - 'YYYY-MM' 형식
+     * @returns {object} { totalPenalty: number, penalties: array }
+     */
+    calculatePenaltyForMonth(reporterId, yearMonth) {
+        const penalties = this.getPenalties({ reporterId, status: 'ACTIVE' });
+        const applicablePenalties = [];
+        let totalPenalty = 0;
+        
+        penalties.forEach(p => {
+            // 해당 월이 감점 적용 기간 내인지 확인
+            if (yearMonth >= p.startMonth && yearMonth <= p.endMonth) {
+                // 시말서(부서)는 해당 월에 한 번만 감점
+                if (p.type === 'DEPT_WARNING') {
+                    // 이미 같은 유형의 감점이 있는지 확인
+                    const existing = applicablePenalties.find(ap => ap.type === 'DEPT_WARNING');
+                    if (!existing) {
+                        applicablePenalties.push(p);
+                        totalPenalty += p.score;
+                    }
+                } else {
+                    applicablePenalties.push(p);
+                    totalPenalty += p.score;
+                }
+            }
+        });
+        
+        return { totalPenalty, penalties: applicablePenalties };
+    },
+    
+    /**
+     * 부서 전체의 특정 월 감점 목록
+     */
+    getDepartmentPenaltiesForMonth(department, yearMonth) {
+        const penalties = this.getPenalties({ department, status: 'ACTIVE' });
+        return penalties.filter(p => yearMonth >= p.startMonth && yearMonth <= p.endMonth);
+    },
+
     // ========== 데이터 리셋 ==========
     resetAll() {
         localStorage.removeItem(this.EVALS_KEY);
@@ -241,6 +360,7 @@ const ScoreDataStore = {
         localStorage.removeItem(this.CONFIG_KEY);
         localStorage.removeItem(this.CONFIG_HISTORY_KEY);
         localStorage.removeItem(this.FEATURE_FLAGS_KEY);
+        localStorage.removeItem(this.PENALTIES_KEY);
         localStorage.removeItem(this.LAST_SYNC_KEY);
     },
     
