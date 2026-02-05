@@ -106,7 +106,8 @@
                 <label class="form-label fw-bold">상태</label>
                 <select class="form-select" id="statusFilter" onchange="filterArticles()">
                     <option value="">전체</option>
-                    <option value="PENDING">미확정</option>
+                    <option value="PENDING">미평가</option>
+                    <option value="EVALUATED">평가</option>
                     <option value="CONFIRMED">확정</option>
                 </select>
             </div>
@@ -125,13 +126,13 @@
     <div class="col-md-3">
         <div class="stat-card">
             <div class="value" id="pendingCount">0</div>
-            <div class="label">미확정</div>
+            <div class="label">미평가</div>
         </div>
     </div>
     <div class="col-md-3">
         <div class="stat-card">
             <div class="value" id="confirmedCount">0</div>
-            <div class="label">확정 완료</div>
+            <div class="label">확정</div>
         </div>
     </div>
     <div class="col-md-3">
@@ -369,7 +370,15 @@ function filterArticles() {
         articles = articles.filter(a => a.reporter_name.toLowerCase().includes(searchInput));
     }
     if (statusFilter) {
-        articles = articles.filter(a => (a.status || 'PENDING') === statusFilter);
+        if (statusFilter === 'PENDING') {
+            // 미평가: 아무 버튼도 안 눌린 것
+            articles = articles.filter(a => a.status !== 'CONFIRMED' && !a.isTopArticle && !a.isExclusive && !a.isFeature && !a.isSGrade);
+        } else if (statusFilter === 'EVALUATED') {
+            // 평가됨: 버튼 하나라도 눌린 것 (확정 제외)
+            articles = articles.filter(a => a.status !== 'CONFIRMED' && (a.isTopArticle || a.isExclusive || a.isFeature || a.isSGrade));
+        } else if (statusFilter === 'CONFIRMED') {
+            articles = articles.filter(a => a.status === 'CONFIRMED');
+        }
     }
     
     // 면 순으로 정렬
@@ -434,8 +443,8 @@ function renderArticles(articles) {
                 </td>
                 <td class="score-cell ${scoreClass}">${score.totalScore}</td>
                 <td>
-                    <span class="badge ${isConfirmed ? 'bg-success' : 'bg-warning text-dark'}">
-                        ${isConfirmed ? '확정' : '미확정'}
+                    <span class="badge ${isConfirmed ? 'bg-success' : (article.isTopArticle || article.isExclusive || article.isFeature || article.isSGrade ? 'bg-info' : 'bg-secondary')}">
+                        ${isConfirmed ? '확정' : (article.isTopArticle || article.isExclusive || article.isFeature || article.isSGrade ? '평가' : '-')}
                     </span>
                 </td>
             </tr>
@@ -447,8 +456,9 @@ function renderArticles(articles) {
 
 // 통계 업데이트
 function updateStats(articles) {
-    const pending = articles.filter(a => (a.status || 'PENDING') === 'PENDING').length;
     const confirmed = articles.filter(a => a.status === 'CONFIRMED').length;
+    const evaluated = articles.filter(a => a.status !== 'CONFIRMED' && (a.isTopArticle || a.isExclusive || a.isFeature || a.isSGrade)).length;
+    const pending = articles.length - confirmed - evaluated;
     
     let totalScore = 0;
     articles.forEach(a => {

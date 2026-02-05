@@ -104,9 +104,14 @@
     <div class="card">
         <div class="card-header d-flex justify-content-between align-items-center">
             <span><i class="bi bi-list-ul me-2"></i>사원 목록</span>
-            <button class="btn btn-sm btn-light" onclick="saveAllChanges()">
-                <i class="bi bi-save me-1"></i>변경사항 저장
-            </button>
+            <div>
+                <button class="btn btn-sm btn-success me-2" onclick="openAddModal()">
+                    <i class="bi bi-person-plus me-1"></i>사원 추가
+                </button>
+                <button class="btn btn-sm btn-light" onclick="saveAllChanges()">
+                    <i class="bi bi-save me-1"></i>변경사항 저장
+                </button>
+            </div>
         </div>
         <div class="card-body p-0">
             <div class="table-responsive">
@@ -119,7 +124,7 @@
                             <th style="width:15%">직급</th>
                             <th style="width:15%">권한</th>
                             <th style="width:20%">이메일</th>
-                            <th style="width:10%">수정</th>
+                            <th style="width:15%">관리</th>
                         </tr>
                     </thead>
                     <tbody id="userList">
@@ -180,6 +185,100 @@
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">취소</button>
                 <button type="button" class="btn btn-primary" onclick="saveUserEdit()">저장</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 사원 추가 모달 -->
+<div class="modal fade" id="addModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-success text-white">
+                <h5 class="modal-title"><i class="bi bi-person-plus me-2"></i>새 사원 추가</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <label class="form-label fw-bold">사번 <span class="text-danger">*</span></label>
+                    <input type="text" class="form-control" id="addId" placeholder="6자리 사번 (예: 260101)" maxlength="6">
+                    <div class="form-text">숫자 6자리로 입력하세요.</div>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label fw-bold">이름 <span class="text-danger">*</span></label>
+                    <input type="text" class="form-control" id="addName" placeholder="홍길동">
+                </div>
+                <div class="mb-3">
+                    <label class="form-label fw-bold">부서 <span class="text-danger">*</span></label>
+                    <select class="form-select" id="addDept"></select>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label fw-bold">직급</label>
+                    <select class="form-select" id="addPosition">
+                        <option value="기자">기자</option>
+                        <option value="견습기자">견습기자</option>
+                        <option value="선임기자">선임기자</option>
+                        <option value="차장">차장</option>
+                        <option value="차장대우">차장대우</option>
+                        <option value="부장">부장</option>
+                        <option value="부장대우">부장대우</option>
+                        <option value="부장직대">부장직대</option>
+                        <option value="국장">국장</option>
+                        <option value="팀장">팀장</option>
+                        <option value="논설위원">논설위원</option>
+                    </select>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label fw-bold">권한</label>
+                    <select class="form-select" id="addRole">
+                        <option value="reporter">기자</option>
+                        <option value="manager">부장 (부서 관리)</option>
+                        <option value="admin">관리자 (전체 관리)</option>
+                    </select>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label fw-bold">이메일</label>
+                    <input type="email" class="form-control" id="addEmail" placeholder="example@sedaily.com">
+                </div>
+                <div class="alert alert-info small mb-0">
+                    <i class="bi bi-info-circle me-1"></i>
+                    초기 비밀번호는 <strong>1234</strong>로 설정됩니다.
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">취소</button>
+                <button type="button" class="btn btn-success" onclick="addNewUser()">
+                    <i class="bi bi-person-plus me-1"></i>추가
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 퇴사 확인 모달 -->
+<div class="modal fade" id="deleteModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title"><i class="bi bi-person-x me-2"></i>퇴사 처리</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="deleteUserId">
+                <div class="alert alert-warning">
+                    <i class="bi bi-exclamation-triangle me-2"></i>
+                    <strong id="deleteUserName"></strong> 사원을 퇴사 처리하시겠습니까?
+                </div>
+                <p class="text-muted small">
+                    퇴사 처리 시 해당 사원은 로그인할 수 없게 됩니다.<br>
+                    기존 기사 데이터는 유지됩니다.
+                </p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">취소</button>
+                <button type="button" class="btn btn-danger" onclick="confirmDelete()">
+                    <i class="bi bi-person-x me-1"></i>퇴사 처리
+                </button>
             </div>
         </div>
     </div>
@@ -292,8 +391,11 @@ function renderTable(users) {
                 <td><span class="role-badge ${roleClass}">${roleText}</span></td>
                 <td><small>${u.email || '-'}</small></td>
                 <td>
-                    <button class="btn btn-sm btn-outline-primary" onclick="openEditModal('${u.id}')">
+                    <button class="btn btn-sm btn-outline-primary me-1" onclick="openEditModal('${u.id}')" title="수정">
                         <i class="bi bi-pencil"></i>
+                    </button>
+                    <button class="btn btn-sm btn-outline-danger" onclick="openDeleteModal('${u.id}', '${u.name}')" title="퇴사">
+                        <i class="bi bi-person-x"></i>
                     </button>
                 </td>
             </tr>
@@ -375,14 +477,119 @@ function showToast(msg, type = 'success') {
 function updateDeptFilters() {
     const deptFilter = document.getElementById('deptFilter');
     const editDept = document.getElementById('editDept');
+    const addDept = document.getElementById('addDept');
     
     deptFilter.innerHTML = '<option value="">전체 부서</option>';
     editDept.innerHTML = '';
+    addDept.innerHTML = '';
     
     departments.forEach(d => {
         deptFilter.innerHTML += `<option value="${d}">${d}</option>`;
         editDept.innerHTML += `<option value="${d}">${d}</option>`;
+        addDept.innerHTML += `<option value="${d}">${d}</option>`;
     });
+}
+
+// 사원 추가 모달 열기
+function openAddModal() {
+    document.getElementById('addId').value = '';
+    document.getElementById('addName').value = '';
+    document.getElementById('addPosition').value = '기자';
+    document.getElementById('addRole').value = 'reporter';
+    document.getElementById('addEmail').value = '';
+    
+    // 부서 옵션 업데이트
+    updateDeptFilters();
+    
+    new bootstrap.Modal(document.getElementById('addModal')).show();
+}
+
+// 새 사원 추가
+function addNewUser() {
+    const id = document.getElementById('addId').value.trim();
+    const name = document.getElementById('addName').value.trim();
+    const dept = document.getElementById('addDept').value;
+    const position = document.getElementById('addPosition').value;
+    const role = document.getElementById('addRole').value;
+    const email = document.getElementById('addEmail').value.trim();
+    
+    // 유효성 검사
+    if (!id) {
+        SCore.toast('사번을 입력하세요.', 'error');
+        return;
+    }
+    if (!/^\d{6}$/.test(id)) {
+        SCore.toast('사번은 6자리 숫자여야 합니다.', 'error');
+        return;
+    }
+    if (!name) {
+        SCore.toast('이름을 입력하세요.', 'error');
+        return;
+    }
+    if (!dept) {
+        SCore.toast('부서를 선택하세요.', 'error');
+        return;
+    }
+    
+    // 중복 체크
+    if (allUsers.find(u => u.id === id)) {
+        SCore.toast('이미 존재하는 사번입니다.', 'error');
+        return;
+    }
+    
+    // 새 사원 추가
+    const newUser = {
+        id: id,
+        name: name,
+        department: dept,
+        position: position,
+        role: role,
+        email: email,
+        password: '1234'
+    };
+    
+    allUsers.push(newUser);
+    changedUsers[id] = true;
+    
+    bootstrap.Modal.getInstance(document.getElementById('addModal')).hide();
+    filterUsers();
+    SCore.toast(`${name} 사원이 추가되었습니다. "변경사항 저장"을 눌러주세요.`, 'warning');
+}
+
+// 퇴사 모달 열기
+function openDeleteModal(userId, userName) {
+    document.getElementById('deleteUserId').value = userId;
+    document.getElementById('deleteUserName').textContent = `${userName} (${userId})`;
+    new bootstrap.Modal(document.getElementById('deleteModal')).show();
+}
+
+// 퇴사 확인
+function confirmDelete() {
+    const userId = document.getElementById('deleteUserId').value;
+    const user = allUsers.find(u => u.id === userId);
+    
+    if (!user) {
+        SCore.toast('사원을 찾을 수 없습니다.', 'error');
+        return;
+    }
+    
+    // admin은 삭제 불가
+    if (user.role === 'admin' && user.id === 'admin') {
+        SCore.toast('기본 관리자 계정은 삭제할 수 없습니다.', 'error');
+        bootstrap.Modal.getInstance(document.getElementById('deleteModal')).hide();
+        return;
+    }
+    
+    // 배열에서 제거
+    const idx = allUsers.findIndex(u => u.id === userId);
+    if (idx !== -1) {
+        allUsers.splice(idx, 1);
+        changedUsers['_deleted_' + userId] = true; // 삭제 표시
+    }
+    
+    bootstrap.Modal.getInstance(document.getElementById('deleteModal')).hide();
+    filterUsers();
+    SCore.toast(`${user.name} 사원이 퇴사 처리되었습니다. "변경사항 저장"을 눌러주세요.`, 'warning');
 }
 </script>
 </body>

@@ -165,7 +165,7 @@
                         <th style="width:10%">기사 수</th>
                         <th style="width:12%" class="hide-mobile">총 글자수</th>
                         <th style="width:12%" class="hide-mobile">평균 글자수</th>
-                        <th style="width:12%">총점</th>
+                        <th style="width:12%" id="scoreHeader">총점</th>
                         <th style="width:10%">상세</th>
                     </tr>
                 </thead>
@@ -411,13 +411,22 @@ function updateView(searchKeyword = null) {
     document.getElementById('stat-evaluated').textContent = evaluatedCount;
     
     let periodText = `${allData.period_start.slice(5)} ~ ${allData.period_end.slice(5)}`;
-    if (currentPeriod === 'daily') periodText = formatDate(selectedDate).slice(5);
+    let scoreHeaderText = '총점 (전체)';
+    if (currentPeriod === 'daily') {
+        periodText = formatDate(selectedDate).slice(5);
+        scoreHeaderText = `총점 (${formatDate(selectedDate).slice(5)})`;
+    }
     else if (currentPeriod === 'weekly') {
         const ws = getWeekStart(selectedDate);
         const we = new Date(ws); we.setDate(ws.getDate() + 6);
         periodText = `${formatDate(ws).slice(5)} ~ ${formatDate(we).slice(5)}`;
-    } else if (currentPeriod === 'monthly') periodText = `${selectedDate.getMonth()+1}월`;
+        scoreHeaderText = `총점 (${formatDate(ws).slice(5)}~)`;
+    } else if (currentPeriod === 'monthly') {
+        periodText = `${selectedDate.getMonth()+1}월`;
+        scoreHeaderText = `총점 (${selectedDate.getMonth()+1}월)`;
+    }
     document.getElementById('stat-period').textContent = periodText;
+    document.getElementById('scoreHeader').textContent = scoreHeaderText;
     
     renderTable(filtered);
 }

@@ -68,6 +68,19 @@
         </div>
     </div>
 </div>
+
+<!-- 월 선택 -->
+<div class="card mb-4">
+    <div class="card-body py-2">
+        <div class="d-flex align-items-center gap-3">
+            <label class="fw-bold text-nowrap"><i class="bi bi-calendar3 me-1"></i>조회 월</label>
+            <button class="btn btn-sm btn-outline-secondary" onclick="moveMonth(-1)"><i class="bi bi-chevron-left"></i></button>
+            <select class="form-select form-select-sm" id="monthSelect" style="width:150px;" onchange="changeMonth()"></select>
+            <button class="btn btn-sm btn-outline-secondary" onclick="moveMonth(1)"><i class="bi bi-chevron-right"></i></button>
+            <span class="badge bg-primary" id="selectedMonthBadge">-</span>
+        </div>
+    </div>
+</div>
 <style>
     .dept-tab { 
         padding: 0.5rem 1rem; 
@@ -110,7 +123,7 @@
         <div class="stat-card">
             <div class="icon"><i class="bi bi-trophy"></i></div>
             <div class="value" id="totalScore">-</div>
-            <div class="label">부서 총점</div>
+            <div class="label" id="totalScoreLabel">부서 총점 (전체)</div>
         </div>
     </div>
 </div>
@@ -195,6 +208,7 @@ function logout() {
 let allData = null;
 let usersData = [];
 let dailyChart = null;
+let selectedMonth = ''; // 'YYYY-MM' 형식, 빈 문자열이면 전체
 
 document.addEventListener('DOMContentLoaded', async () => {
     SCore.showLoading('대시보드 데이터를 불러오는 중...');
@@ -259,6 +273,8 @@ async function loadData() {
         allData = await dataRes.json();
         usersData = await usersRes.json();
         
+        // 월 선택 옵션 생성
+        renderMonthSelect();
         // 부서 탭 생성
         renderDeptTabs();
         renderDashboard();
@@ -270,6 +286,68 @@ async function loadData() {
             retryCallback: 'loadData()',
             colspan: 4
         });
+    }
+}
+
+// 월 선택 옵션 생성
+function renderMonthSelect() {
+    const select = document.getElementById('monthSelect');
+    const months = new Set();
+    
+    // 데이터에서 월 목록 추출
+    allData.reporters.forEach(r => {
+        r.articles.forEach(a => {
+            if (a.pub_date) {
+                months.add(a.pub_date.slice(0, 7)); // YYYY-MM
+            }
+        });
+    });
+    
+    const sortedMonths = Array.from(months).sort().reverse();
+    
+    // 현재 월을 기본값으로
+    const now = new Date();
+    const currentMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+    selectedMonth = sortedMonths.includes(currentMonth) ? currentMonth : (sortedMonths[0] || '');
+    
+    select.innerHTML = sortedMonths.map(m => {
+        const [year, month] = m.split('-');
+        return `<option value="${m}" ${m === selectedMonth ? 'selected' : ''}>${year}년 ${parseInt(month)}월</option>`;
+    }).join('');
+    
+    updateMonthBadge();
+}
+
+// 월 변경
+function changeMonth() {
+    selectedMonth = document.getElementById('monthSelect').value;
+    updateMonthBadge();
+    renderDashboard();
+}
+
+// 월 이동
+function moveMonth(dir) {
+    const select = document.getElementById('monthSelect');
+    const options = Array.from(select.options);
+    const currentIdx = options.findIndex(o => o.value === selectedMonth);
+    const newIdx = currentIdx - dir; // 역순이라 - 사용
+    
+    if (newIdx >= 0 && newIdx < options.length) {
+        selectedMonth = options[newIdx].value;
+        select.value = selectedMonth;
+        updateMonthBadge();
+        renderDashboard();
+    }
+}
+
+// 월 배지 업데이트
+function updateMonthBadge() {
+    const badge = document.getElementById('selectedMonthBadge');
+    if (selectedMonth) {
+        const [year, month] = selectedMonth.split('-');
+        badge.textContent = `${year}년 ${parseInt(month)}월`;
+    } else {
+        badge.textContent = '전체';
     }
 }
 
@@ -309,10 +387,22 @@ function renderDashboard() {
     // 부서 기자들의 기사만 필터
     const deptReporters = allData.reporters.filter(r => deptUserNames.has(r.name));
     
+    // 월별 필터 적용된 기사 목록 생성
+    const filteredReporters = deptReporters.map(r => {
+        const filteredArticles = selectedMonth 
+            ? r.articles.filter(a => a.pub_date && a.pub_date.startsWith(selectedMonth))
+            : r.articles;
+        return {
+            ...r,
+            articles: filteredArticles,
+            article_count: filteredArticles.length
+        };
+    }).filter(r => r.article_count > 0);
+    
     // 통계 계산
     const allNsids = new Set();
     let totalChars = 0;
-    deptReporters.forEach(r => {
+    filteredReporters.forEach(r => {
         r.articles.forEach(a => {
             if (a.nsid) allNsids.add(a.nsid);
             totalChars += a.char_count || 0;
@@ -325,7 +415,7 @@ function renderDashboard() {
     // 총점 계산
     const evals = ScoreDataStore.getEvals();
     let totalScore = 0;
-    deptReporters.forEach(r => {
+    filteredReporters.forEach(r => {
         r.articles.forEach(a => {
             const evalData = {
                 page: a.page || 15,
@@ -337,13 +427,25 @@ function renderDashboard() {
     });
     
     document.getElementById('totalArticles').textContent = uniqueArticleCount.toLocaleString();
-    document.getElementById('totalReporters').textContent = deptReporters.length;
+    document.getElementById('totalReporters').textContent = filteredReporters.length;
     document.getElementById('avgChars').textContent = avgChars.toLocaleString();
     document.getElementById('totalScore').textContent = totalScore.toFixed(1);
     
-    renderTopReporters(deptReporters, evals);
-    renderDailyChange(deptReporters);
-    renderDailyChart(deptReporters);
+    // 월별 기간 표시
+    let periodLabel;
+    if (selectedMonth) {
+        const [year, month] = selectedMonth.split('-');
+        periodLabel = `부서 총점 (${year}년 ${parseInt(month)}월)`;
+    } else {
+        periodLabel = allData.period_start && allData.period_end 
+            ? `부서 총점 (${allData.period_start.slice(5)} ~ ${allData.period_end.slice(5)})`
+            : '부서 총점 (전체)';
+    }
+    document.getElementById('totalScoreLabel').textContent = periodLabel;
+    
+    renderTopReporters(filteredReporters, evals);
+    renderDailyChange(filteredReporters);
+    renderDailyChart(filteredReporters);
 }
 
 function renderTopReporters(reporters, evals) {

@@ -276,7 +276,7 @@
     <div class="sidebar-logo">
         <i class="bi bi-bar-chart-fill"></i> S-CORE
     </div>
-    <div class="sidebar-subtitle">기자 지면 기여도 평가 시스템<br>사용 설명서 v2.3</div>
+    <div class="sidebar-subtitle">기자 지면 기여도 평가 시스템<br>사용 설명서 v2.4</div>
     
     <div class="nav-section">시작하기</div>
     <a href="#overview" class="nav-link"><i class="bi bi-house"></i> 시스템 개요</a>
@@ -321,7 +321,7 @@
 <!-- 페이지 헤더 -->
 <div class="page-header">
     <h1><i class="bi bi-book me-2"></i>S-CORE 사용 설명서</h1>
-    <p>서울경제신문 기자 지면 기여도 평가 시스템 완벽 가이드 | v2.3 | 최종 업데이트: 2026년 2월 4일</p>
+    <p>서울경제신문 기자 지면 기여도 평가 시스템 완벽 가이드 | v2.4 | 최종 업데이트: 2026년 2월 5일</p>
 </div>
 
 <!-- ==================== 시스템 개요 ==================== -->
@@ -2105,6 +2105,72 @@
     <h2 class="section-title"><i class="bi bi-clock-history"></i> 변경 이력 (Changelog)</h2>
     
     <p>S-CORE 시스템의 주요 변경 사항을 기록합니다.</p>
+    
+    <h5 class="mt-4 mb-3">v2.4 (2026년 2월 5일)</h5>
+    <div class="info-card green mb-3">
+        <h5><i class="bi bi-plus-circle me-2"></i>신규 기능</h5>
+        <ul class="mb-0">
+            <li><strong>부서 대시보드 월별 필터</strong>: 월 선택하여 해당 월 통계만 조회
+                <ul>
+                    <li>드롭다운에서 월 선택 (좌우 화살표로 이동 가능)</li>
+                    <li>"부서 총점 (2026년 2월)" 형식으로 기간 표시</li>
+                </ul>
+            </li>
+            <li><strong>기자 목록 총점 기간 표시</strong>: 선택한 기간에 따라 "총점 (1월)", "총점 (01-05)" 등 표시</li>
+            <li><strong>기사 평가 상태 개선</strong>: 미평가(-), 평가, 확정 3단계로 구분
+                <ul>
+                    <li>아무 버튼도 안 누름 → "-" (회색)</li>
+                    <li>면톱/단독/기획/S등급 중 하나라도 누름 → "평가" (파란색)</li>
+                    <li>확정 버튼 누름 → "확정" (초록색)</li>
+                </ul>
+            </li>
+            <li><strong>사원 추가 기능</strong>: 사원관리에서 신규 기자 추가 가능
+                <ul>
+                    <li>사번 6자리 입력 (중복 체크)</li>
+                    <li>이름, 부서, 직급, 권한, 이메일 입력</li>
+                    <li>초기 비밀번호: 1234</li>
+                </ul>
+            </li>
+            <li><strong>퇴사 처리 기능</strong>: 사원관리에서 퇴사자 삭제 가능
+                <ul>
+                    <li>확인 모달로 실수 방지</li>
+                    <li>기본 admin 계정은 삭제 불가</li>
+                    <li>기존 기사 데이터는 유지됨</li>
+                </ul>
+            </li>
+            <li><strong>동기화 자동 캐시 무효화</strong>: 동기화 버튼 클릭 시 CloudFront 캐시 자동 무효화
+                <ul>
+                    <li>Lambda 역할에 CloudFrontFullAccess 권한 추가</li>
+                    <li>동기화 후 즉시 최신 데이터 반영</li>
+                </ul>
+            </li>
+        </ul>
+    </div>
+    
+    <div class="info-card orange mb-3">
+        <h5><i class="bi bi-pencil me-2"></i>개선 사항</h5>
+        <ul class="mb-0">
+            <li><strong>자동 동기화 스케줄</strong>:
+                <ul>
+                    <li>오전 6시(KST) 자동 동기화 (kpi-sync-morning)</li>
+                    <li>30분마다 자동 동기화 (kpi-sync-30min, 백업용)</li>
+                </ul>
+            </li>
+            <li><strong>기자 목록 총점 표시</strong>: 기자별 점수 합계를 목록에서 바로 확인</li>
+            <li><strong>총점 색상 구분</strong>: 50점↑ 초록색, 30점↑ 파란색으로 시각화</li>
+            <li><strong>엑셀 총점 포함</strong>: 엑셀 내보내기 시 총점 컬럼 자동 포함</li>
+        </ul>
+    </div>
+    
+    <div class="info-card mb-3">
+        <h5><i class="bi bi-file-code me-2"></i>적용된 페이지</h5>
+        <ul class="mb-0">
+            <li>score-dashboard.html (부서 대시보드) - 월별 필터 추가</li>
+            <li>list.html (기자 목록) - 총점 기간 표시</li>
+            <li>score-eval.html (기사 평가) - 상태 3단계 구분</li>
+            <li>admin.html (사원 관리) - 추가/퇴사 기능</li>
+        </ul>
+    </div>
     
     <h5 class="mt-4 mb-3">v2.3 (2026년 2월 4일)</h5>
     <div class="info-card green mb-3">
