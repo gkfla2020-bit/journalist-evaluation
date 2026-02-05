@@ -747,20 +747,22 @@ function renderArticleTable(articles) {
         return renderReporterTable(articles);
     }
     
-    // admin/manager용 평가 테이블
+    // admin/manager용 평가 테이블 - 점수 컬럼 추가
+    let totalScore = 0;
     let html = `
-        <table class="table table-hover mb-0" style="font-size:0.85rem;">
+        <table class="table table-hover mb-0" style="font-size:0.8rem;">
             <thead class="table-light">
                 <tr>
-                    <th style="width:10%">날짜</th>
-                    <th style="width:26%">제목</th>
-                    <th style="width:8%">면</th>
-                    <th style="width:10%">글자수</th>
-                    <th style="width:10%">위치</th>
-                    <th style="width:10%">취재유형</th>
-                    <th style="width:10%">기사성격</th>
-                    <th style="width:10%">임팩트</th>
-                    <th style="width:6%">저장</th>
+                    <th style="width:7%">날짜</th>
+                    <th style="width:20%">제목</th>
+                    <th style="width:4%">면</th>
+                    <th style="width:6%">글자수</th>
+                    <th style="width:14%">점수 산정</th>
+                    <th style="width:9%">위치</th>
+                    <th style="width:9%">취재유형</th>
+                    <th style="width:9%">기사성격</th>
+                    <th style="width:9%">임팩트</th>
+                    <th style="width:4%">저장</th>
                 </tr>
             </thead>
             <tbody>
@@ -771,14 +773,47 @@ function renderArticleTable(articles) {
         const isHighlight = article.paper_number >= 1 && article.paper_number <= 3 ? 'style="background:#fffbeb;"' : '';
         const isSaved = article.impact_grade ? true : false;
         
+        // 점수 계산
+        const evalData = ScoreDataStore ? ScoreDataStore.getEval(article.nsid) : null;
+        const scoreInput = {
+            page: article.paper_number || 10,
+            charCount: article.char_count || 0,
+            isTopArticle: evalData?.isTopArticle || article.is_auto_top || false,
+            isExclusive: evalData?.isExclusive || article.coverage_type === '단독' || false,
+            isFeature: evalData?.isFeature || article.coverage_type === '특종' || article.coverage_type === '기획발굴' || false,
+            isSGrade: evalData?.isSGrade || article.impact_grade === 'S' || false
+        };
+        const scoreResult = calculateArticleScore(scoreInput);
+        totalScore += scoreResult.totalScore;
+        
+        const scoreColor = scoreResult.totalScore >= 15 ? '#dc3545' : (scoreResult.totalScore >= 10 ? '#fd7e14' : '#2c5282');
+        
+        // 점수 상세 내역 (기본점수 + 가점 = 총점) + 확정/미확정 표시
+        let bonusItems = [];
+        if (scoreInput.isTopArticle) bonusItems.push('톱+2');
+        if (scoreInput.isExclusive) bonusItems.push('단독+5');
+        if (scoreInput.isFeature) bonusItems.push('기획+5');
+        if (scoreInput.isSGrade) bonusItems.push('S+3');
+        const bonusStr = bonusItems.length > 0 ? '+' + bonusItems.join('+') : '';
+        
+        // 확정 여부 확인
+        const evalData2 = ScoreDataStore ? ScoreDataStore.getEval(article.nsid) : null;
+        const isConfirmed = evalData2?.status === 'CONFIRMED';
+        const confirmBadge = isConfirmed ? 
+            '<span class="badge bg-success" style="font-size:0.6rem; margin-left:2px;">확정</span>' : 
+            '<span class="badge bg-secondary" style="font-size:0.6rem; margin-left:2px;">미확정</span>';
+        
+        const scoreDetail = `<span style="font-size:0.65rem; color:#666;">${scoreResult.baseScore}${bonusStr}=</span><span style="font-weight:700; color:${scoreColor};">${scoreResult.totalScore}</span>${confirmBadge}`;
+        
         html += `
             <tr ${isHighlight} data-nsid="${article.nsid}">
                 <td>${article.pub_date ? article.pub_date.slice(5) : '-'}</td>
-                <td><a href="${article.url || '#'}" target="_blank" class="text-decoration-none fw-bold">${escapeHtml(article.title || '')}</a></td>
-                <td><span class="page-badge ${pageClass}">${article.paper_number || '-'}</span> <button type="button" class="btn btn-link btn-sm p-0 text-muted edit-page" title="수정"><i class="bi bi-pencil" style="font-size:0.7rem;"></i></button></td>
-                <td>${article.char_count ? article.char_count.toLocaleString() : '-'} <button type="button" class="btn btn-link btn-sm p-0 text-muted edit-chars" title="수정"><i class="bi bi-pencil" style="font-size:0.7rem;"></i></button></td>
+                <td><a href="${article.url || '#'}" target="_blank" class="text-decoration-none fw-bold" style="font-size:0.8rem;">${escapeHtml(article.title || '')}</a></td>
+                <td><span class="page-badge ${pageClass}" style="width:26px; height:26px; line-height:26px; font-size:0.8rem;">${article.paper_number || '-'}</span></td>
+                <td style="font-size:0.8rem;">${article.char_count ? article.char_count.toLocaleString() : '-'}</td>
+                <td style="text-align:center;">${scoreDetail}</td>
                 <td>
-                    <select class="form-select form-select-sm eval-position" style="width:85px;">
+                    <select class="form-select form-select-sm eval-position" style="width:75px; font-size:0.7rem;">
                         <option value="">선택</option>
                         <option value="톱(자동)" ${article.is_auto_top ? 'selected' : ''}>톱(자동)</option>
                         <option value="톱" ${!article.is_auto_top && article.position === '톱' ? 'selected' : ''}>톱</option>
@@ -789,7 +824,7 @@ function renderArticleTable(articles) {
                     </select>
                 </td>
                 <td>
-                    <select class="form-select form-select-sm eval-type" style="width:80px;">
+                    <select class="form-select form-select-sm eval-type" style="width:70px; font-size:0.7rem;">
                         <option value="">선택</option>
                         <option value="특종" ${article.coverage_type === '특종' ? 'selected' : ''}>특종</option>
                         <option value="단독" ${article.coverage_type === '단독' ? 'selected' : ''}>단독</option>
@@ -801,7 +836,7 @@ function renderArticleTable(articles) {
                     </select>
                 </td>
                 <td>
-                    <select class="form-select form-select-sm eval-nature" style="width:80px;">
+                    <select class="form-select form-select-sm eval-nature" style="width:75px; font-size:0.75rem;">
                         <option value="">선택</option>
                         <option value="탐사심층" ${article.article_nature === '탐사심층' ? 'selected' : ''}>탐사심층</option>
                         <option value="해설분석" ${article.article_nature === '해설분석' ? 'selected' : ''}>해설분석</option>
@@ -812,7 +847,7 @@ function renderArticleTable(articles) {
                     </select>
                 </td>
                 <td>
-                    <select class="form-select form-select-sm eval-impact" style="width:90px;">
+                    <select class="form-select form-select-sm eval-impact" style="width:75px; font-size:0.75rem;">
                         <option value="">선택</option>
                         <option value="S" ${article.impact_grade === 'S' ? 'selected' : ''}>S등급</option>
                         <option value="A" ${article.impact_grade === 'A' ? 'selected' : ''}>A등급</option>
@@ -830,33 +865,95 @@ function renderArticleTable(articles) {
         `;
     });
     
+    // 합계 행 추가
+    if (articles.length > 0) {
+        html += `
+            <tr class="table-primary" style="font-weight:700;">
+                <td colspan="4" style="text-align:right;">기간 합계 (${articles.length}건)</td>
+                <td style="text-align:center; font-size:1.1rem; color:#dc3545;">${Math.round(totalScore * 10) / 10}점</td>
+                <td colspan="5"></td>
+            </tr>
+        `;
+    }
+    
     html += '</tbody></table>';
     return html;
 }
 
-// 기자용 테이블 (평가 없이 조회만)
+// 기자용 테이블 (평가 없이 조회만) - 점수 상세 내역 포함
 function renderReporterTable(articles) {
-    // Feature Flags 가져오기
+    // Feature Flags 가져오기 (admin에서 설정)
     const flags = ScoreDataStore ? ScoreDataStore.getFeatureFlags() : { SHOW_MY_SCORE: true };
     
-    // 작업지시서 6.2 형식: 기사제목 | 면 | 점수 | 배지 | 액션
+    // 점수 표시 OFF면 점수 컬럼 숨김
+    if (!flags.SHOW_MY_SCORE) {
+        let html = `
+            <table class="table table-hover mb-0" style="font-size:0.9rem;">
+                <thead class="table-light">
+                    <tr>
+                        <th style="width:50%">기사 제목</th>
+                        <th style="width:10%; text-align:center;">면</th>
+                        <th style="width:15%; text-align:center;">글자수</th>
+                        <th style="width:25%; text-align:center;">배지</th>
+                    </tr>
+                </thead>
+                <tbody>
+        `;
+        
+        articles.forEach(article => {
+            const evalData = ScoreDataStore ? ScoreDataStore.getEval(article.nsid) : null;
+            const isTopArticle = evalData?.isTopArticle || article.is_auto_top || false;
+            const isExclusive = evalData?.isExclusive || article.coverage_type === '단독' || false;
+            const isFeature = evalData?.isFeature || article.coverage_type === '특종' || article.coverage_type === '기획발굴' || false;
+            
+            let badges = '';
+            if (isTopArticle) badges += '<span class="badge bg-warning text-dark me-1">🏅톱</span>';
+            if (isExclusive) badges += '<span class="badge bg-primary me-1">⭐단독</span>';
+            if (isFeature) badges += '<span class="badge bg-info me-1">💡기획</span>';
+            
+            const isHighlight = article.paper_number >= 1 && article.paper_number <= 3 ? 'style="background:#fffbeb;"' : '';
+            
+            html += `
+                <tr ${isHighlight}>
+                    <td>
+                        <a href="${article.url || '#'}" target="_blank" class="text-decoration-none fw-bold">${escapeHtml(article.title || '')}</a>
+                        <br><small class="text-muted">${article.pub_date || ''}</small>
+                    </td>
+                    <td style="text-align:center; font-weight:600;">${article.paper_number || '-'}면</td>
+                    <td style="text-align:center;">${article.char_count ? article.char_count.toLocaleString() : '-'}</td>
+                    <td style="text-align:center;">${badges || '<span class="text-muted">-</span>'}</td>
+                </tr>
+            `;
+        });
+        
+        html += '</tbody></table>';
+        return html;
+    }
+    
+    // 점수 표시 ON인 경우 - 월별 총점 계산
+    let totalScore = 0;
+    
+    // 기사제목 | 면 | 글자수 | 점수(상세) | 배지 | 액션
     let html = `
-        <table class="table table-hover mb-0" style="font-size:0.9rem;">
+        <table class="table table-hover mb-0" style="font-size:0.85rem;">
             <thead class="table-light">
                 <tr>
-                    <th style="width:45%">기사 제목</th>
-                    <th style="width:10%; text-align:center;">면</th>
-                    <th style="width:12%; text-align:center;">점수</th>
-                    <th style="width:20%; text-align:center;">배지</th>
-                    <th style="width:13%; text-align:center;">액션</th>
+                    <th style="width:35%">기사 제목</th>
+                    <th style="width:8%; text-align:center;">면</th>
+                    <th style="width:10%; text-align:center;">글자수</th>
+                    <th style="width:22%; text-align:center;">점수 산정</th>
+                    <th style="width:15%; text-align:center;">배지</th>
+                    <th style="width:10%; text-align:center;">액션</th>
                 </tr>
             </thead>
             <tbody>
     `;
     
     articles.forEach(article => {
-        // 점수 계산
+        // 평가 데이터 확인 (확정 여부)
         const evalData = ScoreDataStore ? ScoreDataStore.getEval(article.nsid) : null;
+        const isConfirmed = evalData?.status === 'CONFIRMED'; // 평가 확정 여부
+        
         const scoreInput = {
             page: article.paper_number || 10,
             charCount: article.char_count || 0,
@@ -866,18 +963,36 @@ function renderReporterTable(articles) {
             isSGrade: evalData?.isSGrade || article.impact_grade === 'S' || false
         };
         const scoreResult = calculateArticleScore(scoreInput);
+        totalScore += scoreResult.totalScore;
         
-        // Feature Flag: 점수 표시 여부
-        const scoreDisplay = flags.SHOW_MY_SCORE ? scoreResult.totalScore + '점' : '-';
-        const scoreColor = flags.SHOW_MY_SCORE ? 
-            (scoreResult.totalScore >= 15 ? '#dc3545' : (scoreResult.totalScore >= 10 ? '#fd7e14' : '#2c5282')) : '#718096';
+        const scoreColor = scoreResult.totalScore >= 15 ? '#dc3545' : (scoreResult.totalScore >= 10 ? '#fd7e14' : '#2c5282');
+        
+        // 점수 상세 내역 (기본점수 + 가점 = 총점) + 확정/미확정 표시
+        let bonusItems = [];
+        if (scoreInput.isTopArticle) bonusItems.push('톱+2');
+        if (scoreInput.isExclusive) bonusItems.push('단독+5');
+        if (scoreInput.isFeature) bonusItems.push('기획+5');
+        const bonusStr = bonusItems.length > 0 ? ' + ' + bonusItems.join('+') : '';
+        
+        const confirmBadge = isConfirmed ? 
+            '<span class="badge bg-success" style="font-size:0.65rem;">확정</span>' : 
+            '<span class="badge bg-secondary" style="font-size:0.65rem;">미확정</span>';
+        
+        const scoreDetail = `
+            <div style="font-size:0.7rem; color:#666;">
+                기본 ${scoreResult.baseScore}${bonusStr}
+            </div>
+            <div>
+                <span style="font-weight:700; color:${scoreColor}; font-size:1rem;">= ${scoreResult.totalScore}점</span>
+                ${confirmBadge}
+            </div>
+        `;
         
         // 배지 생성 (기자에게는 S등급 숨김)
         let badges = '';
-        if (scoreInput.isTopArticle) badges += '<span class="badge bg-warning text-dark me-1">🏅면톱</span>';
-        if (scoreInput.isExclusive) badges += '<span class="badge bg-primary me-1">⭐단독</span>';
-        if (scoreInput.isFeature) badges += '<span class="badge bg-info me-1">💡기획</span>';
-        // S등급은 기자에게 표시하지 않음
+        if (scoreInput.isTopArticle) badges += '<span class="badge bg-warning text-dark me-1" title="면톱 기사">🏅톱</span>';
+        if (scoreInput.isExclusive) badges += '<span class="badge bg-primary me-1" title="단독 기사">⭐단독</span>';
+        if (scoreInput.isFeature) badges += '<span class="badge bg-info me-1" title="기획/특종 기사">💡기획</span>';
         
         // 검토요청 상태 확인
         const appeals = ScoreDataStore ? ScoreDataStore.getAppeals({ reporterId: session.userId }) : [];
@@ -897,16 +1012,28 @@ function renderReporterTable(articles) {
         html += `
             <tr ${isHighlight}>
                 <td>
-                    <a href="${article.url || '#'}" target="_blank" class="text-decoration-none fw-bold">${escapeHtml(article.title || '')}</a>
+                    <a href="${article.url || '#'}" target="_blank" class="text-decoration-none fw-bold" style="font-size:0.9rem;">${escapeHtml(article.title || '')}</a>
                     <br><small class="text-muted">${article.pub_date || ''}</small>
                 </td>
                 <td style="text-align:center; font-weight:600;">${article.paper_number || '-'}면</td>
-                <td style="text-align:center; font-weight:700; color:${scoreColor};">${scoreDisplay}</td>
+                <td style="text-align:center;">${article.char_count ? article.char_count.toLocaleString() : '-'}</td>
+                <td style="text-align:center;">${scoreDetail}</td>
                 <td style="text-align:center;">${badges || '<span class="text-muted">-</span>'}</td>
                 <td style="text-align:center;">${actionHtml}</td>
             </tr>
         `;
     });
+    
+    // 합계 행 추가
+    if (articles.length > 0) {
+        html += `
+            <tr class="table-primary" style="font-weight:700;">
+                <td colspan="3" style="text-align:right;">기간 합계 (${articles.length}건)</td>
+                <td style="text-align:center; font-size:1.2rem; color:#dc3545;">${Math.round(totalScore * 10) / 10}점</td>
+                <td colspan="2"></td>
+            </tr>
+        `;
+    }
     
     html += '</tbody></table>';
     return html;
@@ -940,7 +1067,10 @@ function bindSaveEvents() {
                 position: row.querySelector('.eval-position').value,
                 coverage_type: row.querySelector('.eval-type').value,
                 article_nature: row.querySelector('.eval-nature').value,
-                impact_grade: row.querySelector('.eval-impact').value
+                impact_grade: row.querySelector('.eval-impact').value,
+                status: 'CONFIRMED', // 저장 시 확정 처리
+                confirmedAt: new Date().toISOString(),
+                confirmedBy: session.userId
             };
             
             // 기자 데이터에 먼저 반영
@@ -952,7 +1082,7 @@ function bindSaveEvents() {
             // 서버에 저장
             await saveEvaluation(nsid, evalData);
             
-            showToast('저장되었습니다');
+            showToast('저장되었습니다 (확정)');
             saveBtn.classList.remove('btn-outline-primary');
             saveBtn.classList.add('btn-success');
             saveBtn.innerHTML = '<i class="bi bi-check2"></i>';
