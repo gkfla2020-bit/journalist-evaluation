@@ -789,11 +789,12 @@ function renderArticleTable(articles) {
         const scoreColor = scoreResult.totalScore >= 15 ? '#dc3545' : (scoreResult.totalScore >= 10 ? '#fd7e14' : '#2c5282');
         
         // 점수 상세 내역 (기본점수 + 가점 = 총점) + 확정/미확정 표시
+        const config = getScoreConfig();
         let bonusItems = [];
-        if (scoreInput.isTopArticle) bonusItems.push('톱+2');
-        if (scoreInput.isExclusive) bonusItems.push('단독+5');
-        if (scoreInput.isFeature) bonusItems.push('기획+5');
-        if (scoreInput.isSGrade) bonusItems.push('S+3');
+        if (scoreInput.isTopArticle) bonusItems.push('톱+' + config.QUALITY_BONUS.isTopArticle);
+        if (scoreInput.isExclusive) bonusItems.push('단독+' + config.QUALITY_BONUS.isExclusive);
+        if (scoreInput.isFeature) bonusItems.push('기획+' + config.QUALITY_BONUS.isFeature);
+        if (scoreInput.isSGrade) bonusItems.push('S+' + config.QUALITY_BONUS.isSGrade);
         const bonusStr = bonusItems.length > 0 ? '+' + bonusItems.join('+') : '';
         
         // 확정 여부 확인
@@ -968,10 +969,11 @@ function renderReporterTable(articles) {
         const scoreColor = scoreResult.totalScore >= 15 ? '#dc3545' : (scoreResult.totalScore >= 10 ? '#fd7e14' : '#2c5282');
         
         // 점수 상세 내역 (기본점수 + 가점 = 총점) + 확정/미확정 표시
+        const config = getScoreConfig();
         let bonusItems = [];
-        if (scoreInput.isTopArticle) bonusItems.push('톱+2');
-        if (scoreInput.isExclusive) bonusItems.push('단독+5');
-        if (scoreInput.isFeature) bonusItems.push('기획+5');
+        if (scoreInput.isTopArticle) bonusItems.push('톱+' + config.QUALITY_BONUS.isTopArticle);
+        if (scoreInput.isExclusive) bonusItems.push('단독+' + config.QUALITY_BONUS.isExclusive);
+        if (scoreInput.isFeature) bonusItems.push('기획+' + config.QUALITY_BONUS.isFeature);
         const bonusStr = bonusItems.length > 0 ? ' + ' + bonusItems.join('+') : '';
         
         const confirmBadge = isConfirmed ? 
