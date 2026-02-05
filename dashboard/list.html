@@ -160,16 +160,17 @@
                 <thead class="table-light">
                     <tr>
                         <th style="width:5%">#</th>
-                        <th style="width:15%">기자명</th>
-                        <th style="width:15%" id="deptCol" class="hide-mobile">부서</th>
-                        <th style="width:12%">기사 수</th>
-                        <th style="width:15%" class="hide-mobile">총 글자수</th>
-                        <th style="width:15%" class="hide-mobile">평균 글자수</th>
-                        <th style="width:13%">상세</th>
+                        <th style="width:12%">기자명</th>
+                        <th style="width:12%" id="deptCol" class="hide-mobile">부서</th>
+                        <th style="width:10%">기사 수</th>
+                        <th style="width:12%" class="hide-mobile">총 글자수</th>
+                        <th style="width:12%" class="hide-mobile">평균 글자수</th>
+                        <th style="width:12%">총점</th>
+                        <th style="width:10%">상세</th>
                     </tr>
                 </thead>
                 <tbody id="reporterList">
-                    <tr><td colspan="7" class="text-center py-4 text-muted">데이터 로딩중...</td></tr>
+                    <tr><td colspan="8" class="text-center py-4 text-muted">데이터 로딩중...</td></tr>
                 </tbody>
             </table>
         </div>
@@ -189,6 +190,8 @@
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>
 <script src="common.js"></script>
+<script src="score.js"></script>
+<script src="score-data.js"></script>
 <script>
 // 로그인 체크
 const session = JSON.parse(localStorage.getItem('kpi_session') || 'null');
@@ -327,7 +330,7 @@ async function loadData() {
             title: '기자 목록을 불러올 수 없습니다',
             message: SCore.getErrorMessage(err),
             retryCallback: 'loadData()',
-            colspan: 7
+            colspan: 8
         });
     } finally {
         SCore.hideLoading();
@@ -480,10 +483,35 @@ function getFilteredData(searchKeyword = '') {
 function renderTable(reporters) {
     const tbody = document.getElementById('reporterList');
     if (reporters.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="7" class="text-center py-4 text-muted">해당 기간에 기사가 없습니다</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="8" class="text-center py-4 text-muted">해당 기간에 기사가 없습니다</td></tr>';
         return;
     }
-    tbody.innerHTML = reporters.map((r, i) => `
+    
+    // 평가 데이터 가져오기
+    const evals = ScoreDataStore.getEvals();
+    
+    tbody.innerHTML = reporters.map((r, i) => {
+        // 기자별 총점 계산
+        const reporterArticles = getReporterArticles(r.name);
+        let totalScore = 0;
+        
+        reporterArticles.forEach(article => {
+            const evalData = evals[article.nsid] || {};
+            const scoreData = {
+                page: article.page || article.paper_number || 15,
+                charCount: article.char_count || 0,
+                isTopArticle: evalData.isTopArticle || false,
+                isExclusive: evalData.isExclusive || false,
+                isFeature: evalData.isFeature || false,
+                isSGrade: evalData.isSGrade || false
+            };
+            const score = calculateArticleScore(scoreData);
+            totalScore += score.totalScore;
+        });
+        
+        const scoreClass = totalScore >= 50 ? 'text-success fw-bold' : (totalScore >= 30 ? 'text-primary' : '');
+        
+        return `
         <tr class="reporter-row" onclick="location.href='reporter.html?name=${encodeURIComponent(r.name)}'">
             <td>${i + 1}</td>
             <td><strong>${escapeHtml(r.name)}</strong></td>
@@ -491,9 +519,38 @@ function renderTable(reporters) {
             <td>${r.article_count}</td>
             <td class="hide-mobile">${r.total_chars.toLocaleString()}</td>
             <td class="hide-mobile">${r.avg_chars.toLocaleString()}</td>
+            <td class="${scoreClass}">${totalScore.toFixed(1)}점</td>
             <td><button class="btn btn-sm btn-outline-primary">상세보기</button></td>
         </tr>
-    `).join('');
+    `}).join('');
+}
+
+// 기자별 기사 목록 가져오기 (기간 필터 적용)
+function getReporterArticles(reporterName) {
+    if (!allData) return [];
+    
+    const reporter = allData.reporters.find(r => r.name === reporterName);
+    if (!reporter) return [];
+    
+    let articles = reporter.articles || [];
+    
+    // 기간 필터 적용
+    if (currentPeriod === 'daily') {
+        const ds = formatDate(selectedDate);
+        articles = articles.filter(a => a.pub_date === ds);
+    } else if (currentPeriod === 'weekly') {
+        const ws = getWeekStart(selectedDate);
+        const we = new Date(ws); we.setDate(ws.getDate() + 6);
+        articles = articles.filter(a => {
+            const d = new Date(a.pub_date);
+            return d >= ws && d <= we;
+        });
+    } else if (currentPeriod === 'monthly') {
+        const ms = `${selectedDate.getFullYear()}-${String(selectedDate.getMonth()+1).padStart(2,'0')}`;
+        articles = articles.filter(a => a.pub_date && a.pub_date.startsWith(ms));
+    }
+    
+    return articles;
 }
 
 // 날짜 이동
@@ -566,14 +623,37 @@ function exportExcel() {
         return;
     }
     
-    const reporterData = reporters.map((r, i) => ({
-        '순위': i + 1,
-        '기자명': r.name,
-        '부서': r.department,
-        '기사수': r.article_count,
-        '총글자수': r.total_chars,
-        '평균글자수': r.avg_chars
-    }));
+    const evals = ScoreDataStore.getEvals();
+    
+    const reporterData = reporters.map((r, i) => {
+        // 기자별 총점 계산
+        const reporterArticles = getReporterArticles(r.name);
+        let totalScore = 0;
+        
+        reporterArticles.forEach(article => {
+            const evalData = evals[article.nsid] || {};
+            const scoreData = {
+                page: article.page || article.paper_number || 15,
+                charCount: article.char_count || 0,
+                isTopArticle: evalData.isTopArticle || false,
+                isExclusive: evalData.isExclusive || false,
+                isFeature: evalData.isFeature || false,
+                isSGrade: evalData.isSGrade || false
+            };
+            const score = calculateArticleScore(scoreData);
+            totalScore += score.totalScore;
+        });
+        
+        return {
+            '순위': i + 1,
+            '기자명': r.name,
+            '부서': r.department,
+            '기사수': r.article_count,
+            '총글자수': r.total_chars,
+            '평균글자수': r.avg_chars,
+            '총점': totalScore.toFixed(1)
+        };
+    });
     
     let periodText = `${allData.period_start} ~ ${allData.period_end}`;
     if (currentPeriod === 'daily') periodText = formatDate(selectedDate);
@@ -585,7 +665,7 @@ function exportExcel() {
     
     const wb = XLSX.utils.book_new();
     const ws = XLSX.utils.json_to_sheet(reporterData);
-    ws['!cols'] = [{ wch: 6 }, { wch: 15 }, { wch: 15 }, { wch: 10 }, { wch: 12 }, { wch: 12 }];
+    ws['!cols'] = [{ wch: 6 }, { wch: 15 }, { wch: 15 }, { wch: 10 }, { wch: 12 }, { wch: 12 }, { wch: 10 }];
     XLSX.utils.book_append_sheet(wb, ws, '기자목록');
     
     const fileName = `기자목록_${selectedDept || '전체'}_${periodText.replace(/[~\s]/g, '_')}.xlsx`;
