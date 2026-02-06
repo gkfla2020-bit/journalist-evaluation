@@ -99,7 +99,7 @@
     <li class="nav-item"><button class="nav-link" data-period="monthly" type="button">월별</button></li>
     <li class="nav-item"><button class="nav-link" data-period="quarterly" type="button">분기별</button></li>
     <li class="nav-item"><button class="nav-link" data-period="halfyear" type="button">반기별</button></li>
-    <li class="nav-item"><button class="nav-link" data-period="all" type="button">전체</button></li>
+    <li class="nav-item"><button class="nav-link" data-period="yearly" type="button">연간</button></li>
     <li class="nav-item" id="myScoreTab" style="display:none;"><button class="nav-link" data-period="myscore" type="button">내 점수</button></li>
 </ul>
 
@@ -304,6 +304,9 @@ function navigatePeriod(direction) {
         case 'halfyear':
             selectedDate.setMonth(selectedDate.getMonth() + (direction * 6));
             break;
+        case 'yearly':
+            selectedDate.setFullYear(selectedDate.getFullYear() + direction);
+            break;
     }
     renderContent();
     updateNavText();
@@ -312,11 +315,11 @@ function navigatePeriod(direction) {
 // 네비게이션 텍스트 업데이트
 function updateNavText() {
     document.getElementById('navPeriodText').textContent = getPeriodText();
-    // 전체 탭일 때는 네비게이션 버튼 숨기기
+    // 연간 탭일 때는 이전/다음 연도 네비게이션 표시
     const dateNav = document.getElementById('dateNav');
-    if (currentPeriod === 'all') {
-        dateNav.querySelector('#prevBtn').style.display = 'none';
-        dateNav.querySelector('#nextBtn').style.display = 'none';
+    if (currentPeriod === 'yearly') {
+        dateNav.querySelector('#prevBtn').style.display = '';
+        dateNav.querySelector('#nextBtn').style.display = '';
     } else {
         dateNav.querySelector('#prevBtn').style.display = '';
         dateNav.querySelector('#nextBtn').style.display = '';
@@ -695,6 +698,16 @@ function getFilteredArticles() {
                 return d >= hStart && d <= hEnd;
             });
         }
+        case 'yearly': {
+            // 해당 연도의 기사만 필터링
+            const year = baseDate.getFullYear();
+            const yearStart = new Date(year, 0, 1);
+            const yearEnd = new Date(year, 11, 31);
+            return articles.filter(a => {
+                const d = new Date(a.pub_date);
+                return d >= yearStart && d <= yearEnd;
+            });
+        }
         default:
             return articles;
     }
@@ -705,8 +718,8 @@ function getPeriodText() {
     const baseDate = selectedDate;
     
     switch (currentPeriod) {
-        case 'all':
-            return allData.period_start + ' ~ ' + allData.period_end;
+        case 'yearly':
+            return `${baseDate.getFullYear()}년`;
         case 'daily':
             return formatDate(baseDate);
         case 'weekly': {
@@ -727,7 +740,7 @@ function getPeriodText() {
             return `${baseDate.getFullYear()}년 ${half}`;
         }
         default:
-            return allData.period_start + ' ~ ' + allData.period_end;
+            return `${baseDate.getFullYear()}년`;
     }
 }
 
@@ -797,12 +810,11 @@ function renderArticleTable(articles) {
         if (scoreInput.isSGrade) bonusItems.push('S+' + config.QUALITY_BONUS.isSGrade);
         const bonusStr = bonusItems.length > 0 ? '+' + bonusItems.join('+') : '';
         
-        // 확정 여부 확인
+        // 확정 여부 확인 - 자동 점수 산정은 기본 확정 처리
+        // 수동 평가(가점/감점)가 있는 경우에만 별도 확정 처리 필요
         const evalData2 = ScoreDataStore ? ScoreDataStore.getEval(article.nsid) : null;
-        const isConfirmed = evalData2?.status === 'CONFIRMED';
-        const confirmBadge = isConfirmed ? 
-            '<span class="badge bg-success" style="font-size:0.6rem; margin-left:2px;">확정</span>' : 
-            '<span class="badge bg-secondary" style="font-size:0.6rem; margin-left:2px;">미확정</span>';
+        // 기본적으로 모든 기사는 확정 상태 (자동 점수 산정)
+        const confirmBadge = '<span class="badge bg-success" style="font-size:0.6rem; margin-left:2px;">확정</span>';
         
         const scoreDetail = `<span style="font-size:0.65rem; color:#666;">${scoreResult.baseScore}${bonusStr}=</span><span style="font-weight:700; color:${scoreColor};">${scoreResult.totalScore}</span>${confirmBadge}`;
         
@@ -968,7 +980,7 @@ function renderReporterTable(articles) {
         
         const scoreColor = scoreResult.totalScore >= 15 ? '#dc3545' : (scoreResult.totalScore >= 10 ? '#fd7e14' : '#2c5282');
         
-        // 점수 상세 내역 (기본점수 + 가점 = 총점) + 확정/미확정 표시
+        // 점수 상세 내역 (기본점수 + 가점 = 총점) - 자동 점수 산정은 기본 확정
         const config = getScoreConfig();
         let bonusItems = [];
         if (scoreInput.isTopArticle) bonusItems.push('톱+' + config.QUALITY_BONUS.isTopArticle);
@@ -976,9 +988,8 @@ function renderReporterTable(articles) {
         if (scoreInput.isFeature) bonusItems.push('기획+' + config.QUALITY_BONUS.isFeature);
         const bonusStr = bonusItems.length > 0 ? ' + ' + bonusItems.join('+') : '';
         
-        const confirmBadge = isConfirmed ? 
-            '<span class="badge bg-success" style="font-size:0.65rem;">확정</span>' : 
-            '<span class="badge bg-secondary" style="font-size:0.65rem;">미확정</span>';
+        // 기본적으로 모든 기사는 확정 상태 (자동 점수 산정)
+        const confirmBadge = '<span class="badge bg-success" style="font-size:0.65rem;">확정</span>';
         
         const scoreDetail = `
             <div style="font-size:0.7rem; color:#666;">

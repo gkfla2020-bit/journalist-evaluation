@@ -93,10 +93,10 @@
                 <div class="d-flex align-items-center gap-2 flex-wrap">
                     <label class="fw-bold text-nowrap me-2">조회 기간</label>
                     <div class="btn-group" role="group">
-                        <button type="button" class="btn btn-outline-primary active" onclick="setPeriod('all', this)">전체</button>
-                        <button type="button" class="btn btn-outline-primary" onclick="setPeriod('daily', this)">일별</button>
+                        <button type="button" class="btn btn-outline-primary" onclick="setPeriod('yearly', this)">연간</button>
+                        <button type="button" class="btn btn-outline-primary active" onclick="setPeriod('monthly', this)">월별</button>
                         <button type="button" class="btn btn-outline-primary" onclick="setPeriod('weekly', this)">주별</button>
-                        <button type="button" class="btn btn-outline-primary" onclick="setPeriod('monthly', this)">월별</button>
+                        <button type="button" class="btn btn-outline-primary" onclick="setPeriod('daily', this)">일별</button>
                     </div>
                     <div id="periodNav" class="d-flex align-items-center gap-2 ms-3" style="display:none;"></div>
                 </div>
@@ -234,7 +234,7 @@ function logout() {
 let allData = null;
 let usersData = [];
 let evaluationsData = {};
-let currentPeriod = 'all';
+let currentPeriod = 'monthly';
 let selectedDate = new Date();
 let selectedDept = '';
 
@@ -349,10 +349,6 @@ function setPeriod(period, btn) {
 // 기간 네비게이션 UI
 function updatePeriodNav() {
     const nav = document.getElementById('periodNav');
-    if (currentPeriod === 'all') {
-        nav.style.display = 'none';
-        return;
-    }
     nav.style.display = 'flex';
     
     if (currentPeriod === 'daily') {
@@ -375,6 +371,12 @@ function updatePeriodNav() {
             <button class="btn btn-sm btn-outline-secondary" onclick="moveMonth(-1)"><i class="bi bi-chevron-left"></i> 이전달</button>
             <span class="mx-3 fw-bold">${selectedDate.getFullYear()}년 ${selectedDate.getMonth()+1}월</span>
             <button class="btn btn-sm btn-outline-secondary" onclick="moveMonth(1)">다음달 <i class="bi bi-chevron-right"></i></button>
+        `;
+    } else if (currentPeriod === 'yearly') {
+        nav.innerHTML = `
+            <button class="btn btn-sm btn-outline-secondary" onclick="moveYear(-1)"><i class="bi bi-chevron-left"></i> 이전연도</button>
+            <span class="mx-3 fw-bold">${selectedDate.getFullYear()}년</span>
+            <button class="btn btn-sm btn-outline-secondary" onclick="moveYear(1)">다음연도 <i class="bi bi-chevron-right"></i></button>
         `;
     }
 }
@@ -410,8 +412,8 @@ function updateView(searchKeyword = null) {
     ).length;
     document.getElementById('stat-evaluated').textContent = evaluatedCount;
     
-    let periodText = `${allData.period_start.slice(5)} ~ ${allData.period_end.slice(5)}`;
-    let scoreHeaderText = '총점 (전체)';
+    let periodText = `${selectedDate.getFullYear()}년`;
+    let scoreHeaderText = `총점 (${selectedDate.getFullYear()}년)`;
     if (currentPeriod === 'daily') {
         periodText = formatDate(selectedDate).slice(5);
         scoreHeaderText = `총점 (${formatDate(selectedDate).slice(5)})`;
@@ -424,6 +426,9 @@ function updateView(searchKeyword = null) {
     } else if (currentPeriod === 'monthly') {
         periodText = `${selectedDate.getMonth()+1}월`;
         scoreHeaderText = `총점 (${selectedDate.getMonth()+1}월)`;
+    } else if (currentPeriod === 'yearly') {
+        periodText = `${selectedDate.getFullYear()}년`;
+        scoreHeaderText = `총점 (${selectedDate.getFullYear()}년)`;
     }
     document.getElementById('stat-period').textContent = periodText;
     document.getElementById('scoreHeader').textContent = scoreHeaderText;
@@ -451,6 +456,14 @@ function getFilteredData(searchKeyword = '') {
     } else if (currentPeriod === 'monthly') {
         const ms = `${selectedDate.getFullYear()}-${String(selectedDate.getMonth()+1).padStart(2,'0')}`;
         articles = articles.filter(a => a.pub_date && a.pub_date.startsWith(ms));
+    } else if (currentPeriod === 'yearly') {
+        // 해당 연도의 기사만 필터링
+        const year = selectedDate.getFullYear();
+        articles = articles.filter(a => {
+            if (!a.pub_date) return false;
+            const articleYear = new Date(a.pub_date).getFullYear();
+            return articleYear === year;
+        });
     }
     
     // 기자별 재집계
@@ -557,6 +570,13 @@ function getReporterArticles(reporterName) {
     } else if (currentPeriod === 'monthly') {
         const ms = `${selectedDate.getFullYear()}-${String(selectedDate.getMonth()+1).padStart(2,'0')}`;
         articles = articles.filter(a => a.pub_date && a.pub_date.startsWith(ms));
+    } else if (currentPeriod === 'yearly') {
+        const year = selectedDate.getFullYear();
+        articles = articles.filter(a => {
+            if (!a.pub_date) return false;
+            const articleYear = new Date(a.pub_date).getFullYear();
+            return articleYear === year;
+        });
     }
     
     return articles;
@@ -570,6 +590,11 @@ function moveDate(days) {
 }
 function moveMonth(m) {
     selectedDate.setMonth(selectedDate.getMonth() + m);
+    updatePeriodNav();
+    updateView(null);
+}
+function moveYear(y) {
+    selectedDate.setFullYear(selectedDate.getFullYear() + y);
     updatePeriodNav();
     updateView(null);
 }
@@ -664,13 +689,14 @@ function exportExcel() {
         };
     });
     
-    let periodText = `${allData.period_start} ~ ${allData.period_end}`;
+    let periodText = `${selectedDate.getFullYear()}년`;
     if (currentPeriod === 'daily') periodText = formatDate(selectedDate);
     else if (currentPeriod === 'weekly') {
         const ws = getWeekStart(selectedDate);
         const we = new Date(ws); we.setDate(ws.getDate() + 6);
         periodText = `${formatDate(ws)} ~ ${formatDate(we)}`;
     } else if (currentPeriod === 'monthly') periodText = `${selectedDate.getFullYear()}년 ${selectedDate.getMonth()+1}월`;
+    else if (currentPeriod === 'yearly') periodText = `${selectedDate.getFullYear()}년`;
     
     const wb = XLSX.utils.book_new();
     const ws = XLSX.utils.json_to_sheet(reporterData);
