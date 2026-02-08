@@ -111,11 +111,23 @@ function getScoreConfig() {
         if (!Array.isArray(parsed.PAGE_WEIGHTS)) {
             const migrated = migrateConfigV2toV3(parsed);
             localStorage.setItem('score_config', JSON.stringify(migrated));
-            return migrated;
+            return restoreInfinity(migrated);
         }
-        return parsed;
+        return restoreInfinity(parsed);
     }
-    return JSON.parse(JSON.stringify(DEFAULT_CONFIG_V3));
+    return restoreInfinity(JSON.parse(JSON.stringify(DEFAULT_CONFIG_V3)));
+}
+
+// JSON 직렬화 시 Infinity → null 복원
+function restoreInfinity(config) {
+    if (config.LENGTH_WEIGHTS && Array.isArray(config.LENGTH_WEIGHTS)) {
+        config.LENGTH_WEIGHTS.forEach(w => {
+            if (w.max === null || w.max === undefined || w.max === 'Infinity') {
+                w.max = Infinity;
+            }
+        });
+    }
+    return config;
 }
 
 function saveScoreConfig(config) {
@@ -336,6 +348,7 @@ if (typeof window !== 'undefined') {
     window.DEFAULT_CONFIG_V3 = DEFAULT_CONFIG_V3;
     window.getScoreConfig = getScoreConfig;
     window.saveScoreConfig = saveScoreConfig;
+    window.restoreInfinity = restoreInfinity;
     window.getPageWeight = getPageWeight;
     window.getLengthWeight = getLengthWeight;
     window.calculateQualityBonus = calculateQualityBonus;

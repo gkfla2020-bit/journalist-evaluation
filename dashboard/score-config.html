@@ -273,7 +273,6 @@ function renderPageWeights(weights) {
         <tr>
             <td><input type="number" class="form-control form-control-sm range-input pw-min" value="${w.min}" min="1" max="99" data-idx="${i}" onchange="onPageRangeChange()"></td>
             <td><input type="number" class="form-control form-control-sm range-input pw-max" value="${w.max}" min="1" max="99" data-idx="${i}" onchange="onPageRangeChange()"></td>
-            <input type="hidden" class="pw-label" value="${w.label}">
             <td><input type="number" class="form-control form-control-sm weight-input pw-weight" value="${w.weight}" step="0.05" min="0" max="2" data-idx="${i}" onchange="updateMatrix()"></td>
             <td class="text-center"><button class="btn-remove-row" onclick="removePageWeightRow(${i})" title="삭제"><i class="bi bi-x-circle"></i></button></td>
         </tr>
@@ -288,7 +287,6 @@ function renderLengthWeights(weights) {
         <tr>
             <td><input type="number" class="form-control form-control-sm range-input lw-min" value="${w.min}" min="0" max="99999" data-idx="${i}" onchange="onLengthRangeChange()"></td>
             <td><input type="text" class="form-control form-control-sm range-input lw-max" value="${w.max === Infinity ? '∞' : w.max}" data-idx="${i}" style="font-size:0.85rem;" onchange="onLengthRangeChange()"></td>
-            <input type="hidden" class="lw-label" value="${w.label}">
             <td><input type="number" class="form-control form-control-sm weight-input lw-weight" value="${w.weight}" step="0.05" min="0" max="2" data-idx="${i}" onchange="updateMatrix()"></td>
             <td class="text-center"><button class="btn-remove-row" onclick="removeLengthWeightRow(${i})" title="삭제"><i class="bi bi-x-circle"></i></button></td>
         </tr>

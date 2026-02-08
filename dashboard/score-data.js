@@ -173,9 +173,9 @@ const ScoreDataStore = {
             if (typeof migrateConfigV2toV3 === 'function' && !Array.isArray(parsed.PAGE_WEIGHTS)) {
                 const migrated = migrateConfigV2toV3(parsed);
                 localStorage.setItem(this.CONFIG_KEY, JSON.stringify(migrated));
-                return migrated;
+                return typeof restoreInfinity === 'function' ? restoreInfinity(migrated) : migrated;
             }
-            return parsed;
+            return typeof restoreInfinity === 'function' ? restoreInfinity(parsed) : parsed;
         }
         // 기본값은 score.js의 DEFAULT_CONFIG_V3 사용
         if (typeof DEFAULT_CONFIG_V3 !== 'undefined') {
