@@ -25,11 +25,14 @@
             transition: all 0.2s; margin-right: 0.25rem;
         }
         .quality-btn:hover { border-color: #2c5282; color: #2c5282; }
+        .quality-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+        .quality-btn:disabled:hover { border-color: inherit; color: inherit; }
         .quality-btn.active { background: #2c5282; border-color: #2c5282; color: white; }
         .quality-btn.top.active { background: #f59e0b; border-color: #f59e0b; }
         .quality-btn.exclusive.active { background: #ef4444; border-color: #ef4444; }
         .quality-btn.feature.active { background: #8b5cf6; border-color: #8b5cf6; }
         .quality-btn.sgrade.active { background: #10b981; border-color: #10b981; }
+        .quality-btn.agrade.active { background: #3b82f6; border-color: #3b82f6; }
         .score-cell { font-weight: 700; font-size: 1.1rem; }
         .score-high { color: #ef4444; }
         .score-mid { color: #f59e0b; }
@@ -77,11 +80,11 @@
     <a href="score-dashboard.html"><i class="bi bi-speedometer2 me-1"></i>부서 대시보드</a>
     <a href="list.html"><i class="bi bi-people me-1"></i>기자 목록</a>
     <a href="score-eval.html" class="active"><i class="bi bi-clipboard-check me-1"></i>기사 평가</a>
-    <a href="score-penalties.html"><i class="bi bi-exclamation-triangle me-1"></i>감점 관리</a>
+    <a href="score-penalties.html"><i class="bi bi-plus-slash-minus me-1"></i>가감점 관리</a>
     <a href="score-appeals.html"><i class="bi bi-chat-left-text me-1"></i>소명 관리</a>
     <a href="score-config.html" id="nav-config"><i class="bi bi-sliders me-1"></i>가중치 설정</a>
     <a href="admin.html" id="nav-admin"><i class="bi bi-person-gear me-1"></i>사원 관리</a>
-    <a href="dept-manage.html"><i class="bi bi-building me-1"></i>부서 관리</a>
+    <a href="dept-manage.html" id="nav-dept"><i class="bi bi-building me-1"></i>부서 관리</a>
 </div>
 
 <!-- 필터 -->
@@ -217,6 +220,7 @@ if (session.role === 'manager') {
     document.getElementById('nav-home').style.display = 'none';
     document.getElementById('nav-config').style.display = 'none';
     document.getElementById('nav-admin').style.display = 'none';
+    document.getElementById('nav-dept').style.display = 'none';
 }
 
 function logout() {
@@ -259,7 +263,7 @@ function renderScoreMatrix() {
     // 품질 가점 정보
     const qb = config.QUALITY_BONUS;
     document.getElementById('qualityBonusInfo').innerHTML = 
-        `품질 가점: 면톱 +${qb.isTopArticle}점, 단독/특종 +${qb.isExclusive}점, 기획 +${qb.isFeature}점, S등급 +${qb.isSGrade}점 (상한 ${config.QUALITY_BONUS_CAP}점)`;
+        `품질 가점: 면톱 +${qb.isTopArticle}점, 단독/특종 +${qb.isExclusive}점, 기획 +${qb.isFeature}점, S등급 +${qb.isSGrade}점, A등급 +${qb.isAGrade || 2}점 (상한 ${config.QUALITY_BONUS_CAP}점)`;
 }
 
 // 초기 로드
@@ -349,12 +353,17 @@ function filterArticles() {
     allData.reporters.forEach(r => {
         const userInfo = usersData.find(u => u.name === r.name);
         r.articles.forEach(a => {
+            const evalMerged = evals[a.nsid] || {};
+            // is_auto_top 면톱 결정: eval에 명시적 값이 있으면 그걸 사용, 없으면 is_auto_top 따름
+            const resolvedTopArticle = evalMerged.isTopArticle !== undefined 
+                ? evalMerged.isTopArticle 
+                : (a.is_auto_top || false);
             articles.push({
                 ...a,
                 reporter_name: r.name,
                 department: userInfo ? userInfo.department : '-',
-                // 평가 데이터 병합
-                ...(evals[a.nsid] || {})
+                ...evalMerged,
+                isTopArticle: resolvedTopArticle
             });
         });
     });
@@ -372,10 +381,10 @@ function filterArticles() {
     if (statusFilter) {
         if (statusFilter === 'PENDING') {
             // 미평가: 아무 버튼도 안 눌린 것
-            articles = articles.filter(a => a.status !== 'CONFIRMED' && !a.isTopArticle && !a.isExclusive && !a.isFeature && !a.isSGrade);
+            articles = articles.filter(a => a.status !== 'CONFIRMED' && !a.isTopArticle && !a.isExclusive && !a.isFeature && !a.isSGrade && !a.isAGrade);
         } else if (statusFilter === 'EVALUATED') {
             // 평가됨: 버튼 하나라도 눌린 것 (확정 제외)
-            articles = articles.filter(a => a.status !== 'CONFIRMED' && (a.isTopArticle || a.isExclusive || a.isFeature || a.isSGrade));
+            articles = articles.filter(a => a.status !== 'CONFIRMED' && (a.isTopArticle || a.isExclusive || a.isFeature || a.isSGrade || a.isAGrade));
         } else if (statusFilter === 'CONFIRMED') {
             articles = articles.filter(a => a.status === 'CONFIRMED');
         }
@@ -409,7 +418,8 @@ function renderArticles(articles) {
             isTopArticle: article.isTopArticle || false,
             isExclusive: article.isExclusive || false,
             isFeature: article.isFeature || false,
-            isSGrade: article.isSGrade || false
+            isSGrade: article.isSGrade || false,
+            isAGrade: article.isAGrade || false
         };
         const score = calculateArticleScore(evalData);
         
@@ -431,6 +441,7 @@ function renderArticles(articles) {
                 <td class="hide-mobile">${charCount.toLocaleString()}</td>
                 <td class="hide-mobile">${score.baseScore}</td>
                 <td>
+                    ${article.is_auto_top ? `<span class="badge bg-warning text-dark me-1" style="font-size:0.7rem;">자동</span>` : ''}
                     <button class="quality-btn top ${article.isTopArticle ? 'active' : ''}" 
                             onclick="toggleQuality('${nsid}', 'isTopArticle')" ${isConfirmed ? 'disabled' : ''}>면톱</button>
                     <button class="quality-btn exclusive ${article.isExclusive ? 'active' : ''}" 
@@ -439,12 +450,14 @@ function renderArticles(articles) {
                             onclick="toggleQuality('${nsid}', 'isFeature')" ${isConfirmed ? 'disabled' : ''}>기획</button>
                     <button class="quality-btn sgrade ${article.isSGrade ? 'active' : ''}" 
                             onclick="toggleQuality('${nsid}', 'isSGrade')" ${isConfirmed ? 'disabled' : ''}>S등급</button>
+                    <button class="quality-btn agrade ${article.isAGrade ? 'active' : ''}" 
+                            onclick="toggleQuality('${nsid}', 'isAGrade')" ${isConfirmed ? 'disabled' : ''}>A등급</button>
                     ${score.qualityBonus > 0 ? `<span class="badge bg-success ms-1">+${score.qualityBonus}</span>` : ''}
                 </td>
                 <td class="score-cell ${scoreClass}">${score.totalScore}</td>
                 <td>
-                    <span class="badge ${isConfirmed ? 'bg-success' : (article.isTopArticle || article.isExclusive || article.isFeature || article.isSGrade ? 'bg-info' : 'bg-secondary')}">
-                        ${isConfirmed ? '확정' : (article.isTopArticle || article.isExclusive || article.isFeature || article.isSGrade ? '평가' : '-')}
+                    <span class="badge ${isConfirmed ? 'bg-success' : (article.isTopArticle || article.isExclusive || article.isFeature || article.isSGrade || article.isAGrade ? 'bg-info' : 'bg-secondary')}">
+                        ${isConfirmed ? '확정' : (article.isTopArticle || article.isExclusive || article.isFeature || article.isSGrade || article.isAGrade ? '평가' : '-')}
                     </span>
                 </td>
             </tr>
@@ -457,7 +470,7 @@ function renderArticles(articles) {
 // 통계 업데이트
 function updateStats(articles) {
     const confirmed = articles.filter(a => a.status === 'CONFIRMED').length;
-    const evaluated = articles.filter(a => a.status !== 'CONFIRMED' && (a.isTopArticle || a.isExclusive || a.isFeature || a.isSGrade)).length;
+    const evaluated = articles.filter(a => a.status !== 'CONFIRMED' && (a.isTopArticle || a.isExclusive || a.isFeature || a.isSGrade || a.isAGrade)).length;
     const pending = articles.length - confirmed - evaluated;
     
     let totalScore = 0;
@@ -468,7 +481,8 @@ function updateStats(articles) {
             isTopArticle: a.isTopArticle || false,
             isExclusive: a.isExclusive || false,
             isFeature: a.isFeature || false,
-            isSGrade: a.isSGrade || false
+            isSGrade: a.isSGrade || false,
+            isAGrade: a.isAGrade || false
         };
         totalScore += calculateArticleScore(evalData).totalScore;
     });

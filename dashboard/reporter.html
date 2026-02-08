@@ -44,6 +44,21 @@
         .btn-outline-secondary:hover { background: #2c5282; border-color: #2c5282; color: white; }
         @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
         .spin { display: inline-block; animation: spin 1s linear infinite; }
+        /* 품질 가점 버튼 (score-eval.html과 동일) */
+        .quality-btn { 
+            padding: 0.25rem 0.5rem; border-radius: 6px; font-size: 0.7rem; font-weight: 600;
+            border: 2px solid #e2e8f0; background: white; color: #718096; cursor: pointer;
+            transition: all 0.2s; margin-right: 0.15rem; margin-bottom: 0.15rem;
+        }
+        .quality-btn:hover { border-color: #2c5282; color: #2c5282; }
+        .quality-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+        .quality-btn:disabled:hover { border-color: inherit; color: inherit; }
+        .quality-btn.active { background: #2c5282; border-color: #2c5282; color: white; }
+        .quality-btn.top.active { background: #f59e0b; border-color: #f59e0b; }
+        .quality-btn.exclusive.active { background: #ef4444; border-color: #ef4444; }
+        .quality-btn.feature.active { background: #8b5cf6; border-color: #8b5cf6; }
+        .quality-btn.sgrade.active { background: #10b981; border-color: #10b981; }
+        .quality-btn.agrade.active { background: #3b82f6; border-color: #3b82f6; }
     </style>
 </head>
 <body>
@@ -64,7 +79,7 @@
     <a href="home.html" id="navHome"><i class="bi bi-house-door me-1"></i>대시보드</a>
     <a href="list.html"><i class="bi bi-people me-1"></i>기자 목록</a>
     <a href="score-eval.html" id="navScoreEval"><i class="bi bi-clipboard-check me-1"></i>기사 평가</a>
-    <a href="score-penalties.html" id="navPenalties"><i class="bi bi-exclamation-triangle me-1"></i>감점 관리</a>
+    <a href="score-penalties.html" id="navPenalties"><i class="bi bi-plus-slash-minus me-1"></i>가감점 관리</a>
     <a href="score-appeals.html" id="navAppeals"><i class="bi bi-chat-left-text me-1"></i>소명 관리</a>
     <span class="float-end">
         <small id="userInfo" class="me-2 text-muted"></small>
@@ -760,22 +775,20 @@ function renderArticleTable(articles) {
         return renderReporterTable(articles);
     }
     
-    // admin/manager용 평가 테이블 - 점수 컬럼 추가
+    // admin/manager용 평가 테이블 - score-eval.html과 동일한 버튼 토글 방식
     let totalScore = 0;
     let html = `
         <table class="table table-hover mb-0" style="font-size:0.8rem;">
             <thead class="table-light">
                 <tr>
                     <th style="width:7%">날짜</th>
-                    <th style="width:20%">제목</th>
+                    <th style="width:25%">제목</th>
                     <th style="width:4%">면</th>
                     <th style="width:6%">글자수</th>
-                    <th style="width:14%">점수 산정</th>
-                    <th style="width:9%">위치</th>
-                    <th style="width:9%">취재유형</th>
-                    <th style="width:9%">기사성격</th>
-                    <th style="width:9%">임팩트</th>
-                    <th style="width:4%">저장</th>
+                    <th style="width:7%">기본점수</th>
+                    <th style="width:35%">품질 가점</th>
+                    <th style="width:8%">점수</th>
+                    <th style="width:8%">상태</th>
                 </tr>
             </thead>
             <tbody>
@@ -784,95 +797,57 @@ function renderArticleTable(articles) {
     articles.forEach(article => {
         const pageClass = article.paper_number == 1 ? 'page-1' : (article.paper_number <= 3 ? 'page-2-3' : 'page-other');
         const isHighlight = article.paper_number >= 1 && article.paper_number <= 3 ? 'style="background:#fffbeb;"' : '';
-        const isSaved = article.impact_grade ? true : false;
         
         // 점수 계산
         const evalData = ScoreDataStore ? ScoreDataStore.getEval(article.nsid) : null;
+        // is_auto_top 면톱 결정: eval에 명시적 값이 있으면 그걸 사용, 없으면 is_auto_top 따름
+        const resolvedTopArticle = evalData?.isTopArticle !== undefined 
+            ? evalData.isTopArticle 
+            : (article.is_auto_top || false);
         const scoreInput = {
             page: article.paper_number || 10,
             charCount: article.char_count || 0,
-            isTopArticle: evalData?.isTopArticle || article.is_auto_top || false,
-            isExclusive: evalData?.isExclusive || article.coverage_type === '단독' || false,
-            isFeature: evalData?.isFeature || article.coverage_type === '특종' || article.coverage_type === '기획발굴' || false,
-            isSGrade: evalData?.isSGrade || article.impact_grade === 'S' || false
+            isTopArticle: resolvedTopArticle,
+            isExclusive: evalData?.isExclusive || false,
+            isFeature: evalData?.isFeature || false,
+            isSGrade: evalData?.isSGrade || false,
+            isAGrade: evalData?.isAGrade || false
         };
         const scoreResult = calculateArticleScore(scoreInput);
         totalScore += scoreResult.totalScore;
         
-        const scoreColor = scoreResult.totalScore >= 15 ? '#dc3545' : (scoreResult.totalScore >= 10 ? '#fd7e14' : '#2c5282');
+        const scoreColor = scoreResult.totalScore >= 10 ? 'score-high' : (scoreResult.totalScore >= 5 ? 'score-mid' : 'score-low');
+        const isConfirmed = evalData?.status === 'CONFIRMED';
+        const nsid = article.nsid;
         
-        // 점수 상세 내역 (기본점수 + 가점 = 총점) + 확정/미확정 표시
-        const config = getScoreConfig();
-        let bonusItems = [];
-        if (scoreInput.isTopArticle) bonusItems.push('톱+' + config.QUALITY_BONUS.isTopArticle);
-        if (scoreInput.isExclusive) bonusItems.push('단독+' + config.QUALITY_BONUS.isExclusive);
-        if (scoreInput.isFeature) bonusItems.push('기획+' + config.QUALITY_BONUS.isFeature);
-        if (scoreInput.isSGrade) bonusItems.push('S+' + config.QUALITY_BONUS.isSGrade);
-        const bonusStr = bonusItems.length > 0 ? '+' + bonusItems.join('+') : '';
-        
-        // 확정 여부 확인 - 자동 점수 산정은 기본 확정 처리
-        // 수동 평가(가점/감점)가 있는 경우에만 별도 확정 처리 필요
-        const evalData2 = ScoreDataStore ? ScoreDataStore.getEval(article.nsid) : null;
-        // 기본적으로 모든 기사는 확정 상태 (자동 점수 산정)
-        const confirmBadge = '<span class="badge bg-success" style="font-size:0.6rem; margin-left:2px;">확정</span>';
-        
-        const scoreDetail = `<span style="font-size:0.65rem; color:#666;">${scoreResult.baseScore}${bonusStr}=</span><span style="font-weight:700; color:${scoreColor};">${scoreResult.totalScore}</span>${confirmBadge}`;
+        const isEvaluated = scoreInput.isTopArticle || scoreInput.isExclusive || scoreInput.isFeature || scoreInput.isSGrade || scoreInput.isAGrade;
         
         html += `
-            <tr ${isHighlight} data-nsid="${article.nsid}">
+            <tr ${isHighlight} data-nsid="${nsid}">
                 <td>${article.pub_date ? article.pub_date.slice(5) : '-'}</td>
                 <td><a href="${article.url || '#'}" target="_blank" class="text-decoration-none fw-bold" style="font-size:0.8rem;">${escapeHtml(article.title || '')}</a></td>
                 <td><span class="page-badge ${pageClass}" style="width:26px; height:26px; line-height:26px; font-size:0.8rem;">${article.paper_number || '-'}</span></td>
                 <td style="font-size:0.8rem;">${article.char_count ? article.char_count.toLocaleString() : '-'}</td>
-                <td style="text-align:center;">${scoreDetail}</td>
+                <td style="font-size:0.8rem; text-align:center;">${scoreResult.baseScore}</td>
                 <td>
-                    <select class="form-select form-select-sm eval-position" style="width:75px; font-size:0.7rem;">
-                        <option value="">선택</option>
-                        <option value="톱(자동)" ${article.is_auto_top ? 'selected' : ''}>톱(자동)</option>
-                        <option value="톱" ${!article.is_auto_top && article.position === '톱' ? 'selected' : ''}>톱</option>
-                        <option value="사이드(좌)" ${article.position === '사이드(좌)' ? 'selected' : ''}>사이드(좌)</option>
-                        <option value="사이드(우)" ${article.position === '사이드(우)' ? 'selected' : ''}>사이드(우)</option>
-                        <option value="하단" ${article.position === '하단' ? 'selected' : ''}>하단</option>
-                        <option value="기타" ${article.position === '기타' ? 'selected' : ''}>기타</option>
-                    </select>
+                    ${article.is_auto_top ? `<span class="badge bg-warning text-dark me-1" style="font-size:0.65rem;">자동</span>` : ''}
+                    <button class="quality-btn top ${scoreInput.isTopArticle ? 'active' : ''}" 
+                            onclick="toggleQualityReporter('${nsid}', 'isTopArticle')" ${isConfirmed ? 'disabled' : ''}>면톱</button>
+                    <button class="quality-btn exclusive ${scoreInput.isExclusive ? 'active' : ''}" 
+                            onclick="toggleQualityReporter('${nsid}', 'isExclusive')" ${isConfirmed ? 'disabled' : ''}>단독</button>
+                    <button class="quality-btn feature ${scoreInput.isFeature ? 'active' : ''}" 
+                            onclick="toggleQualityReporter('${nsid}', 'isFeature')" ${isConfirmed ? 'disabled' : ''}>기획</button>
+                    <button class="quality-btn sgrade ${scoreInput.isSGrade ? 'active' : ''}" 
+                            onclick="toggleQualityReporter('${nsid}', 'isSGrade')" ${isConfirmed ? 'disabled' : ''}>S등급</button>
+                    <button class="quality-btn agrade ${scoreInput.isAGrade ? 'active' : ''}" 
+                            onclick="toggleQualityReporter('${nsid}', 'isAGrade')" ${isConfirmed ? 'disabled' : ''}>A등급</button>
+                    ${scoreResult.qualityBonus > 0 ? `<span class="badge bg-success ms-1">+${scoreResult.qualityBonus}</span>` : ''}
                 </td>
+                <td style="font-weight:700; font-size:1rem; color:${scoreResult.totalScore >= 10 ? '#ef4444' : (scoreResult.totalScore >= 5 ? '#f59e0b' : '#718096')};">${scoreResult.totalScore}</td>
                 <td>
-                    <select class="form-select form-select-sm eval-type" style="width:70px; font-size:0.7rem;">
-                        <option value="">선택</option>
-                        <option value="특종" ${article.coverage_type === '특종' ? 'selected' : ''}>특종</option>
-                        <option value="단독" ${article.coverage_type === '단독' ? 'selected' : ''}>단독</option>
-                        <option value="기획발굴" ${article.coverage_type === '기획발굴' ? 'selected' : ''}>기획발굴</option>
-                        <option value="현장취재" ${article.coverage_type === '현장취재' ? 'selected' : ''}>현장취재</option>
-                        <option value="단순발생" ${article.coverage_type === '단순발생' ? 'selected' : ''}>단순발생</option>
-                        <option value="보도자료" ${article.coverage_type === '보도자료' ? 'selected' : ''}>보도자료</option>
-                        <option value="인용외신" ${article.coverage_type === '인용외신' ? 'selected' : ''}>인용외신</option>
-                    </select>
-                </td>
-                <td>
-                    <select class="form-select form-select-sm eval-nature" style="width:75px; font-size:0.75rem;">
-                        <option value="">선택</option>
-                        <option value="탐사심층" ${article.article_nature === '탐사심층' ? 'selected' : ''}>탐사심층</option>
-                        <option value="해설분석" ${article.article_nature === '해설분석' ? 'selected' : ''}>해설분석</option>
-                        <option value="인터뷰" ${article.article_nature === '인터뷰' ? 'selected' : ''}>인터뷰</option>
-                        <option value="르포스케치" ${article.article_nature === '르포스케치' ? 'selected' : ''}>르포스케치</option>
-                        <option value="스트레이트" ${article.article_nature === '스트레이트' ? 'selected' : ''}>스트레이트</option>
-                        <option value="가십미담" ${article.article_nature === '가십미담' ? 'selected' : ''}>가십미담</option>
-                    </select>
-                </td>
-                <td>
-                    <select class="form-select form-select-sm eval-impact" style="width:75px; font-size:0.75rem;">
-                        <option value="">선택</option>
-                        <option value="S" ${article.impact_grade === 'S' ? 'selected' : ''}>S등급</option>
-                        <option value="A" ${article.impact_grade === 'A' ? 'selected' : ''}>A등급</option>
-                        <option value="B" ${article.impact_grade === 'B' ? 'selected' : ''}>B등급</option>
-                        <option value="C" ${article.impact_grade === 'C' ? 'selected' : ''}>C등급</option>
-                        <option value="D" ${article.impact_grade === 'D' ? 'selected' : ''}>D등급</option>
-                    </select>
-                </td>
-                <td>
-                    <button type="button" class="btn btn-sm ${isSaved ? 'btn-success' : 'btn-outline-primary'} save-btn">
-                        <i class="bi bi-${isSaved ? 'check2' : 'save'}"></i>
-                    </button>
+                    <span class="badge ${isConfirmed ? 'bg-success' : (isEvaluated ? 'bg-info' : 'bg-secondary')}">
+                        ${isConfirmed ? '확정' : (isEvaluated ? '평가' : '-')}
+                    </span>
                 </td>
             </tr>
         `;
@@ -882,15 +857,46 @@ function renderArticleTable(articles) {
     if (articles.length > 0) {
         html += `
             <tr class="table-primary" style="font-weight:700;">
-                <td colspan="4" style="text-align:right;">기간 합계 (${articles.length}건)</td>
-                <td style="text-align:center; font-size:1.1rem; color:#dc3545;">${Math.round(totalScore * 10) / 10}점</td>
-                <td colspan="5"></td>
+                <td colspan="6" style="text-align:right;">기간 합계 (${articles.length}건)</td>
+                <td style="font-size:1.1rem; color:#dc3545;">${Math.round(totalScore * 10) / 10}점</td>
+                <td></td>
             </tr>
         `;
     }
     
     html += '</tbody></table>';
     return html;
+}
+
+// 품질 가점 토글 (reporter.html용)
+async function toggleQualityReporter(nsid, field) {
+    if (ScoreDataStore.isConfirmed(nsid)) {
+        showToast('확정된 기사는 수정할 수 없습니다', 'warning');
+        return;
+    }
+    
+    const evals = ScoreDataStore.getEvals();
+    const current = evals[nsid] || {};
+    const newValue = !current[field];
+    
+    ScoreDataStore.saveEval(nsid, { [field]: newValue });
+    
+    // Lambda API에도 저장
+    try {
+        const payload = {};
+        payload[nsid] = { ...current, [field]: newValue, updatedAt: new Date().toISOString() };
+        await fetch(EVAL_API_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        });
+    } catch (e) {
+        console.log('서버 저장 실패:', e);
+    }
+    
+    // 테이블 다시 렌더링
+    renderContent();
+    showToast('저장되었습니다');
 }
 
 // 기자용 테이블 (평가 없이 조회만) - 점수 상세 내역 포함
@@ -915,12 +921,15 @@ function renderReporterTable(articles) {
         
         articles.forEach(article => {
             const evalData = ScoreDataStore ? ScoreDataStore.getEval(article.nsid) : null;
-            const isTopArticle = evalData?.isTopArticle || article.is_auto_top || false;
+            const isTopArticle = evalData?.isTopArticle !== undefined 
+                ? evalData.isTopArticle 
+                : (article.is_auto_top || false);
             const isExclusive = evalData?.isExclusive || article.coverage_type === '단독' || false;
             const isFeature = evalData?.isFeature || article.coverage_type === '특종' || article.coverage_type === '기획발굴' || false;
             
             let badges = '';
-            if (isTopArticle) badges += '<span class="badge bg-warning text-dark me-1">🏅톱</span>';
+            if (isTopArticle) badges += `<span class="badge bg-warning text-dark me-1">${article.is_auto_top ? '🏅톱(자동)' : '🏅톱'}</span>`;
+            if (!isTopArticle && article.is_auto_top) badges += `<span class="badge bg-secondary me-1" style="text-decoration:line-through;">톱(자동해제)</span>`;
             if (isExclusive) badges += '<span class="badge bg-primary me-1">⭐단독</span>';
             if (isFeature) badges += '<span class="badge bg-info me-1">💡기획</span>';
             
@@ -967,13 +976,18 @@ function renderReporterTable(articles) {
         const evalData = ScoreDataStore ? ScoreDataStore.getEval(article.nsid) : null;
         const isConfirmed = evalData?.status === 'CONFIRMED'; // 평가 확정 여부
         
+        // is_auto_top 면톱 결정: eval에 명시적 값이 있으면 그걸 사용, 없으면 is_auto_top 따름
+        const resolvedTopArticle = evalData?.isTopArticle !== undefined 
+            ? evalData.isTopArticle 
+            : (article.is_auto_top || false);
         const scoreInput = {
             page: article.paper_number || 10,
             charCount: article.char_count || 0,
-            isTopArticle: evalData?.isTopArticle || article.is_auto_top || false,
+            isTopArticle: resolvedTopArticle,
             isExclusive: evalData?.isExclusive || article.coverage_type === '단독' || false,
             isFeature: evalData?.isFeature || article.coverage_type === '특종' || article.coverage_type === '기획발굴' || false,
-            isSGrade: evalData?.isSGrade || article.impact_grade === 'S' || false
+            isSGrade: evalData?.isSGrade || article.impact_grade === 'S' || false,
+            isAGrade: evalData?.isAGrade || article.impact_grade === 'A' || false
         };
         const scoreResult = calculateArticleScore(scoreInput);
         totalScore += scoreResult.totalScore;
@@ -986,6 +1000,8 @@ function renderReporterTable(articles) {
         if (scoreInput.isTopArticle) bonusItems.push('톱+' + config.QUALITY_BONUS.isTopArticle);
         if (scoreInput.isExclusive) bonusItems.push('단독+' + config.QUALITY_BONUS.isExclusive);
         if (scoreInput.isFeature) bonusItems.push('기획+' + config.QUALITY_BONUS.isFeature);
+        if (scoreInput.isSGrade) bonusItems.push('S+' + config.QUALITY_BONUS.isSGrade);
+        if (scoreInput.isAGrade) bonusItems.push('A+' + (config.QUALITY_BONUS.isAGrade || 2));
         const bonusStr = bonusItems.length > 0 ? ' + ' + bonusItems.join('+') : '';
         
         // 기본적으로 모든 기사는 확정 상태 (자동 점수 산정)
@@ -1001,9 +1017,10 @@ function renderReporterTable(articles) {
             </div>
         `;
         
-        // 배지 생성 (기자에게는 S등급 숨김)
+        // 배지 생성 (기자에게는 S등급/A등급 숨김)
         let badges = '';
-        if (scoreInput.isTopArticle) badges += '<span class="badge bg-warning text-dark me-1" title="면톱 기사">🏅톱</span>';
+        if (scoreInput.isTopArticle) badges += `<span class="badge bg-warning text-dark me-1" title="면톱 기사">${article.is_auto_top ? '🏅톱(자동)' : '🏅톱'}</span>`;
+        if (!scoreInput.isTopArticle && article.is_auto_top) badges += `<span class="badge bg-secondary me-1" style="text-decoration:line-through;">톱(자동해제)</span>`;
         if (scoreInput.isExclusive) badges += '<span class="badge bg-primary me-1" title="단독 기사">⭐단독</span>';
         if (scoreInput.isFeature) badges += '<span class="badge bg-info me-1" title="기획/특종 기사">💡기획</span>';
         
@@ -1069,41 +1086,7 @@ function bindSaveEvents() {
         });
     });
     
-    // 저장 버튼
-    document.querySelectorAll('.save-btn').forEach(btn => {
-        btn.addEventListener('click', async function() {
-            const row = this.closest('tr');
-            const nsid = row.dataset.nsid;
-            const saveBtn = this;
-            
-            const evalData = {
-                position: row.querySelector('.eval-position').value,
-                coverage_type: row.querySelector('.eval-type').value,
-                article_nature: row.querySelector('.eval-nature').value,
-                impact_grade: row.querySelector('.eval-impact').value,
-                status: 'CONFIRMED', // 저장 시 확정 처리
-                confirmedAt: new Date().toISOString(),
-                confirmedBy: session.userId
-            };
-            
-            // 기자 데이터에 먼저 반영
-            const article = reporterData.articles.find(a => a.nsid === nsid);
-            if (article) {
-                Object.assign(article, evalData);
-            }
-            
-            // 서버에 저장
-            await saveEvaluation(nsid, evalData);
-            
-            showToast('저장되었습니다 (확정)');
-            saveBtn.classList.remove('btn-outline-primary');
-            saveBtn.classList.add('btn-success');
-            saveBtn.innerHTML = '<i class="bi bi-check2"></i>';
-            
-            // 통계만 업데이트 (전체 렌더링 안함)
-            updateStats();
-        });
-    });
+    // 저장 버튼 (더 이상 사용하지 않음 - 버튼 토글 방식으로 자동 저장)
     
     // 면 수정 버튼
     document.querySelectorAll('.edit-page').forEach(btn => {
@@ -1414,23 +1397,30 @@ function renderMyScorePage() {
     let totalScore = 0;
     const articleCards = articles.map(article => {
         const evalData = ScoreDataStore ? ScoreDataStore.getEval(article.nsid) : null;
+        // is_auto_top 면톱 결정: eval에 명시적 값이 있으면 그걸 사용, 없으면 is_auto_top 따름
+        const resolvedTopArticle = evalData?.isTopArticle !== undefined 
+            ? evalData.isTopArticle 
+            : (article.is_auto_top || false);
         const scoreInput = {
             page: article.paper_number || 10,
             charCount: article.char_count || 0,
-            isTopArticle: evalData?.isTopArticle || article.is_auto_top || false,
+            isTopArticle: resolvedTopArticle,
             isExclusive: evalData?.isExclusive || article.coverage_type === '단독' || false,
             isFeature: evalData?.isFeature || article.coverage_type === '특종' || article.coverage_type === '기획발굴' || false,
-            isSGrade: evalData?.isSGrade || article.impact_grade === 'S' || false
+            isSGrade: evalData?.isSGrade || article.impact_grade === 'S' || false,
+            isAGrade: evalData?.isAGrade || article.impact_grade === 'A' || false
         };
         const scoreResult = calculateArticleScore(scoreInput);
         totalScore += scoreResult.totalScore;
         
         // 배지 생성
         let badges = '';
-        if (article.is_auto_top || scoreInput.isTopArticle) badges += '<span class="badge bg-warning text-dark me-1">🏅면톱</span>';
+        if (scoreInput.isTopArticle) badges += `<span class="badge bg-warning text-dark me-1">${article.is_auto_top ? '🏅면톱(자동)' : '🏅면톱'}</span>`;
+        if (!scoreInput.isTopArticle && article.is_auto_top) badges += '<span class="badge bg-secondary me-1" style="text-decoration:line-through;">톱(자동해제)</span>';
         if (scoreInput.isExclusive || article.coverage_type === '단독') badges += '<span class="badge bg-primary me-1">⭐단독</span>';
         if (scoreInput.isFeature || article.coverage_type === '특종' || article.coverage_type === '기획발굴') badges += '<span class="badge bg-info me-1">📰기획</span>';
         if (scoreInput.isSGrade || article.impact_grade === 'S') badges += '<span class="badge bg-danger me-1">🔥S급</span>';
+        if (scoreInput.isAGrade || article.impact_grade === 'A') badges += '<span class="badge bg-primary me-1">🅰️A급</span>';
         
         // 검토요청 상태 확인
         const appeals = ScoreDataStore ? ScoreDataStore.getAppeals({ reporterId: session.userId }) : [];
@@ -1591,13 +1581,17 @@ function calculateDeptStats() {
         let reporterScore = 0;
         reporter.articles.forEach(article => {
             const evalData = evals[article.nsid] || {};
+            const resolvedTopArticle = evalData.isTopArticle !== undefined 
+                ? evalData.isTopArticle 
+                : (article.is_auto_top || false);
             const scoreInput = {
                 page: article.paper_number || 10,
                 charCount: article.char_count || 0,
-                isTopArticle: evalData.isTopArticle || article.is_auto_top || false,
+                isTopArticle: resolvedTopArticle,
                 isExclusive: evalData.isExclusive || article.coverage_type === '단독' || false,
                 isFeature: evalData.isFeature || article.coverage_type === '특종' || article.coverage_type === '기획발굴' || false,
-                isSGrade: evalData.isSGrade || article.impact_grade === 'S' || false
+                isSGrade: evalData.isSGrade || article.impact_grade === 'S' || false,
+                isAGrade: evalData.isAGrade || article.impact_grade === 'A' || false
             };
             reporterScore += calculateArticleScore(scoreInput).totalScore;
         });

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>감점 관리 - S-CORE</title>
+    <title>가감점 관리 - S-CORE</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
     <link href="common.css" rel="stylesheet">
@@ -20,16 +20,23 @@
         .stat-card .value { font-size: 2.5rem; font-weight: 700; }
         .stat-card .label { font-size: 0.9rem; color: #718096; margin-top: 0.5rem; }
         .stat-card.danger .value { color: #dc3545; }
+        .stat-card.success .value { color: #198754; }
         .stat-card.warning .value { color: #f59e0b; }
         .stat-card.info .value { color: #2c5282; }
         .penalty-badge { padding: 0.35rem 0.75rem; border-radius: 20px; font-size: 0.8rem; font-weight: 600; }
-        .penalty-dept { background: #fef3c7; color: #92400e; }
-        .penalty-repeat { background: #fee2e2; color: #991b1b; }
-        .penalty-editor { background: #fce7f3; color: #9d174d; }
+        .badge-deduction { background: #fee2e2; color: #991b1b; }
+        .badge-bonus { background: #dcfce7; color: #166534; }
         .status-active { background: #dcfce7; color: #166534; }
         .status-expired { background: #f3f4f6; color: #6b7280; }
         .status-deleted { background: #fee2e2; color: #991b1b; text-decoration: line-through; }
-        .info-box { background: #fef3c7; border-left: 4px solid #f59e0b; padding: 1rem; border-radius: 0 8px 8px 0; margin-bottom: 1rem; }
+        .info-box { background: #e8f4fd; border-left: 4px solid #2c5282; padding: 1rem; border-radius: 0 8px 8px 0; margin-bottom: 1rem; }
+        .info-box.warning { background: #fef3c7; border-left-color: #f59e0b; }
+        .score-positive { color: #198754; font-weight: 700; }
+        .score-negative { color: #dc3545; font-weight: 700; }
+        .type-toggle { display: flex; border-radius: 8px; overflow: hidden; border: 2px solid #2c5282; }
+        .type-toggle .toggle-btn { flex: 1; padding: 0.6rem 1rem; text-align: center; cursor: pointer; font-weight: 600; transition: all 0.2s; border: none; background: white; color: #2c5282; }
+        .type-toggle .toggle-btn.active-deduction { background: #dc3545; color: white; }
+        .type-toggle .toggle-btn.active-bonus { background: #198754; color: white; }
     </style>
 </head>
 <body>
@@ -39,8 +46,8 @@
 <div class="header">
     <div class="d-flex justify-content-between align-items-center">
         <div>
-            <h1 style="font-size:1.8rem; margin-bottom:0.25rem;"><i class="bi bi-exclamation-triangle-fill me-2"></i>S-CORE</h1>
-            <div style="opacity:0.9;">감점 관리</div>
+            <h1 style="font-size:1.8rem; margin-bottom:0.25rem;"><i class="bi bi-plus-slash-minus me-2"></i>S-CORE</h1>
+            <div style="opacity:0.9;">가감점 관리</div>
         </div>
         <div class="text-end">
             <small id="userInfo" class="me-2"></small>
@@ -55,44 +62,49 @@
     <a href="score-dashboard.html"><i class="bi bi-speedometer2 me-1"></i>부서 대시보드</a>
     <a href="list.html"><i class="bi bi-people me-1"></i>기자 목록</a>
     <a href="score-eval.html"><i class="bi bi-clipboard-check me-1"></i>기사 평가</a>
-    <a href="score-penalties.html" class="active"><i class="bi bi-exclamation-triangle me-1"></i>감점 관리</a>
+    <a href="score-penalties.html" class="active"><i class="bi bi-plus-slash-minus me-1"></i>가감점 관리</a>
     <a href="score-appeals.html"><i class="bi bi-chat-left-text me-1"></i>소명 관리</a>
     <a href="score-config.html" id="nav-config"><i class="bi bi-sliders me-1"></i>가중치 설정</a>
     <a href="admin.html" id="nav-admin"><i class="bi bi-person-gear me-1"></i>사원 관리</a>
-    <a href="dept-manage.html"><i class="bi bi-building me-1"></i>부서 관리</a>
+    <a href="dept-manage.html" id="nav-dept"><i class="bi bi-building me-1"></i>부서 관리</a>
 </div>
 
 <!-- 안내 -->
-<div class="info-box">
+<div class="info-box warning">
     <i class="bi bi-info-circle me-2"></i>
-    <strong>감점 항목 안내:</strong> 
+    <strong>감점 항목 예시:</strong> 
     시말서(부서) -2점(1개월), 시말서(반복) -5점(1개월), 편집국장 -5점(6개월간 매월 감점)
+</div>
+<div class="info-box">
+    <i class="bi bi-lightbulb me-2"></i>
+    <strong>가감점 등록 안내:</strong> 
+    가점(+) 또는 감점(-)을 직접 입력하여 기자에게 반영할 수 있습니다. 등록된 점수는 해당 기자의 월별 총점에 실제로 반영됩니다.
 </div>
 
 <!-- 요약 통계 -->
 <div class="row g-3 mb-4">
     <div class="col-md-3">
         <div class="stat-card danger">
-            <div class="value" id="totalPenalties">0</div>
+            <div class="value" id="totalDeductions">0</div>
             <div class="label">활성 감점 건수</div>
         </div>
     </div>
     <div class="col-md-3">
-        <div class="stat-card warning">
-            <div class="value" id="thisMonthPenalties">0</div>
-            <div class="label">이번 달 적용</div>
+        <div class="stat-card success">
+            <div class="value" id="totalBonuses">0</div>
+            <div class="label">활성 가점 건수</div>
         </div>
     </div>
     <div class="col-md-3">
         <div class="stat-card info">
             <div class="value" id="affectedReporters">0</div>
-            <div class="label">감점 대상 기자</div>
+            <div class="label">대상 기자 수</div>
         </div>
     </div>
     <div class="col-md-3">
-        <div class="stat-card danger">
-            <div class="value" id="totalDeduction">0</div>
-            <div class="label">이번 달 총 감점</div>
+        <div class="stat-card warning">
+            <div class="value" id="netScore">0</div>
+            <div class="label">이번 달 순 가감점</div>
         </div>
     </div>
 </div>
@@ -101,19 +113,18 @@
 <div class="card">
     <div class="card-body">
         <div class="row g-3 align-items-end">
-            <div class="col-md-3">
+            <div class="col-md-2">
                 <label class="form-label fw-bold">부서</label>
                 <select class="form-select" id="deptFilter" onchange="filterPenalties()">
                     <option value="">전체 부서</option>
                 </select>
             </div>
             <div class="col-md-2">
-                <label class="form-label fw-bold">감점 유형</label>
-                <select class="form-select" id="typeFilter" onchange="filterPenalties()">
+                <label class="form-label fw-bold">구분</label>
+                <select class="form-select" id="categoryFilter" onchange="filterPenalties()">
                     <option value="">전체</option>
-                    <option value="DEPT_WARNING">시말서(부서)</option>
-                    <option value="REPEAT_WARNING">시말서(반복)</option>
-                    <option value="EDITOR_PENALTY">편집국장</option>
+                    <option value="DEDUCTION">감점</option>
+                    <option value="BONUS">가점</option>
                 </select>
             </div>
             <div class="col-md-2">
@@ -124,23 +135,26 @@
                     <option value="DELETED">삭제됨</option>
                 </select>
             </div>
-            <div class="col-md-3">
+            <div class="col-md-2">
                 <label class="form-label fw-bold">기자 검색</label>
                 <input type="text" class="form-control" id="searchInput" placeholder="기자명..." oninput="filterPenalties()">
             </div>
-            <div class="col-md-2 text-end">
-                <button class="btn btn-danger" onclick="openCreateModal()">
-                    <i class="bi bi-plus-lg me-1"></i>감점 등록
+            <div class="col-md-4 text-end">
+                <button class="btn btn-danger me-2" onclick="openCreateModal('DEDUCTION')">
+                    <i class="bi bi-dash-circle me-1"></i>감점 등록
+                </button>
+                <button class="btn btn-success" onclick="openCreateModal('BONUS')">
+                    <i class="bi bi-plus-circle me-1"></i>가점 등록
                 </button>
             </div>
         </div>
     </div>
 </div>
 
-<!-- 감점 목록 -->
+<!-- 가감점 목록 -->
 <div class="card">
     <div class="card-header d-flex justify-content-between align-items-center">
-        <span><i class="bi bi-list-ul me-2"></i>감점 목록</span>
+        <span><i class="bi bi-list-ul me-2"></i>가감점 목록</span>
         <span class="badge bg-light text-dark" id="penaltyCount">0건</span>
     </div>
     <div class="card-body p-0">
@@ -148,19 +162,21 @@
             <table class="table table-hover mb-0">
                 <thead class="table-light">
                     <tr>
-                        <th style="width:12%">기자</th>
-                        <th style="width:10%" class="hide-mobile">부서</th>
-                        <th style="width:12%">감점 유형</th>
-                        <th style="width:8%">감점</th>
-                        <th style="width:15%">적용 기간</th>
-                        <th style="width:20%" class="hide-mobile">사유</th>
-                        <th style="width:10%" class="hide-mobile">등록일</th>
-                        <th style="width:8%">상태</th>
-                        <th style="width:5%">액션</th>
+                        <th style="width:10%">기자</th>
+                        <th style="width:8%" class="hide-mobile">부서</th>
+                        <th style="width:8%">구분</th>
+                        <th style="width:14%">항목</th>
+                        <th style="width:8%">점수</th>
+                        <th style="width:10%">적용 기간</th>
+                        <th style="width:8%">적용 개월</th>
+                        <th style="width:16%" class="hide-mobile">사유</th>
+                        <th style="width:8%" class="hide-mobile">등록일</th>
+                        <th style="width:6%">상태</th>
+                        <th style="width:4%">액션</th>
                     </tr>
                 </thead>
                 <tbody id="penaltyList">
-                    <tr><td colspan="9" class="text-center py-4 text-muted">데이터 로딩중...</td></tr>
+                    <tr><td colspan="11" class="text-center py-4 text-muted">데이터 로딩중...</td></tr>
                 </tbody>
             </table>
         </div>
@@ -169,15 +185,27 @@
 
 </div>
 
-<!-- 감점 등록 모달 -->
+<!-- 가감점 등록 모달 -->
 <div class="modal fade" id="createModal" tabindex="-1">
     <div class="modal-dialog">
         <div class="modal-content">
-            <div class="modal-header bg-danger text-white">
-                <h5 class="modal-title"><i class="bi bi-exclamation-triangle me-2"></i>감점 등록</h5>
+            <div class="modal-header" id="createModalHeader">
+                <h5 class="modal-title" id="createModalTitle"><i class="bi bi-plus-slash-minus me-2"></i>가감점 등록</h5>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body">
+                <!-- 가점/감점 토글 -->
+                <div class="mb-3">
+                    <label class="form-label fw-bold">구분 *</label>
+                    <div class="type-toggle">
+                        <button type="button" class="toggle-btn" id="toggleDeduction" onclick="setCategory('DEDUCTION')">
+                            <i class="bi bi-dash-circle me-1"></i>감점
+                        </button>
+                        <button type="button" class="toggle-btn" id="toggleBonus" onclick="setCategory('BONUS')">
+                            <i class="bi bi-plus-circle me-1"></i>가점
+                        </button>
+                    </div>
+                </div>
                 <div class="mb-3">
                     <label class="form-label fw-bold">대상 기자 *</label>
                     <select class="form-select" id="reporterSelect" required>
@@ -185,27 +213,42 @@
                     </select>
                 </div>
                 <div class="mb-3">
-                    <label class="form-label fw-bold">감점 유형 *</label>
-                    <select class="form-select" id="penaltyType" required onchange="updatePenaltyInfo()">
-                        <option value="">유형 선택...</option>
-                        <option value="DEPT_WARNING">시말서(부서) - 2점 감점, 1개월</option>
-                        <option value="REPEAT_WARNING">시말서(반복) - 5점 감점, 1개월</option>
-                        <option value="EDITOR_PENALTY">편집국장 - 5점 감점, 6개월</option>
-                    </select>
-                    <div class="form-text" id="penaltyTypeInfo"></div>
+                    <label class="form-label fw-bold">항목명 *</label>
+                    <input type="text" class="form-control" id="itemName" placeholder="예: 시말서(부서), 우수기사 선정, 특종 보도 등" required>
+                    <div class="form-text text-muted">직접 입력하거나 아래 예시를 클릭하세요</div>
+                    <div class="mt-2" id="itemPresets"></div>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label fw-bold" id="scoreLabel">점수 *</label>
+                    <div class="input-group">
+                        <span class="input-group-text" id="scorePrefix">-</span>
+                        <input type="number" class="form-control" id="scoreInput" min="0.5" max="50" step="0.5" placeholder="점수 입력 (예: 2, 5)" required>
+                        <span class="input-group-text">점</span>
+                    </div>
+                    <div class="form-text" id="scoreHelp">감점할 점수를 양수로 입력하세요 (예: 2 입력 시 -2점 적용)</div>
                 </div>
                 <div class="mb-3">
                     <label class="form-label fw-bold">적용 시작월</label>
                     <input type="month" class="form-control" id="startMonth">
                 </div>
                 <div class="mb-3">
+                    <label class="form-label fw-bold">적용 기간 (개월)</label>
+                    <select class="form-select" id="durationMonth">
+                        <option value="1">1개월</option>
+                        <option value="2">2개월</option>
+                        <option value="3">3개월</option>
+                        <option value="6">6개월</option>
+                        <option value="12">12개월</option>
+                    </select>
+                </div>
+                <div class="mb-3">
                     <label class="form-label fw-bold">사유 *</label>
-                    <textarea class="form-control" id="penaltyReason" rows="3" placeholder="감점 사유를 입력하세요..." required></textarea>
+                    <textarea class="form-control" id="penaltyReason" rows="3" placeholder="사유를 입력하세요..." required></textarea>
                 </div>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">취소</button>
-                <button type="button" class="btn btn-danger" onclick="createPenalty()">
+                <button type="button" class="btn" id="createBtn" onclick="createPenalty()">
                     <i class="bi bi-check-lg me-1"></i>등록
                 </button>
             </div>
@@ -218,12 +261,12 @@
     <div class="modal-dialog modal-sm">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title">감점 삭제</h5>
+                <h5 class="modal-title">항목 삭제</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body">
-                <p>이 감점 항목을 삭제하시겠습니까?</p>
-                <p class="text-muted small">삭제된 감점은 점수 계산에서 제외됩니다.</p>
+                <p>이 항목을 삭제하시겠습니까?</p>
+                <p class="text-muted small">삭제된 항목은 점수 계산에서 제외됩니다.</p>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">취소</button>
@@ -251,6 +294,7 @@ if (session.role === 'manager') {
     document.getElementById('nav-home').style.display = 'none';
     document.getElementById('nav-config').style.display = 'none';
     document.getElementById('nav-admin').style.display = 'none';
+    document.getElementById('nav-dept').style.display = 'none';
 }
 
 function logout() {
@@ -261,24 +305,88 @@ function logout() {
 let usersData = [];
 let createModal, deleteModal;
 let pendingDeleteId = null;
+let currentCategory = 'DEDUCTION'; // DEDUCTION or BONUS
+
+// 감점 예시 항목
+const DEDUCTION_PRESETS = [
+    { name: '시말서(부서)', score: 2, duration: 1 },
+    { name: '시말서(반복)', score: 5, duration: 1 },
+    { name: '편집국장', score: 5, duration: 6 }
+];
+
+// 가점 예시 항목
+const BONUS_PRESETS = [
+    { name: '우수기사 선정', score: 3, duration: 1 },
+    { name: '특종 보도', score: 5, duration: 1 },
+    { name: '기획기사 우수', score: 3, duration: 1 }
+];
+
+// 카테고리 설정 (가점/감점 토글)
+function setCategory(category) {
+    currentCategory = category;
+    const header = document.getElementById('createModalHeader');
+    const title = document.getElementById('createModalTitle');
+    const btn = document.getElementById('createBtn');
+    const prefix = document.getElementById('scorePrefix');
+    const help = document.getElementById('scoreHelp');
+    const toggleD = document.getElementById('toggleDeduction');
+    const toggleB = document.getElementById('toggleBonus');
+
+    toggleD.className = 'toggle-btn';
+    toggleB.className = 'toggle-btn';
+
+    if (category === 'DEDUCTION') {
+        header.className = 'modal-header bg-danger text-white';
+        title.innerHTML = '<i class="bi bi-dash-circle me-2"></i>감점 등록';
+        btn.className = 'btn btn-danger';
+        btn.innerHTML = '<i class="bi bi-check-lg me-1"></i>감점 등록';
+        prefix.textContent = '-';
+        help.textContent = '감점할 점수를 양수로 입력하세요 (예: 2 입력 시 -2점 적용)';
+        toggleD.classList.add('active-deduction');
+        renderPresets(DEDUCTION_PRESETS);
+    } else {
+        header.className = 'modal-header bg-success text-white';
+        title.innerHTML = '<i class="bi bi-plus-circle me-2"></i>가점 등록';
+        btn.className = 'btn btn-success';
+        btn.innerHTML = '<i class="bi bi-check-lg me-1"></i>가점 등록';
+        prefix.textContent = '+';
+        help.textContent = '가점할 점수를 양수로 입력하세요 (예: 3 입력 시 +3점 적용)';
+        toggleB.classList.add('active-bonus');
+        renderPresets(BONUS_PRESETS);
+    }
+}
+
+// 예시 항목 렌더링
+function renderPresets(presets) {
+    const container = document.getElementById('itemPresets');
+    container.innerHTML = presets.map(p => 
+        `<button type="button" class="btn btn-sm btn-outline-secondary me-1 mb-1" onclick="applyPreset('${p.name}', ${p.score}, ${p.duration})">
+            ${p.name} (${p.score}점, ${p.duration}개월)
+        </button>`
+    ).join('');
+}
+
+// 예시 항목 적용
+function applyPreset(name, score, duration) {
+    document.getElementById('itemName').value = name;
+    document.getElementById('scoreInput').value = score;
+    document.getElementById('durationMonth').value = duration;
+}
 
 // 초기화
 document.addEventListener('DOMContentLoaded', async () => {
     createModal = new bootstrap.Modal(document.getElementById('createModal'));
     deleteModal = new bootstrap.Modal(document.getElementById('deleteModal'));
     
-    // 초기 상태: 빈 목록 표시
-    document.getElementById('penaltyList').innerHTML = '<tr><td colspan="9" class="text-center py-4 text-muted">등록된 감점이 없습니다</td></tr>';
+    document.getElementById('penaltyList').innerHTML = '<tr><td colspan="11" class="text-center py-4 text-muted">등록된 항목이 없습니다</td></tr>';
     
     try {
         const usersRes = await fetch('users.json?t=' + Date.now());
         if (!usersRes.ok) throw new Error('사용자 데이터 로드 실패');
         usersData = await usersRes.json();
         
-        // 서버에서 부서 설정 로드
         const deptConfig = await ScoreDataStore.loadDeptConfigFromServer();
         
-        // 부서 필터 채우기 (기자가 있는 실제 부서만, visible=true인 것만)
         const reporterDepts = usersData
             .filter(u => u.role === 'reporter' && u.department && u.department !== '전체' && u.department !== '편집국')
             .map(u => u.department);
@@ -290,20 +398,14 @@ document.addEventListener('DOMContentLoaded', async () => {
             deptFilter.innerHTML += `<option value="${d}">${d}</option>`;
         });
         
-        // 기자 선택 채우기 (manager는 자기 부서만)
         if (session.role === 'manager') {
             populateReporterSelect(session.department);
+            deptFilter.value = session.department;
+            deptFilter.disabled = true;
         } else {
             populateReporterSelect();
         }
         
-        // manager는 자기 부서만
-        if (session.role === 'manager') {
-            deptFilter.value = session.department;
-            deptFilter.disabled = true;
-        }
-        
-        // 기본 시작월 설정
         const now = new Date();
         document.getElementById('startMonth').value = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
         
@@ -311,39 +413,32 @@ document.addEventListener('DOMContentLoaded', async () => {
     } catch (err) {
         console.error(err);
         document.getElementById('penaltyList').innerHTML = `
-            <tr><td colspan="9" class="text-center py-4">
+            <tr><td colspan="11" class="text-center py-4">
                 <div class="text-danger mb-2"><i class="bi bi-exclamation-circle"></i> 데이터를 불러올 수 없습니다</div>
                 <button class="btn btn-sm btn-outline-primary" onclick="location.reload()">다시 시도</button>
             </td></tr>`;
     }
 });
 
-// 기자 선택 옵션 채우기 (부서 필터 연동)
 function populateReporterSelect(filterDept = '') {
     const select = document.getElementById('reporterSelect');
-    select.innerHTML = '<option value="">기자 선택...</option>';  // 초기화
+    select.innerHTML = '<option value="">기자 선택...</option>';
     
     const reporters = usersData.filter(u => u.role === 'reporter');
-    
-    // manager는 자기 부서 기자만, admin은 선택한 부서 또는 전체
     let filtered;
     if (session.role === 'manager') {
         filtered = reporters.filter(r => r.department === session.department);
     } else {
         filtered = reporters.filter(r => r.department && r.department !== '전체' && r.department !== '편집국');
-        if (filterDept) {
-            filtered = filtered.filter(r => r.department === filterDept);
-        }
+        if (filterDept) filtered = filtered.filter(r => r.department === filterDept);
     }
     
-    // 부서별 그룹화
     const byDept = {};
     filtered.forEach(r => {
         if (!byDept[r.department]) byDept[r.department] = [];
         byDept[r.department].push(r);
     });
     
-    // 이름순 정렬 후 추가
     Object.keys(byDept).sort().forEach(dept => {
         const optgroup = document.createElement('optgroup');
         optgroup.label = dept;
@@ -358,59 +453,37 @@ function populateReporterSelect(filterDept = '') {
     });
 }
 
-// 감점 유형 정보 업데이트
-function updatePenaltyInfo() {
-    const type = document.getElementById('penaltyType').value;
-    const info = document.getElementById('penaltyTypeInfo');
-    
-    if (type && ScoreDataStore.PENALTY_TYPES[type]) {
-        const t = ScoreDataStore.PENALTY_TYPES[type];
-        info.innerHTML = `<span class="text-danger">${t.score}점</span> 감점, ${t.duration}개월간 적용 - ${t.description}`;
-    } else {
-        info.innerHTML = '';
-    }
-}
-
-// 감점 목록 필터링
+// 필터링
 function filterPenalties() {
     const deptFilter = document.getElementById('deptFilter').value;
-    const typeFilter = document.getElementById('typeFilter').value;
+    const categoryFilter = document.getElementById('categoryFilter').value;
     const statusFilter = document.getElementById('statusFilter').value;
     const searchInput = document.getElementById('searchInput').value.toLowerCase();
     
     let penalties = ScoreDataStore.getPenalties({});
     
-    // 필터 적용
-    if (deptFilter) {
-        penalties = penalties.filter(p => p.department === deptFilter);
-    }
-    if (typeFilter) {
-        penalties = penalties.filter(p => p.type === typeFilter);
-    }
+    if (deptFilter) penalties = penalties.filter(p => p.department === deptFilter);
+    if (categoryFilter) penalties = penalties.filter(p => p.category === categoryFilter);
     if (statusFilter) {
         penalties = penalties.filter(p => p.status === statusFilter);
     } else {
-        // 기본적으로 삭제된 것 제외
         penalties = penalties.filter(p => p.status !== 'DELETED');
     }
-    if (searchInput) {
-        penalties = penalties.filter(p => p.reporterName.toLowerCase().includes(searchInput));
-    }
+    if (searchInput) penalties = penalties.filter(p => p.reporterName.toLowerCase().includes(searchInput));
     
-    // 최신순 정렬
     penalties.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
     
     renderPenalties(penalties);
     updateStats();
 }
 
-// 감점 목록 렌더링
+// 목록 렌더링
 function renderPenalties(penalties) {
     const tbody = document.getElementById('penaltyList');
     document.getElementById('penaltyCount').textContent = `${penalties.length}건`;
     
     if (penalties.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="9" class="text-center py-4 text-muted">등록된 감점이 없습니다</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="11" class="text-center py-4 text-muted">등록된 항목이 없습니다</td></tr>';
         return;
     }
     
@@ -418,11 +491,12 @@ function renderPenalties(penalties) {
     const currentMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
     
     tbody.innerHTML = penalties.map(p => {
-        const typeInfo = ScoreDataStore.PENALTY_TYPES[p.type] || { name: p.type };
-        const typeBadgeClass = p.type === 'DEPT_WARNING' ? 'penalty-dept' : 
-                              (p.type === 'REPEAT_WARNING' ? 'penalty-repeat' : 'penalty-editor');
+        const isBonus = p.category === 'BONUS';
+        const badgeClass = isBonus ? 'badge-bonus' : 'badge-deduction';
+        const categoryText = isBonus ? '가점' : '감점';
+        const scoreClass = isBonus ? 'score-positive' : 'score-negative';
+        const scoreDisplay = isBonus ? `+${Math.abs(p.score)}점` : `${p.score}점`;
         
-        // 상태 판단
         let statusClass = 'status-active';
         let statusText = '활성';
         if (p.status === 'DELETED') {
@@ -434,14 +508,17 @@ function renderPenalties(penalties) {
         }
         
         const createdDate = new Date(p.createdAt).toLocaleDateString('ko-KR');
+        const durationMonths = p.durationMonths || 1;
         
         return `
             <tr class="${p.status === 'DELETED' ? 'table-secondary' : ''}">
                 <td class="fw-bold">${escapeHtml(p.reporterName)}</td>
                 <td class="hide-mobile"><small>${p.department}</small></td>
-                <td><span class="penalty-badge ${typeBadgeClass}">${typeInfo.name}</span></td>
-                <td class="text-danger fw-bold">${p.score}점</td>
+                <td><span class="penalty-badge ${badgeClass}">${categoryText}</span></td>
+                <td>${escapeHtml(p.itemName || p.type || '-')}</td>
+                <td class="${scoreClass}">${scoreDisplay}</td>
                 <td><small>${p.startMonth} ~ ${p.endMonth}</small></td>
+                <td class="text-center">${durationMonths}개월</td>
                 <td class="hide-mobile"><small class="text-muted">${escapeHtml(p.reason || '-')}</small></td>
                 <td class="hide-mobile"><small>${createdDate}</small></td>
                 <td><span class="badge ${statusClass}">${statusText}</span></td>
@@ -463,102 +540,127 @@ function updateStats() {
     const currentMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
     
     const allPenalties = ScoreDataStore.getPenalties({ status: 'ACTIVE' });
-    
-    // 활성 감점 (현재 적용 중)
     const activePenalties = allPenalties.filter(p => currentMonth >= p.startMonth && currentMonth <= p.endMonth);
     
-    // 이번 달 적용 건수
-    const thisMonthCount = activePenalties.length;
-    
-    // 감점 대상 기자 수
+    const deductions = activePenalties.filter(p => p.category !== 'BONUS');
+    const bonuses = activePenalties.filter(p => p.category === 'BONUS');
     const affectedReporters = new Set(activePenalties.map(p => p.reporterId)).size;
     
-    // 이번 달 총 감점
     let totalDeduction = 0;
-    const reporterPenalties = {};
+    let totalBonus = 0;
     activePenalties.forEach(p => {
-        if (!reporterPenalties[p.reporterId]) {
-            reporterPenalties[p.reporterId] = { DEPT_WARNING: false, others: 0 };
-        }
-        // 시말서(부서)는 한 번만 계산
-        if (p.type === 'DEPT_WARNING') {
-            if (!reporterPenalties[p.reporterId].DEPT_WARNING) {
-                reporterPenalties[p.reporterId].DEPT_WARNING = true;
-                totalDeduction += p.score;
-            }
+        if (p.category === 'BONUS') {
+            totalBonus += Math.abs(p.score);
         } else {
-            totalDeduction += p.score;
+            totalDeduction += p.score; // 음수
         }
     });
     
-    document.getElementById('totalPenalties').textContent = allPenalties.length;
-    document.getElementById('thisMonthPenalties').textContent = thisMonthCount;
+    document.getElementById('totalDeductions').textContent = deductions.length;
+    document.getElementById('totalBonuses').textContent = bonuses.length;
     document.getElementById('affectedReporters').textContent = affectedReporters;
-    document.getElementById('totalDeduction').textContent = totalDeduction;
+    
+    const net = totalBonus + totalDeduction;
+    const netEl = document.getElementById('netScore');
+    netEl.textContent = (net >= 0 ? '+' : '') + net;
+    netEl.style.color = net >= 0 ? '#198754' : '#dc3545';
 }
 
-// 감점 등록 모달 열기
-function openCreateModal() {
+// 등록 모달 열기
+function openCreateModal(category) {
     document.getElementById('reporterSelect').value = '';
-    document.getElementById('penaltyType').value = '';
+    document.getElementById('itemName').value = '';
+    document.getElementById('scoreInput').value = '';
+    document.getElementById('durationMonth').value = '1';
     document.getElementById('penaltyReason').value = '';
-    document.getElementById('penaltyTypeInfo').innerHTML = '';
     
-    // 현재 부서 필터 값으로 기자 목록 갱신
     const currentDept = document.getElementById('deptFilter').value;
     populateReporterSelect(currentDept);
     
     const now = new Date();
     document.getElementById('startMonth').value = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
     
+    setCategory(category || 'DEDUCTION');
     createModal.show();
 }
 
-// 감점 등록
+// 등록
 function createPenalty() {
     const reporterSelect = document.getElementById('reporterSelect');
     const reporterId = reporterSelect.value;
     const selectedOption = reporterSelect.options[reporterSelect.selectedIndex];
     const reporterName = selectedOption?.text || '';
     const department = selectedOption?.dataset?.department || '';
-    const type = document.getElementById('penaltyType').value;
+    const itemName = document.getElementById('itemName').value.trim();
+    const scoreVal = parseFloat(document.getElementById('scoreInput').value);
     const startMonth = document.getElementById('startMonth').value;
+    const durationMonths = parseInt(document.getElementById('durationMonth').value);
     const reason = document.getElementById('penaltyReason').value.trim();
     
-    if (!reporterId || !type || !reason) {
+    if (!reporterId || !itemName || !scoreVal || !reason) {
         SCore.toast('모든 필수 항목을 입력해주세요.', 'warning');
         return;
     }
     
-    const penalty = ScoreDataStore.createPenalty({
+    if (scoreVal <= 0 || scoreVal > 50) {
+        SCore.toast('점수는 0.5 ~ 50 사이로 입력해주세요.', 'warning');
+        return;
+    }
+    
+    // 실제 점수 계산: 감점은 음수, 가점은 양수
+    const actualScore = currentCategory === 'DEDUCTION' ? -Math.abs(scoreVal) : Math.abs(scoreVal);
+    
+    // 종료월 계산
+    const startDate = new Date(startMonth + '-01');
+    startDate.setMonth(startDate.getMonth() + durationMonths - 1);
+    const endMonth = `${startDate.getFullYear()}-${String(startDate.getMonth() + 1).padStart(2, '0')}`;
+    
+    // 기존 createPenalty 대신 직접 저장 (커스텀 항목 지원)
+    const penalties = JSON.parse(localStorage.getItem(ScoreDataStore.PENALTIES_KEY) || '[]');
+    const penalty = {
+        id: 'PEN-' + Date.now(),
         reporterId,
         reporterName,
         department,
-        type,
+        category: currentCategory,
+        itemName,
+        type: currentCategory === 'DEDUCTION' ? 'CUSTOM_DEDUCTION' : 'CUSTOM_BONUS',
+        score: actualScore,
+        durationMonths,
         startMonth,
+        endMonth,
         reason,
+        status: 'ACTIVE',
+        createdAt: new Date().toISOString(),
         createdBy: session.userId || session.id,
         createdByName: session.name
-    });
+    };
+    
+    penalties.push(penalty);
+    localStorage.setItem(ScoreDataStore.PENALTIES_KEY, JSON.stringify(penalties));
+    
+    if (ScoreDataStore.SYNC_ENABLED) {
+        ScoreDataStore.syncToServer('penalty', penalty.id, penalty);
+    }
     
     createModal.hide();
     filterPenalties();
-    SCore.toast(`${reporterName} 기자에게 감점이 등록되었습니다.`, 'success');
+    
+    const typeText = currentCategory === 'DEDUCTION' ? '감점' : '가점';
+    SCore.toast(`${reporterName} 기자에게 ${typeText}이 등록되었습니다. (${actualScore > 0 ? '+' : ''}${actualScore}점)`, 'success');
 }
 
-// 삭제 모달 열기
 function openDeleteModal(penaltyId) {
     pendingDeleteId = penaltyId;
     deleteModal.show();
 }
 
-// 삭제 확인
 function confirmDelete() {
     if (pendingDeleteId) {
         ScoreDataStore.deletePenalty(pendingDeleteId);
         deleteModal.hide();
         filterPenalties();
-        SCore.toast('감점이 삭제되었습니다.', 'success');
+        SCore.toast('항목이 삭제되었습니다.', 'success');
         pendingDeleteId = null;
     }
 }

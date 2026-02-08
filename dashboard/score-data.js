@@ -125,6 +125,7 @@ const ScoreDataStore = {
             if (appeal.qualityType === 'EXCLUSIVE') updates.isExclusive = true;
             if (appeal.qualityType === 'FEATURE') updates.isFeature = true;
             if (appeal.qualityType === 'S_GRADE') updates.isSGrade = true;
+            if (appeal.qualityType === 'A_GRADE') updates.isAGrade = true;
             if (appeal.qualityType === 'TOP_ARTICLE') updates.isTopArticle = true;
             
             // 기존 평가 데이터 가져와서 점수 재계산
@@ -139,7 +140,8 @@ const ScoreDataStore = {
                     isTopArticle: updatedEval.isTopArticle || false,
                     isExclusive: updatedEval.isExclusive || false,
                     isFeature: updatedEval.isFeature || false,
-                    isSGrade: updatedEval.isSGrade || false
+                    isSGrade: updatedEval.isSGrade || false,
+                    isAGrade: updatedEval.isAGrade || false
                 });
                 updates.calculatedScore = scoreResult.totalScore;
                 updates.baseScore = scoreResult.baseScore;
@@ -165,7 +167,7 @@ const ScoreDataStore = {
             MAX_SCORE: 20,
             PAGE_WEIGHTS: { 1: 1.00, 3: 0.85, 5: 0.70, 10: 0.55, 20: 0.40, 32: 0.30 },
             LENGTH_WEIGHTS: { 2000: 1.00, 1200: 0.70, 600: 0.55, 0: 0.55 },
-            QUALITY_BONUS: { isTopArticle: 2, isExclusive: 5, isFeature: 5, isSGrade: 3 }
+            QUALITY_BONUS: { isTopArticle: 2, isExclusive: 5, isFeature: 5, isSGrade: 3, isAGrade: 2 }
         };
     },
 
@@ -277,7 +279,7 @@ const ScoreDataStore = {
         return this.getDeptConfig();
     },
 
-    // ========== 감점 관리 ==========
+    // ========== 가감점 관리 ==========
     
     /**
      * 감점 유형:
@@ -356,35 +358,42 @@ const ScoreDataStore = {
     },
     
     /**
-     * 특정 기자의 특정 월 감점 합계 계산
+     * 특정 기자의 특정 월 가감점 합계 계산 (가점 + 감점 모두 반영)
      * @param {string} reporterId - 기자 ID
      * @param {string} yearMonth - 'YYYY-MM' 형식
-     * @returns {object} { totalPenalty: number, penalties: array }
+     * @returns {object} { totalPenalty: number, penalties: array, bonusTotal: number, deductionTotal: number }
      */
     calculatePenaltyForMonth(reporterId, yearMonth) {
         const penalties = this.getPenalties({ reporterId, status: 'ACTIVE' });
         const applicablePenalties = [];
         let totalPenalty = 0;
+        let bonusTotal = 0;
+        let deductionTotal = 0;
         
         penalties.forEach(p => {
-            // 해당 월이 감점 적용 기간 내인지 확인
+            // 해당 월이 적용 기간 내인지 확인
             if (yearMonth >= p.startMonth && yearMonth <= p.endMonth) {
-                // 시말서(부서)는 해당 월에 한 번만 감점
+                // 기존 시말서(부서) 중복 방지 로직 유지
                 if (p.type === 'DEPT_WARNING') {
-                    // 이미 같은 유형의 감점이 있는지 확인
                     const existing = applicablePenalties.find(ap => ap.type === 'DEPT_WARNING');
                     if (!existing) {
                         applicablePenalties.push(p);
                         totalPenalty += p.score;
+                        deductionTotal += p.score;
                     }
                 } else {
                     applicablePenalties.push(p);
                     totalPenalty += p.score;
+                    if (p.category === 'BONUS' || p.score > 0) {
+                        bonusTotal += p.score;
+                    } else {
+                        deductionTotal += p.score;
+                    }
                 }
             }
         });
         
-        return { totalPenalty, penalties: applicablePenalties };
+        return { totalPenalty, penalties: applicablePenalties, bonusTotal, deductionTotal };
     },
     
     /**

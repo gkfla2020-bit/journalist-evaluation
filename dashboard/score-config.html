@@ -57,11 +57,11 @@
     <a href="score-dashboard.html"><i class="bi bi-speedometer2 me-1"></i>부서 대시보드</a>
     <a href="list.html"><i class="bi bi-people me-1"></i>기자 목록</a>
     <a href="score-eval.html"><i class="bi bi-clipboard-check me-1"></i>기사 평가</a>
-    <a href="score-penalties.html"><i class="bi bi-exclamation-triangle me-1"></i>감점 관리</a>
+    <a href="score-penalties.html"><i class="bi bi-plus-slash-minus me-1"></i>가감점 관리</a>
     <a href="score-appeals.html"><i class="bi bi-chat-left-text me-1"></i>소명 관리</a>
     <a href="score-config.html" class="active"><i class="bi bi-sliders me-1"></i>가중치 설정</a>
     <a href="admin.html" id="nav-admin"><i class="bi bi-person-gear me-1"></i>사원 관리</a>
-    <a href="dept-manage.html"><i class="bi bi-building me-1"></i>부서 관리</a>
+    <a href="dept-manage.html" id="nav-dept"><i class="bi bi-building me-1"></i>부서 관리</a>
 </div>
 
 <!-- 점수 공식 안내 -->
@@ -130,6 +130,7 @@
                         <tr><td>⭐ 단독/특종</td><td><input type="number" class="form-control weight-input" id="qbExclusive" step="1" min="0" max="10"></td></tr>
                         <tr><td>💡 기획</td><td><input type="number" class="form-control weight-input" id="qbFeature" step="1" min="0" max="10"></td></tr>
                         <tr><td>🏆 S등급</td><td><input type="number" class="form-control weight-input" id="qbSGrade" step="1" min="0" max="10"></td></tr>
+                        <tr><td>🅰️ A등급</td><td><input type="number" class="form-control weight-input" id="qbAGrade" step="1" min="0" max="10"></td></tr>
                     </tbody>
                 </table>
                 <div class="small text-muted mt-2">* 품질 가점 합계 상한: 10점</div>
@@ -170,7 +171,7 @@
     <div class="card-body p-0">
         <table class="table table-sm mb-0">
             <thead class="table-light">
-                <tr><th>예시</th><th>면</th><th>글자수</th><th>면톱</th><th>단독</th><th>기획</th><th>S등급</th><th colspan="2">계산 점수</th><th>설명</th></tr>
+                <tr><th>예시</th><th>면</th><th>글자수</th><th>면톱</th><th>단독</th><th>기획</th><th>S등급</th><th>A등급</th><th colspan="2">계산 점수</th><th>설명</th></tr>
             </thead>
             <tbody id="testResults">
                 <tr><td colspan="10" class="text-center text-muted py-3">테스트 실행 버튼을 클릭하세요</td></tr>
@@ -313,6 +314,7 @@ function loadConfig() {
     document.getElementById('qbExclusive').value = config.QUALITY_BONUS.isExclusive;
     document.getElementById('qbFeature').value = config.QUALITY_BONUS.isFeature;
     document.getElementById('qbSGrade').value = config.QUALITY_BONUS.isSGrade;
+    document.getElementById('qbAGrade').value = config.QUALITY_BONUS.isAGrade || 2;
     
     // 기본 설정
     document.getElementById('baseScore').value = config.BASE_SCORE;
@@ -346,7 +348,8 @@ async function saveConfig() {
             isTopArticle: parseFloat(document.getElementById('qbTop').value),
             isExclusive: parseFloat(document.getElementById('qbExclusive').value),
             isFeature: parseFloat(document.getElementById('qbFeature').value),
-            isSGrade: parseFloat(document.getElementById('qbSGrade').value)
+            isSGrade: parseFloat(document.getElementById('qbSGrade').value),
+            isAGrade: parseFloat(document.getElementById('qbAGrade').value)
         }
     };
     
@@ -418,13 +421,13 @@ function resetToDefault() {
 // 테스트 실행 - 현재 설정 기준 점수 계산 예시
 function runTests() {
     const testCases = [
-        { page: 1, charCount: 2100, isTopArticle: true, isExclusive: true, isFeature: true, isSGrade: true, desc: '1면 2100자 + 모든 가점' },
-        { page: 1, charCount: 2000, isTopArticle: true, isExclusive: true, isFeature: false, isSGrade: false, desc: '1면 2000자 + 면톱/단독' },
-        { page: 3, charCount: 1500, isTopArticle: true, isExclusive: false, isFeature: true, isSGrade: false, desc: '3면 1500자 + 면톱/기획' },
-        { page: 5, charCount: 1500, isTopArticle: true, isExclusive: false, isFeature: false, isSGrade: false, desc: '5면 1500자 + 면톱' },
-        { page: 10, charCount: 1300, isTopArticle: false, isExclusive: false, isFeature: false, isSGrade: false, desc: '10면 1300자 (가점 없음)' },
-        { page: 15, charCount: 1000, isTopArticle: false, isExclusive: false, isFeature: false, isSGrade: false, desc: '15면 1000자 (가점 없음)' },
-        { page: 30, charCount: 400, isTopArticle: false, isExclusive: false, isFeature: false, isSGrade: false, desc: '30면 400자 (가점 없음)' }
+        { page: 1, charCount: 2100, isTopArticle: true, isExclusive: true, isFeature: true, isSGrade: true, isAGrade: true, desc: '1면 2100자 + 모든 가점' },
+        { page: 1, charCount: 2000, isTopArticle: true, isExclusive: true, isFeature: false, isSGrade: false, isAGrade: false, desc: '1면 2000자 + 면톱/단독' },
+        { page: 3, charCount: 1500, isTopArticle: true, isExclusive: false, isFeature: true, isSGrade: false, isAGrade: false, desc: '3면 1500자 + 면톱/기획' },
+        { page: 5, charCount: 1500, isTopArticle: true, isExclusive: false, isFeature: false, isSGrade: false, isAGrade: false, desc: '5면 1500자 + 면톱' },
+        { page: 10, charCount: 1300, isTopArticle: false, isExclusive: false, isFeature: false, isSGrade: false, isAGrade: false, desc: '10면 1300자 (가점 없음)' },
+        { page: 15, charCount: 1000, isTopArticle: false, isExclusive: false, isFeature: false, isSGrade: false, isAGrade: false, desc: '15면 1000자 (가점 없음)' },
+        { page: 30, charCount: 400, isTopArticle: false, isExclusive: false, isFeature: false, isSGrade: false, isAGrade: false, desc: '30면 400자 (가점 없음)' }
     ];
     
     const tbody = document.getElementById('testResults');
@@ -439,6 +442,7 @@ function runTests() {
                 <td>${tc.isExclusive ? 'Y' : 'N'}</td>
                 <td>${tc.isFeature ? 'Y' : 'N'}</td>
                 <td>${tc.isSGrade ? 'Y' : 'N'}</td>
+                <td>${tc.isAGrade ? 'Y' : 'N'}</td>
                 <td colspan="2" class="fw-bold text-primary">${result.totalScore}점</td>
                 <td><small class="text-muted">${tc.desc}</small></td>
             </tr>

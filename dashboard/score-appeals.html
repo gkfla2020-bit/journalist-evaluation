@@ -28,6 +28,7 @@
         .quality-exclusive { background: #fee2e2; color: #991b1b; }
         .quality-feature { background: #ede9fe; color: #5b21b6; }
         .quality-sgrade { background: #d1fae5; color: #065f46; }
+        .quality-agrade { background: #dbeafe; color: #1e40af; }
         .btn-outline-light:hover { background: rgba(255,255,255,0.15); }
     </style>
 </head>
@@ -64,11 +65,11 @@
     <a href="score-dashboard.html"><i class="bi bi-speedometer2 me-1"></i>부서 대시보드</a>
     <a href="list.html"><i class="bi bi-people me-1"></i>기자 목록</a>
     <a href="score-eval.html"><i class="bi bi-clipboard-check me-1"></i>기사 평가</a>
-    <a href="score-penalties.html"><i class="bi bi-exclamation-triangle me-1"></i>감점 관리</a>
+    <a href="score-penalties.html"><i class="bi bi-plus-slash-minus me-1"></i>가감점 관리</a>
     <a href="score-appeals.html" class="active"><i class="bi bi-chat-left-text me-1"></i>소명 관리</a>
     <a href="score-config.html" id="nav-config"><i class="bi bi-sliders me-1"></i>가중치 설정</a>
     <a href="admin.html" id="nav-admin"><i class="bi bi-person-gear me-1"></i>사원 관리</a>
-    <a href="dept-manage.html"><i class="bi bi-building me-1"></i>부서 관리</a>
+    <a href="dept-manage.html" id="nav-dept"><i class="bi bi-building me-1"></i>부서 관리</a>
 </div>
 
 <!-- 요약 통계 -->
@@ -201,6 +202,7 @@ if (session.role === 'manager') {
     document.getElementById('nav-home').style.display = 'none';
     document.getElementById('nav-config').style.display = 'none';
     document.getElementById('nav-admin').style.display = 'none';
+    document.getElementById('nav-dept').style.display = 'none';
 }
 
 function logout() {
@@ -212,7 +214,8 @@ const qualityLabels = {
     'TOP_ARTICLE': { text: '🏅 면톱 +2', class: 'quality-top' },
     'EXCLUSIVE': { text: '⭐ 단독 +5', class: 'quality-exclusive' },
     'FEATURE': { text: '💡 기획 +5', class: 'quality-feature' },
-    'S_GRADE': { text: '🏆 S등급 +3', class: 'quality-sgrade' }
+    'S_GRADE': { text: '🏆 S등급 +3', class: 'quality-sgrade' },
+    'A_GRADE': { text: '🅰️ A등급 +2', class: 'quality-agrade' }
 };
 
 function renderAppeals() {

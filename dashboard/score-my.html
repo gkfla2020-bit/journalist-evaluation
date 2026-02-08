@@ -225,6 +225,10 @@
                         <input class="form-check-input" type="radio" name="appealType" id="typeFeature" value="FEATURE">
                         <label class="form-check-label" for="typeFeature">💡 기획 기사 인정 요청 (+5점)</label>
                     </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" name="appealType" id="typeAGrade" value="A_GRADE">
+                        <label class="form-check-label" for="typeAGrade">🅰️ A등급 인정 요청 (+2점)</label>
+                    </div>
                 </div>
                 <div class="mb-3">
                     <label class="form-label fw-bold">소명 사유 * (최대 500자)</label>
@@ -369,7 +373,7 @@ function renderScoreInfo() {
     document.getElementById('infoLengthWeights').innerHTML = 
         `<strong>분량 가중치:</strong> 2,000자↑(${lw[2000]}), 1,200~1,999자(${lw[1200]}), 600자↓(${lw[600] || lw[0]})`;
     
-    // 품질 가점 (S등급은 기자에게 표시하지 않음)
+    // 품질 가점 (S등급/A등급 포함)
     const qb = config.QUALITY_BONUS;
     document.getElementById('infoQualityBonus').innerHTML = `
         <small class="text-muted">
@@ -377,6 +381,8 @@ function renderScoreInfo() {
             <span class="badge-quality badge-top">🏅 면톱 +${qb.isTopArticle}</span>
             <span class="badge-quality badge-exclusive">⭐ 단독 +${qb.isExclusive}</span>
             <span class="badge-quality badge-feature">💡 기획 +${qb.isFeature}</span>
+            <span class="badge-quality badge-sgrade">🏆 S등급 +${qb.isSGrade}</span>
+            <span class="badge-quality" style="background:#dbeafe;color:#1e40af;">🅰️ A등급 +${qb.isAGrade || 2}</span>
             (상한 ${config.QUALITY_BONUS_CAP}점)
         </small>
     `;
@@ -398,10 +404,18 @@ function renderMyArticles() {
     }
     
     const evals = ScoreDataStore.getEvals();
-    const articles = myReporter.articles.map(a => ({
-        ...a,
-        ...(evals[a.nsid] || {})
-    }));
+    const articles = myReporter.articles.map(a => {
+        const evalMerged = evals[a.nsid] || {};
+        // is_auto_top 면톱 결정: eval에 명시적 값이 있으면 그걸 사용, 없으면 is_auto_top 따름
+        const resolvedTopArticle = evalMerged.isTopArticle !== undefined 
+            ? evalMerged.isTopArticle 
+            : (a.is_auto_top || false);
+        return {
+            ...a,
+            ...evalMerged,
+            _resolvedTopArticle: resolvedTopArticle
+        };
+    });
     
     let totalScore = 0;
     const tbody = document.getElementById('articleList');
@@ -414,10 +428,11 @@ function renderMyArticles() {
         const evalData = {
             page: page,
             charCount: charCount,
-            isTopArticle: article.isTopArticle || false,
+            isTopArticle: article._resolvedTopArticle || false,
             isExclusive: article.isExclusive || false,
             isFeature: article.isFeature || false,
-            isSGrade: article.isSGrade || false
+            isSGrade: article.isSGrade || false,
+            isAGrade: article.isAGrade || false
         };
         const score = calculateArticleScore(evalData);
         totalScore += score.totalScore;
@@ -425,11 +440,14 @@ function renderMyArticles() {
         const pageClass = page === 1 ? 'page-1' : (page <= 5 ? 'page-main' : 'page-other');
         const scoreClass = score.totalScore >= 10 ? 'score-high' : (score.totalScore >= 5 ? 'score-mid' : 'score-low');
         
-        // 배지 (S등급은 기자에게 표시하지 않음)
+        // 배지 (S등급/A등급은 기자에게 표시하지 않음)
         let badges = '';
-        if (article.isTopArticle) badges += '<span class="badge-quality badge-top">🏅 면톱</span>';
+        if (article._resolvedTopArticle) badges += `<span class="badge-quality badge-top">${article.is_auto_top ? '🏅 면톱(자동)' : '🏅 면톱'}</span>`;
+        if (!article._resolvedTopArticle && article.is_auto_top) badges += '<span class="badge-quality" style="background:#e2e8f0;color:#718096;text-decoration:line-through;">톱(자동해제)</span>';
         if (article.isExclusive) badges += '<span class="badge-quality badge-exclusive">⭐ 단독</span>';
         if (article.isFeature) badges += '<span class="badge-quality badge-feature">💡 기획</span>';
+        if (article.isSGrade) badges += '<span class="badge-quality badge-sgrade">🏆 S등급</span>';
+        if (article.isAGrade) badges += '<span class="badge-quality" style="background:#dbeafe;color:#1e40af;">🅰️ A등급</span>';
         
         // 이미 소명 요청한 기사인지 확인
         const myAppeals = ScoreDataStore.getAppeals({ reporterId: session.userId });
@@ -495,7 +513,8 @@ function renderMyAppeals() {
         'TOP_ARTICLE': '🏅 면톱',
         'EXCLUSIVE': '⭐ 단독',
         'FEATURE': '💡 기획',
-        'S_GRADE': '🏆 S등급'
+        'S_GRADE': '🏆 S등급',
+        'A_GRADE': '🅰️ A등급'
     };
     
     tbody.innerHTML = myAppeals.map(a => {
@@ -609,10 +628,11 @@ function calculateDeptAverage() {
                 const evalData = {
                     page: a.page || 15,
                     charCount: a.char_count || 0,
-                    isTopArticle: evals[a.nsid]?.isTopArticle || false,
+                    isTopArticle: evals[a.nsid]?.isTopArticle !== undefined ? evals[a.nsid].isTopArticle : (a.is_auto_top || false),
                     isExclusive: evals[a.nsid]?.isExclusive || false,
                     isFeature: evals[a.nsid]?.isFeature || false,
-                    isSGrade: evals[a.nsid]?.isSGrade || false
+                    isSGrade: evals[a.nsid]?.isSGrade || false,
+                    isAGrade: evals[a.nsid]?.isAGrade || false
                 };
                 reporterScore += calculateArticleScore(evalData).totalScore;
             });
@@ -642,10 +662,11 @@ function calculateDeptRanking() {
                 const evalData = {
                     page: a.page || 15,
                     charCount: a.char_count || 0,
-                    isTopArticle: evals[a.nsid]?.isTopArticle || false,
+                    isTopArticle: evals[a.nsid]?.isTopArticle !== undefined ? evals[a.nsid].isTopArticle : (a.is_auto_top || false),
                     isExclusive: evals[a.nsid]?.isExclusive || false,
                     isFeature: evals[a.nsid]?.isFeature || false,
-                    isSGrade: evals[a.nsid]?.isSGrade || false
+                    isSGrade: evals[a.nsid]?.isSGrade || false,
+                    isAGrade: evals[a.nsid]?.isAGrade || false
                 };
                 reporterScore += calculateArticleScore(evalData).totalScore;
             });
