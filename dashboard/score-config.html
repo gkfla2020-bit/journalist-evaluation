@@ -259,6 +259,14 @@ document.getElementById('userInfo').textContent = session.role === 'admin' ? '�
 
 const EVAL_API_URL = 'https://yyffk7tpfey7s2kv7hoitskxb40aljqw.lambda-url.us-east-1.on.aws/';
 
+// URL에 ?reset=1 이 있으면 config 초기화
+if (new URLSearchParams(location.search).get('reset') === '1') {
+    localStorage.removeItem('score_config');
+    localStorage.removeItem('score_config_history');
+    console.log('Config 초기화 완료');
+    history.replaceState(null, '', 'score-config.html');
+}
+
 function logout() {
     localStorage.removeItem('kpi_session');
     location.href = 'login.html';
