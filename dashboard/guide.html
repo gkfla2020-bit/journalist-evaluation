@@ -1428,19 +1428,28 @@
     <div class="card-grid">
         <div class="info-card">
             <h5><i class="bi bi-newspaper me-2"></i>면 가중치</h5>
-            <p>1면, 2~3면, 4~5면, 6~10면, 11~20면, 21~32면 각각의 가중치를 설정합니다.</p>
+            <p>면 범위(시작면~끝면)와 가중치를 행 단위로 자유롭게 추가/삭제할 수 있습니다. 기본: 1면, 2~3면, 4~5면, 6~10면, 11~20면, 21~32면</p>
         </div>
         <div class="info-card orange">
             <h5><i class="bi bi-text-paragraph me-2"></i>분량 가중치</h5>
-            <p>2000자↑, 1200~1999자, 600~1199자, 600자↓ 구간별 가중치를 설정합니다.</p>
+            <p>글자수 범위(최소~최대)와 가중치를 행 단위로 자유롭게 추가/삭제할 수 있습니다. 최대값에 ∞ 입력 시 "이상" 처리됩니다.</p>
         </div>
         <div class="info-card green">
             <h5><i class="bi bi-star me-2"></i>품질 가점</h5>
-            <p>면톱, 단독, 기획, S등급, A등급 각각의 가점을 설정합니다.</p>
+            <p>품질 가점 항목(면톱, 단독, 기획 등)을 자유롭게 추가/삭제할 수 있습니다. 항목명과 가점을 직접 입력합니다.</p>
         </div>
         <div class="info-card red">
             <h5><i class="bi bi-gear me-2"></i>기본 설정</h5>
             <p>기본 점수(10), 가점 상한(10), 최대 점수(20)를 설정합니다.</p>
+        </div>
+    </div>
+    
+    <div class="alert-box success mt-4 mb-3">
+        <i class="bi bi-check-circle"></i>
+        <div>
+            <strong>v2.6 동적 가중치 설정</strong><br>
+            면 범위, 글자수 범위, 품질 가점 항목을 자유롭게 추가·삭제할 수 있습니다. 변경 시 점수 매트릭스 미리보기가 실시간으로 업데이트됩니다.<br>
+            <small>문제 발생 시 <code>score-config.html?reset=1</code>로 접속하면 설정이 기본값으로 초기화됩니다.</small>
         </div>
     </div>
     
@@ -2214,6 +2223,52 @@
     
     <p>S-CORE 시스템의 주요 변경 사항을 기록합니다.</p>
     
+    <h5 class="mt-4 mb-3">v2.6 (2026년 2월 8일)</h5>
+    <div class="info-card green mb-3">
+        <h5><i class="bi bi-plus-circle me-2"></i>신규 기능</h5>
+        <ul class="mb-0">
+            <li><strong>동적 가중치 설정 (v3 엔진)</strong>: 가중치 설정 페이지에서 면 범위, 글자수 범위, 품질 가점 항목을 자유롭게 추가/삭제 가능
+                <ul>
+                    <li>면 가중치: 시작면~끝면 범위와 가중치를 행 단위로 추가/삭제</li>
+                    <li>분량 가중치: 최소~최대 글자수 범위와 가중치를 행 단위로 추가/삭제</li>
+                    <li>품질 가점: 항목명과 가점을 자유롭게 추가/삭제 (기존 면톱/단독/기획/S등급/A등급 외 커스텀 항목 가능)</li>
+                </ul>
+            </li>
+            <li><strong>v2→v3 자동 마이그레이션</strong>: 기존 고정 키-값 방식(v2)에서 배열 기반(v3)으로 자동 변환
+                <ul>
+                    <li>기존 localStorage 설정 데이터가 자동으로 v3 포맷으로 마이그레이션</li>
+                    <li>마이그레이션 후에도 기존 가중치 값 유지</li>
+                </ul>
+            </li>
+            <li><strong>Config 강제 초기화</strong>: score-config.html?reset=1 접속 시 설정 데이터 초기화 (문제 발생 시 복구용)</li>
+        </ul>
+    </div>
+    
+    <div class="info-card orange mb-3">
+        <h5><i class="bi bi-pencil me-2"></i>개선 사항</h5>
+        <ul class="mb-0">
+            <li><strong>가중치 설정 UI 간소화</strong>: 아이콘, ID, CSS 클래스 등 불필요한 필드 제거 → 범위+가중치만 표시</li>
+            <li><strong>점수 매트릭스 동적 생성</strong>: 설정 변경 시 점수 매트릭스 미리보기가 실시간 업데이트</li>
+            <li><strong>Infinity JSON 직렬화 버그 수정</strong>: 글자수 범위의 "이상" (∞) 값이 localStorage/서버 저장 시 null로 변환되는 문제 해결</li>
+            <li><strong>에러 핸들링 강화</strong>: 설정 로드 실패 시 기본값으로 자동 폴백, 개별 함수별 try-catch 적용</li>
+            <li><strong>전체 페이지 동적 품질 가점 적용</strong>: 하드코딩된 면톱/단독/기획/S등급/A등급 참조를 getQualityBonusItems() 동적 순회로 교체</li>
+        </ul>
+    </div>
+    
+    <div class="info-card mb-3">
+        <h5><i class="bi bi-file-code me-2"></i>적용된 페이지</h5>
+        <ul class="mb-0">
+            <li>score.js (핵심 계산 모듈) - v3 배열 기반 엔진, restoreInfinity, 동적 헬퍼 함수</li>
+            <li>score-config.html (가중치 설정) - 동적 행 추가/삭제 UI, 에러 핸들링 강화</li>
+            <li>score-data.js (데이터 저장소) - v3 config 지원, Infinity 복원</li>
+            <li>score-eval.html (기사 평가) - 동적 품질 가점 버튼</li>
+            <li>reporter.html (기자 상세) - 동적 품질 가점 버튼</li>
+            <li>list.html (기자 목록) - 동적 품질 가점 점수 계산</li>
+            <li>score-dashboard.html (부서 대시보드) - 동적 품질 가점 점수 계산</li>
+            <li>score-my.html (내 점수) - 동적 품질 가점 배지 표시</li>
+        </ul>
+    </div>
+    
     <h5 class="mt-4 mb-3">v2.5 (2026년 2월 8일)</h5>
     <div class="info-card green mb-3">
         <h5><i class="bi bi-plus-circle me-2"></i>신규 기능</h5>
@@ -2520,6 +2575,11 @@
             <tr>
                 <td><strong>v2.5</strong></td>
                 <td>A등급 품질 가점, 가감점 관리 자유 입력 개편</td>
+                <td><span class="badge bg-success">완료</span></td>
+            </tr>
+            <tr>
+                <td><strong>v2.6</strong></td>
+                <td>동적 가중치 설정 (면/글자수/품질 가점 항목 추가·삭제)</td>
                 <td><span class="badge bg-success">완료</span></td>
             </tr>
             <tr>
