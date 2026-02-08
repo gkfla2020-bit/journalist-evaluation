@@ -526,12 +526,12 @@ function renderTable(reporters) {
             const scoreData = {
                 page: article.page || article.paper_number || 15,
                 charCount: article.char_count || 0,
-                isTopArticle: resolvedTopArticle,
-                isExclusive: evalData.isExclusive || false,
-                isFeature: evalData.isFeature || false,
-                isSGrade: evalData.isSGrade || false,
-                isAGrade: evalData.isAGrade || false
+                isTopArticle: resolvedTopArticle
             };
+            getQualityBonusItems().forEach(item => {
+                if (item.id === 'isTopArticle') return;
+                scoreData[item.id] = evalData[item.id] || false;
+            });
             const score = calculateArticleScore(scoreData);
             totalScore += score.totalScore;
         });
@@ -677,12 +677,12 @@ function exportExcel() {
             const scoreData = {
                 page: article.page || article.paper_number || 15,
                 charCount: article.char_count || 0,
-                isTopArticle: resolvedTopArticle,
-                isExclusive: evalData.isExclusive || false,
-                isFeature: evalData.isFeature || false,
-                isSGrade: evalData.isSGrade || false,
-                isAGrade: evalData.isAGrade || false
+                isTopArticle: resolvedTopArticle
             };
+            getQualityBonusItems().forEach(item => {
+                if (item.id === 'isTopArticle') return;
+                scoreData[item.id] = evalData[item.id] || false;
+            });
             const score = calculateArticleScore(scoreData);
             totalScore += score.totalScore;
         });

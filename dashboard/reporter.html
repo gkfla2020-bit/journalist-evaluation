@@ -59,6 +59,7 @@
         .quality-btn.feature.active { background: #8b5cf6; border-color: #8b5cf6; }
         .quality-btn.sgrade.active { background: #10b981; border-color: #10b981; }
         .quality-btn.agrade.active { background: #3b82f6; border-color: #3b82f6; }
+        .quality-btn.custom.active { background: #6366f1; border-color: #6366f1; }
     </style>
 </head>
 <body>
@@ -807,12 +808,13 @@ function renderArticleTable(articles) {
         const scoreInput = {
             page: article.paper_number || 10,
             charCount: article.char_count || 0,
-            isTopArticle: resolvedTopArticle,
-            isExclusive: evalData?.isExclusive || false,
-            isFeature: evalData?.isFeature || false,
-            isSGrade: evalData?.isSGrade || false,
-            isAGrade: evalData?.isAGrade || false
+            isTopArticle: resolvedTopArticle
         };
+        // 동적 품질 가점 항목 로드
+        getQualityBonusItems().forEach(item => {
+            if (item.id === 'isTopArticle') return; // 이미 위에서 처리
+            scoreInput[item.id] = evalData?.[item.id] || false;
+        });
         const scoreResult = calculateArticleScore(scoreInput);
         totalScore += scoreResult.totalScore;
         
@@ -820,7 +822,7 @@ function renderArticleTable(articles) {
         const isConfirmed = evalData?.status === 'CONFIRMED';
         const nsid = article.nsid;
         
-        const isEvaluated = scoreInput.isTopArticle || scoreInput.isExclusive || scoreInput.isFeature || scoreInput.isSGrade || scoreInput.isAGrade;
+        const isEvaluated = hasAnyQualityBonus(scoreInput);
         
         html += `
             <tr ${isHighlight} data-nsid="${nsid}">
@@ -830,17 +832,7 @@ function renderArticleTable(articles) {
                 <td style="font-size:0.8rem;">${article.char_count ? article.char_count.toLocaleString() : '-'}</td>
                 <td style="font-size:0.8rem; text-align:center;">${scoreResult.baseScore}</td>
                 <td>
-                    ${article.is_auto_top ? `<span class="badge bg-warning text-dark me-1" style="font-size:0.65rem;">자동</span>` : ''}
-                    <button class="quality-btn top ${scoreInput.isTopArticle ? 'active' : ''}" 
-                            onclick="toggleQualityReporter('${nsid}', 'isTopArticle')" ${isConfirmed ? 'disabled' : ''}>면톱</button>
-                    <button class="quality-btn exclusive ${scoreInput.isExclusive ? 'active' : ''}" 
-                            onclick="toggleQualityReporter('${nsid}', 'isExclusive')" ${isConfirmed ? 'disabled' : ''}>단독</button>
-                    <button class="quality-btn feature ${scoreInput.isFeature ? 'active' : ''}" 
-                            onclick="toggleQualityReporter('${nsid}', 'isFeature')" ${isConfirmed ? 'disabled' : ''}>기획</button>
-                    <button class="quality-btn sgrade ${scoreInput.isSGrade ? 'active' : ''}" 
-                            onclick="toggleQualityReporter('${nsid}', 'isSGrade')" ${isConfirmed ? 'disabled' : ''}>S등급</button>
-                    <button class="quality-btn agrade ${scoreInput.isAGrade ? 'active' : ''}" 
-                            onclick="toggleQualityReporter('${nsid}', 'isAGrade')" ${isConfirmed ? 'disabled' : ''}>A등급</button>
+                    ${renderQualityButtons(nsid, scoreInput, isConfirmed, 'toggleQualityReporter', article)}
                     ${scoreResult.qualityBonus > 0 ? `<span class="badge bg-success ms-1">+${scoreResult.qualityBonus}</span>` : ''}
                 </td>
                 <td style="font-weight:700; font-size:1rem; color:${scoreResult.totalScore >= 10 ? '#ef4444' : (scoreResult.totalScore >= 5 ? '#f59e0b' : '#718096')};">${scoreResult.totalScore}</td>
@@ -924,14 +916,18 @@ function renderReporterTable(articles) {
             const isTopArticle = evalData?.isTopArticle !== undefined 
                 ? evalData.isTopArticle 
                 : (article.is_auto_top || false);
-            const isExclusive = evalData?.isExclusive || article.coverage_type === '단독' || false;
-            const isFeature = evalData?.isFeature || article.coverage_type === '특종' || article.coverage_type === '기획발굴' || false;
             
+            // 동적 배지 생성 (기자에게는 면톱/단독/기획만 표시)
             let badges = '';
             if (isTopArticle) badges += `<span class="badge bg-warning text-dark me-1">${article.is_auto_top ? '🏅톱(자동)' : '🏅톱'}</span>`;
             if (!isTopArticle && article.is_auto_top) badges += `<span class="badge bg-secondary me-1" style="text-decoration:line-through;">톱(자동해제)</span>`;
-            if (isExclusive) badges += '<span class="badge bg-primary me-1">⭐단독</span>';
-            if (isFeature) badges += '<span class="badge bg-info me-1">💡기획</span>';
+            
+            const qbItems = getQualityBonusItems();
+            qbItems.forEach(item => {
+                if (item.id === 'isTopArticle') return; // 면톱은 위에서 처리
+                const val = evalData?.[item.id] || false;
+                if (val) badges += `<span class="badge bg-primary me-1">${item.icon}${item.label}</span>`;
+            });
             
             const isHighlight = article.paper_number >= 1 && article.paper_number <= 3 ? 'style="background:#fffbeb;"' : '';
             
@@ -983,25 +979,24 @@ function renderReporterTable(articles) {
         const scoreInput = {
             page: article.paper_number || 10,
             charCount: article.char_count || 0,
-            isTopArticle: resolvedTopArticle,
-            isExclusive: evalData?.isExclusive || article.coverage_type === '단독' || false,
-            isFeature: evalData?.isFeature || article.coverage_type === '특종' || article.coverage_type === '기획발굴' || false,
-            isSGrade: evalData?.isSGrade || article.impact_grade === 'S' || false,
-            isAGrade: evalData?.isAGrade || article.impact_grade === 'A' || false
+            isTopArticle: resolvedTopArticle
         };
+        // 동적 품질 가점 항목 로드
+        getQualityBonusItems().forEach(item => {
+            if (item.id === 'isTopArticle') return;
+            scoreInput[item.id] = evalData?.[item.id] || false;
+        });
         const scoreResult = calculateArticleScore(scoreInput);
         totalScore += scoreResult.totalScore;
         
         const scoreColor = scoreResult.totalScore >= 15 ? '#dc3545' : (scoreResult.totalScore >= 10 ? '#fd7e14' : '#2c5282');
         
-        // 점수 상세 내역 (기본점수 + 가점 = 총점) - 자동 점수 산정은 기본 확정
+        // 점수 상세 내역 (동적 품질 가점)
         const config = getScoreConfig();
         let bonusItems = [];
-        if (scoreInput.isTopArticle) bonusItems.push('톱+' + config.QUALITY_BONUS.isTopArticle);
-        if (scoreInput.isExclusive) bonusItems.push('단독+' + config.QUALITY_BONUS.isExclusive);
-        if (scoreInput.isFeature) bonusItems.push('기획+' + config.QUALITY_BONUS.isFeature);
-        if (scoreInput.isSGrade) bonusItems.push('S+' + config.QUALITY_BONUS.isSGrade);
-        if (scoreInput.isAGrade) bonusItems.push('A+' + (config.QUALITY_BONUS.isAGrade || 2));
+        config.QUALITY_BONUS.forEach(qb => {
+            if (scoreInput[qb.id]) bonusItems.push(qb.label + '+' + qb.points);
+        });
         const bonusStr = bonusItems.length > 0 ? ' + ' + bonusItems.join('+') : '';
         
         // 기본적으로 모든 기사는 확정 상태 (자동 점수 산정)
@@ -1017,12 +1012,14 @@ function renderReporterTable(articles) {
             </div>
         `;
         
-        // 배지 생성 (기자에게는 S등급/A등급 숨김)
+        // 배지 생성 (동적 품질 가점 항목)
         let badges = '';
         if (scoreInput.isTopArticle) badges += `<span class="badge bg-warning text-dark me-1" title="면톱 기사">${article.is_auto_top ? '🏅톱(자동)' : '🏅톱'}</span>`;
         if (!scoreInput.isTopArticle && article.is_auto_top) badges += `<span class="badge bg-secondary me-1" style="text-decoration:line-through;">톱(자동해제)</span>`;
-        if (scoreInput.isExclusive) badges += '<span class="badge bg-primary me-1" title="단독 기사">⭐단독</span>';
-        if (scoreInput.isFeature) badges += '<span class="badge bg-info me-1" title="기획/특종 기사">💡기획</span>';
+        config.QUALITY_BONUS.forEach(qb => {
+            if (qb.id === 'isTopArticle') return; // 면톱은 위에서 처리
+            if (scoreInput[qb.id]) badges += `<span class="badge bg-primary me-1" title="${qb.label}">${qb.icon}${qb.label}</span>`;
+        });
         
         // 검토요청 상태 확인
         const appeals = ScoreDataStore ? ScoreDataStore.getAppeals({ reporterId: session.userId }) : [];
@@ -1404,23 +1401,23 @@ function renderMyScorePage() {
         const scoreInput = {
             page: article.paper_number || 10,
             charCount: article.char_count || 0,
-            isTopArticle: resolvedTopArticle,
-            isExclusive: evalData?.isExclusive || article.coverage_type === '단독' || false,
-            isFeature: evalData?.isFeature || article.coverage_type === '특종' || article.coverage_type === '기획발굴' || false,
-            isSGrade: evalData?.isSGrade || article.impact_grade === 'S' || false,
-            isAGrade: evalData?.isAGrade || article.impact_grade === 'A' || false
+            isTopArticle: resolvedTopArticle
         };
+        getQualityBonusItems().forEach(item => {
+            if (item.id === 'isTopArticle') return;
+            scoreInput[item.id] = evalData?.[item.id] || false;
+        });
         const scoreResult = calculateArticleScore(scoreInput);
         totalScore += scoreResult.totalScore;
         
-        // 배지 생성
+        // 배지 생성 (동적)
         let badges = '';
         if (scoreInput.isTopArticle) badges += `<span class="badge bg-warning text-dark me-1">${article.is_auto_top ? '🏅면톱(자동)' : '🏅면톱'}</span>`;
         if (!scoreInput.isTopArticle && article.is_auto_top) badges += '<span class="badge bg-secondary me-1" style="text-decoration:line-through;">톱(자동해제)</span>';
-        if (scoreInput.isExclusive || article.coverage_type === '단독') badges += '<span class="badge bg-primary me-1">⭐단독</span>';
-        if (scoreInput.isFeature || article.coverage_type === '특종' || article.coverage_type === '기획발굴') badges += '<span class="badge bg-info me-1">📰기획</span>';
-        if (scoreInput.isSGrade || article.impact_grade === 'S') badges += '<span class="badge bg-danger me-1">🔥S급</span>';
-        if (scoreInput.isAGrade || article.impact_grade === 'A') badges += '<span class="badge bg-primary me-1">🅰️A급</span>';
+        getQualityBonusItems().forEach(item => {
+            if (item.id === 'isTopArticle') return;
+            if (scoreInput[item.id]) badges += `<span class="badge bg-primary me-1">${item.icon}${item.label}</span>`;
+        });
         
         // 검토요청 상태 확인
         const appeals = ScoreDataStore ? ScoreDataStore.getAppeals({ reporterId: session.userId }) : [];
@@ -1587,12 +1584,12 @@ function calculateDeptStats() {
             const scoreInput = {
                 page: article.paper_number || 10,
                 charCount: article.char_count || 0,
-                isTopArticle: resolvedTopArticle,
-                isExclusive: evalData.isExclusive || article.coverage_type === '단독' || false,
-                isFeature: evalData.isFeature || article.coverage_type === '특종' || article.coverage_type === '기획발굴' || false,
-                isSGrade: evalData.isSGrade || article.impact_grade === 'S' || false,
-                isAGrade: evalData.isAGrade || article.impact_grade === 'A' || false
+                isTopArticle: resolvedTopArticle
             };
+            getQualityBonusItems().forEach(item => {
+                if (item.id === 'isTopArticle') return;
+                scoreInput[item.id] = evalData[item.id] || false;
+            });
             reporterScore += calculateArticleScore(scoreInput).totalScore;
         });
         scores.push({ name: reporter.name, score: reporterScore });

@@ -425,12 +425,12 @@ function renderDashboard() {
             const evalData = {
                 page: a.page || 15,
                 charCount: a.char_count || 0,
-                isTopArticle: resolvedTopArticle,
-                isExclusive: evalMerged.isExclusive || false,
-                isFeature: evalMerged.isFeature || false,
-                isSGrade: evalMerged.isSGrade || false,
-                isAGrade: evalMerged.isAGrade || false
+                isTopArticle: resolvedTopArticle
             };
+            getQualityBonusItems().forEach(item => {
+                if (item.id === 'isTopArticle') return;
+                evalData[item.id] = evalMerged[item.id] || false;
+            });
             totalScore += calculateArticleScore(evalData).totalScore;
         });
     });
@@ -469,12 +469,12 @@ function renderTopReporters(reporters, evals) {
             const evalData = {
                 page: a.page || 15,
                 charCount: a.char_count || 0,
-                isTopArticle: resolvedTopArticle,
-                isExclusive: evalMerged.isExclusive || false,
-                isFeature: evalMerged.isFeature || false,
-                isSGrade: evalMerged.isSGrade || false,
-                isAGrade: evalMerged.isAGrade || false
+                isTopArticle: resolvedTopArticle
             };
+            getQualityBonusItems().forEach(item => {
+                if (item.id === 'isTopArticle') return;
+                evalData[item.id] = evalMerged[item.id] || false;
+            });
             score += calculateArticleScore(evalData).totalScore;
         });
         return {

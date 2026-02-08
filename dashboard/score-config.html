@@ -18,10 +18,13 @@
         .nav-menu a:hover, .nav-menu a.active { background: #2c5282; color: white; }
         .toast-container { position: fixed; top: 20px; right: 20px; z-index: 9999; }
         .weight-input { width: 80px; text-align: center; font-weight: 600; }
-        .test-pass { color: #10b981; }
-        .test-fail { color: #ef4444; }
+        .range-input { width: 70px; text-align: center; }
         .matrix-cell { text-align: center; font-weight: 600; }
         .btn-outline-light:hover { background: rgba(255,255,255,0.15); }
+        .btn-add-row { border: 2px dashed #cbd5e0; color: #718096; background: transparent; width: 100%; padding: 0.5rem; border-radius: 8px; transition: all 0.2s; }
+        .btn-add-row:hover { border-color: #2c5282; color: #2c5282; background: #ebf4ff; }
+        .btn-remove-row { color: #ef4444; background: none; border: none; padding: 0.25rem 0.5rem; cursor: pointer; font-size: 1.1rem; }
+        .btn-remove-row:hover { color: #dc2626; background: #fef2f2; border-radius: 4px; }
     </style>
 </head>
 <body>
@@ -71,69 +74,63 @@
         <div class="alert alert-primary mb-0">
             <strong>기사 점수 = (면 가중치 × 분량 가중치 × 기본 점수) + 품질 가점</strong>
             <div class="mt-2 small">
-                최대 점수: <strong>20점</strong> | 최저 점수: <strong>1.7점</strong> | 품질 가점 상한: <strong>10점</strong>
+                최대 점수: <strong id="infoMaxScore">20점</strong> | 최저 점수: <strong>1.7점</strong> | 품질 가점 상한: <strong id="infoBonusCap">10점</strong>
             </div>
         </div>
     </div>
 </div>
 
 <div class="row">
-    <!-- 면 가중치 -->
+    <!-- 면 가중치 (동적) -->
     <div class="col-md-6">
         <div class="card">
-            <div class="card-header"><i class="bi bi-newspaper me-2"></i>면 가중치</div>
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <span><i class="bi bi-newspaper me-2"></i>면 가중치</span>
+                <span class="badge bg-light text-dark" id="pageWeightCount">0개</span>
+            </div>
             <div class="card-body">
-                <table class="table table-sm">
-                    <thead><tr><th>게재 면</th><th>가중치</th></tr></thead>
-                    <tbody>
-                        <tr><td>1면</td><td><input type="number" class="form-control weight-input" id="pw1" step="0.05" min="0" max="2"></td></tr>
-                        <tr><td>2~3면</td><td><input type="number" class="form-control weight-input" id="pw3" step="0.05" min="0" max="2"></td></tr>
-                        <tr><td>4~5면</td><td><input type="number" class="form-control weight-input" id="pw5" step="0.05" min="0" max="2"></td></tr>
-                        <tr><td>6~10면</td><td><input type="number" class="form-control weight-input" id="pw10" step="0.05" min="0" max="2"></td></tr>
-                        <tr><td>11~20면</td><td><input type="number" class="form-control weight-input" id="pw20" step="0.05" min="0" max="2"></td></tr>
-                        <tr><td>21~32면</td><td><input type="number" class="form-control weight-input" id="pw32" step="0.05" min="0" max="2"></td></tr>
-                    </tbody>
+                <table class="table table-sm mb-2">
+                    <thead><tr><th style="width:20%">시작면</th><th style="width:20%">끝면</th><th style="width:35%">가중치</th><th style="width:10%"></th></tr></thead>
+                    <tbody id="pageWeightsBody"></tbody>
                 </table>
+                <button class="btn-add-row" onclick="addPageWeightRow()"><i class="bi bi-plus-circle me-1"></i>면 범위 추가</button>
             </div>
         </div>
     </div>
     
-    <!-- 분량 가중치 -->
+    <!-- 분량 가중치 (동적) -->
     <div class="col-md-6">
         <div class="card">
-            <div class="card-header"><i class="bi bi-file-text me-2"></i>분량 가중치</div>
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <span><i class="bi bi-file-text me-2"></i>분량 가중치</span>
+                <span class="badge bg-light text-dark" id="lengthWeightCount">0개</span>
+            </div>
             <div class="card-body">
-                <table class="table table-sm">
-                    <thead><tr><th>글자 수</th><th>가중치</th></tr></thead>
-                    <tbody>
-                        <tr><td>2,000자 이상</td><td><input type="number" class="form-control weight-input" id="lw2000" step="0.05" min="0" max="2"></td></tr>
-                        <tr><td>1,200~1,999자</td><td><input type="number" class="form-control weight-input" id="lw1200" step="0.05" min="0" max="2"></td></tr>
-                        <tr><td>600~1,199자</td><td><input type="number" class="form-control weight-input" id="lw600" step="0.05" min="0" max="2"></td></tr>
-                        <tr><td>600자 미만</td><td><input type="number" class="form-control weight-input" id="lw0" step="0.05" min="0" max="2"></td></tr>
-                    </tbody>
+                <table class="table table-sm mb-2">
+                    <thead><tr><th style="width:20%">최소(자)</th><th style="width:20%">최대(자)</th><th style="width:35%">가중치</th><th style="width:10%"></th></tr></thead>
+                    <tbody id="lengthWeightsBody"></tbody>
                 </table>
+                <button class="btn-add-row" onclick="addLengthWeightRow()"><i class="bi bi-plus-circle me-1"></i>글자수 범위 추가</button>
             </div>
         </div>
     </div>
 </div>
 
 <div class="row">
-    <!-- 품질 가점 -->
+    <!-- 품질 가점 (동적) -->
     <div class="col-md-6">
         <div class="card">
-            <div class="card-header"><i class="bi bi-star me-2"></i>품질 가점</div>
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <span><i class="bi bi-star me-2"></i>품질 가점</span>
+                <span class="badge bg-light text-dark" id="qualityBonusCount">0개</span>
+            </div>
             <div class="card-body">
-                <table class="table table-sm">
-                    <thead><tr><th>항목</th><th>가점</th></tr></thead>
-                    <tbody>
-                        <tr><td>🏅 면톱</td><td><input type="number" class="form-control weight-input" id="qbTop" step="1" min="0" max="10"></td></tr>
-                        <tr><td>⭐ 단독/특종</td><td><input type="number" class="form-control weight-input" id="qbExclusive" step="1" min="0" max="10"></td></tr>
-                        <tr><td>💡 기획</td><td><input type="number" class="form-control weight-input" id="qbFeature" step="1" min="0" max="10"></td></tr>
-                        <tr><td>🏆 S등급</td><td><input type="number" class="form-control weight-input" id="qbSGrade" step="1" min="0" max="10"></td></tr>
-                        <tr><td>🅰️ A등급</td><td><input type="number" class="form-control weight-input" id="qbAGrade" step="1" min="0" max="10"></td></tr>
-                    </tbody>
+                <table class="table table-sm mb-2">
+                    <thead><tr><th>항목</th><th style="width:25%">가점</th><th style="width:10%"></th></tr></thead>
+                    <tbody id="qualityBonusBody"></tbody>
                 </table>
-                <div class="small text-muted mt-2">* 품질 가점 합계 상한: 10점</div>
+                <button class="btn-add-row" onclick="addQualityBonusRow()"><i class="bi bi-plus-circle me-1"></i>품질 가점 항목 추가</button>
+                <div class="small text-muted mt-2">* 품질 가점 합계 상한: <input type="number" class="form-control form-control-sm d-inline-block" id="bonusCap" style="width:60px;" step="1" min="1" max="30">점</div>
             </div>
         </div>
     </div>
@@ -147,7 +144,6 @@
                     <thead><tr><th>항목</th><th>값</th></tr></thead>
                     <tbody>
                         <tr><td>기본 점수</td><td><input type="number" class="form-control weight-input" id="baseScore" step="1" min="1" max="20"></td></tr>
-                        <tr><td>가점 상한</td><td><input type="number" class="form-control weight-input" id="bonusCap" step="1" min="1" max="20"></td></tr>
                         <tr><td>최대 점수</td><td><input type="number" class="form-control weight-input" id="maxScore" step="1" min="1" max="30"></td></tr>
                     </tbody>
                 </table>
@@ -169,14 +165,16 @@
         <button class="btn btn-sm btn-light" onclick="runTests()"><i class="bi bi-play me-1"></i>계산 실행</button>
     </div>
     <div class="card-body p-0">
-        <table class="table table-sm mb-0">
-            <thead class="table-light">
-                <tr><th>예시</th><th>면</th><th>글자수</th><th>면톱</th><th>단독</th><th>기획</th><th>S등급</th><th>A등급</th><th colspan="2">계산 점수</th><th>설명</th></tr>
-            </thead>
-            <tbody id="testResults">
-                <tr><td colspan="10" class="text-center text-muted py-3">테스트 실행 버튼을 클릭하세요</td></tr>
-            </tbody>
-        </table>
+        <div class="table-responsive">
+            <table class="table table-sm mb-0">
+                <thead class="table-light">
+                    <tr id="testHeader"></tr>
+                </thead>
+                <tbody id="testResults">
+                    <tr><td colspan="10" class="text-center text-muted py-3">테스트 실행 버튼을 클릭하세요</td></tr>
+                </tbody>
+            </table>
+        </div>
     </div>
 </div>
 
@@ -184,12 +182,14 @@
 <div class="card">
     <div class="card-header"><i class="bi bi-table me-2"></i>점수 매트릭스 미리보기 (품질 가점 제외)</div>
     <div class="card-body p-0">
-        <table class="table table-bordered table-sm mb-0">
-            <thead class="table-dark">
-                <tr><th>면 \ 글자수</th><th>2,000자↑</th><th>1,200~1,999자</th><th>600~1,199자</th><th>600자↓</th></tr>
-            </thead>
-            <tbody id="matrixPreview"></tbody>
-        </table>
+        <div class="table-responsive">
+            <table class="table table-bordered table-sm mb-0">
+                <thead class="table-dark">
+                    <tr id="matrixHeader"><th>면 \ 글자수</th></tr>
+                </thead>
+                <tbody id="matrixPreview"></tbody>
+            </table>
+        </div>
     </div>
 </div>
 
@@ -256,7 +256,6 @@ if (!session || session.role !== 'admin') {
     location.href = 'login.html';
 }
 document.getElementById('userInfo').textContent = session.role === 'admin' ? '관리자님' : `${session.name}님`;
-// score-config.html은 admin 전용이므로 네비게이션 숨김 처리 불필요
 
 const EVAL_API_URL = 'https://yyffk7tpfey7s2kv7hoitskxb40aljqw.lambda-url.us-east-1.on.aws/';
 
@@ -264,6 +263,158 @@ function logout() {
     localStorage.removeItem('kpi_session');
     location.href = 'login.html';
 }
+
+// ========== 동적 행 렌더링 ==========
+
+// 면 가중치 행 렌더링
+function renderPageWeights(weights) {
+    const tbody = document.getElementById('pageWeightsBody');
+    tbody.innerHTML = weights.map((w, i) => `
+        <tr>
+            <td><input type="number" class="form-control form-control-sm range-input pw-min" value="${w.min}" min="1" max="99" data-idx="${i}" onchange="onPageRangeChange()"></td>
+            <td><input type="number" class="form-control form-control-sm range-input pw-max" value="${w.max}" min="1" max="99" data-idx="${i}" onchange="onPageRangeChange()"></td>
+            <input type="hidden" class="pw-label" value="${w.label}">
+            <td><input type="number" class="form-control form-control-sm weight-input pw-weight" value="${w.weight}" step="0.05" min="0" max="2" data-idx="${i}" onchange="updateMatrix()"></td>
+            <td class="text-center"><button class="btn-remove-row" onclick="removePageWeightRow(${i})" title="삭제"><i class="bi bi-x-circle"></i></button></td>
+        </tr>
+    `).join('');
+    document.getElementById('pageWeightCount').textContent = weights.length + '개';
+}
+
+// 분량 가중치 행 렌더링
+function renderLengthWeights(weights) {
+    const tbody = document.getElementById('lengthWeightsBody');
+    tbody.innerHTML = weights.map((w, i) => `
+        <tr>
+            <td><input type="number" class="form-control form-control-sm range-input lw-min" value="${w.min}" min="0" max="99999" data-idx="${i}" onchange="onLengthRangeChange()"></td>
+            <td><input type="text" class="form-control form-control-sm range-input lw-max" value="${w.max === Infinity ? '∞' : w.max}" data-idx="${i}" style="font-size:0.85rem;" onchange="onLengthRangeChange()"></td>
+            <input type="hidden" class="lw-label" value="${w.label}">
+            <td><input type="number" class="form-control form-control-sm weight-input lw-weight" value="${w.weight}" step="0.05" min="0" max="2" data-idx="${i}" onchange="updateMatrix()"></td>
+            <td class="text-center"><button class="btn-remove-row" onclick="removeLengthWeightRow(${i})" title="삭제"><i class="bi bi-x-circle"></i></button></td>
+        </tr>
+    `).join('');
+    document.getElementById('lengthWeightCount').textContent = weights.length + '개';
+}
+
+// 품질 가점 행 렌더링 (아이콘+라벨만 표시, ID/CSS는 내부 유지)
+function renderQualityBonus(items) {
+    const tbody = document.getElementById('qualityBonusBody');
+    tbody.innerHTML = items.map((item, i) => `
+        <tr>
+            <td>${item.icon} ${item.label}
+                <input type="hidden" class="qb-icon" value="${item.icon}">
+                <input type="hidden" class="qb-label" value="${item.label}">
+                <input type="hidden" class="qb-id" value="${item.id}">
+                <input type="hidden" class="qb-css" value="${item.cssClass}">
+            </td>
+            <td><input type="number" class="form-control form-control-sm weight-input qb-points" value="${item.points}" step="1" min="0" max="20" data-idx="${i}"></td>
+            <td class="text-center"><button class="btn-remove-row" onclick="removeQualityBonusRow(${i})" title="삭제"><i class="bi bi-x-circle"></i></button></td>
+        </tr>
+    `).join('');
+    document.getElementById('qualityBonusCount').textContent = items.length + '개';
+}
+
+// ========== 행 추가/삭제 ==========
+
+let currentConfig = null;
+
+function addPageWeightRow() {
+    const weights = collectPageWeights();
+    const lastMax = weights.length > 0 ? weights[weights.length - 1].max : 0;
+    weights.push({ min: lastMax + 1, max: lastMax + 5, label: `${lastMax + 1}~${lastMax + 5}면`, weight: 0.30 });
+    renderPageWeights(weights);
+    updateMatrix();
+}
+
+function removePageWeightRow(idx) {
+    const weights = collectPageWeights();
+    if (weights.length <= 1) { SCore.toast('최소 1개 항목이 필요합니다', 'warning'); return; }
+    weights.splice(idx, 1);
+    renderPageWeights(weights);
+    updateMatrix();
+}
+
+function addLengthWeightRow() {
+    const weights = collectLengthWeights();
+    weights.push({ min: 0, max: 99, label: '새 범위', weight: 0.50 });
+    renderLengthWeights(weights);
+    updateMatrix();
+}
+
+function removeLengthWeightRow(idx) {
+    const weights = collectLengthWeights();
+    if (weights.length <= 1) { SCore.toast('최소 1개 항목이 필요합니다', 'warning'); return; }
+    weights.splice(idx, 1);
+    renderLengthWeights(weights);
+    updateMatrix();
+}
+
+function addQualityBonusRow() {
+    const name = prompt('추가할 품질 가점 항목명을 입력하세요:');
+    if (!name || !name.trim()) return;
+    const items = collectQualityBonus();
+    const newId = 'is' + name.trim().replace(/[^a-zA-Z0-9가-힣]/g, '') + Date.now();
+    items.push({ id: newId, label: name.trim(), icon: '⭐', points: 1, cssClass: 'custom' });
+    renderQualityBonus(items);
+}
+
+function removeQualityBonusRow(idx) {
+    const items = collectQualityBonus();
+    if (items.length <= 1) { SCore.toast('최소 1개 항목이 필요합니다', 'warning'); return; }
+    items.splice(idx, 1);
+    renderQualityBonus(items);
+}
+
+// ========== 입력값 수집 ==========
+
+function collectPageWeights() {
+    const rows = document.querySelectorAll('#pageWeightsBody tr');
+    return Array.from(rows).map(row => {
+        const min = parseInt(row.querySelector('.pw-min').value) || 1;
+        const max = parseInt(row.querySelector('.pw-max').value) || 1;
+        // 라벨 자동 생성
+        const label = min === max ? `${min}면` : `${min}~${max}면`;
+        return { min, max, label, weight: parseFloat(row.querySelector('.pw-weight').value) || 0 };
+    });
+}
+
+function collectLengthWeights() {
+    const rows = document.querySelectorAll('#lengthWeightsBody tr');
+    return Array.from(rows).map(row => {
+        const min = parseInt(row.querySelector('.lw-min').value) || 0;
+        const maxVal = row.querySelector('.lw-max').value;
+        const max = (maxVal === '∞' || maxVal === 'Infinity' || maxVal === '') ? Infinity : (parseInt(maxVal) || 0);
+        // 라벨 자동 생성
+        let label;
+        if (max === Infinity) label = `${min.toLocaleString()}자 이상`;
+        else if (min === 0) label = `${max.toLocaleString()}자 미만`;
+        else label = `${min.toLocaleString()}~${max.toLocaleString()}자`;
+        return { min, max, label, weight: parseFloat(row.querySelector('.lw-weight').value) || 0 };
+    });
+}
+
+function collectQualityBonus() {
+    const rows = document.querySelectorAll('#qualityBonusBody tr');
+    return Array.from(rows).map(row => ({
+        icon: row.querySelector('.qb-icon').value,
+        label: row.querySelector('.qb-label').value,
+        id: row.querySelector('.qb-id').value,
+        cssClass: row.querySelector('.qb-css').value,
+        points: parseInt(row.querySelector('.qb-points').value) || 0
+    }));
+}
+
+// ========== 범위 변경 시 라벨 자동 업데이트 ==========
+
+function onPageRangeChange() {
+    updateMatrix();
+}
+
+function onLengthRangeChange() {
+    updateMatrix();
+}
+
+// ========== 설정 로드/저장 ==========
 
 // 초기 로드 시 서버에서 설정 가져오기
 (async function() {
@@ -291,67 +442,42 @@ function logout() {
     loadHistory();
 })();
 
-// 설정 로드
 function loadConfig() {
-    const config = getScoreConfig();
+    const config = getScoreConfig(); // v3 포맷 보장 (마이그레이션 포함)
+    currentConfig = config;
     
-    // 면 가중치
-    document.getElementById('pw1').value = config.PAGE_WEIGHTS[1];
-    document.getElementById('pw3').value = config.PAGE_WEIGHTS[3];
-    document.getElementById('pw5').value = config.PAGE_WEIGHTS[5];
-    document.getElementById('pw10').value = config.PAGE_WEIGHTS[10];
-    document.getElementById('pw20').value = config.PAGE_WEIGHTS[20];
-    document.getElementById('pw32').value = config.PAGE_WEIGHTS[32];
+    renderPageWeights(config.PAGE_WEIGHTS);
+    renderLengthWeights(config.LENGTH_WEIGHTS);
+    renderQualityBonus(config.QUALITY_BONUS);
     
-    // 분량 가중치
-    document.getElementById('lw2000').value = config.LENGTH_WEIGHTS[2000];
-    document.getElementById('lw1200').value = config.LENGTH_WEIGHTS[1200];
-    document.getElementById('lw600').value = config.LENGTH_WEIGHTS[600];
-    document.getElementById('lw0').value = config.LENGTH_WEIGHTS[0];
-    
-    // 품질 가점
-    document.getElementById('qbTop').value = config.QUALITY_BONUS.isTopArticle;
-    document.getElementById('qbExclusive').value = config.QUALITY_BONUS.isExclusive;
-    document.getElementById('qbFeature').value = config.QUALITY_BONUS.isFeature;
-    document.getElementById('qbSGrade').value = config.QUALITY_BONUS.isSGrade;
-    document.getElementById('qbAGrade').value = config.QUALITY_BONUS.isAGrade || 2;
-    
-    // 기본 설정
     document.getElementById('baseScore').value = config.BASE_SCORE;
     document.getElementById('bonusCap').value = config.QUALITY_BONUS_CAP;
     document.getElementById('maxScore').value = config.MAX_SCORE;
     
+    document.getElementById('infoMaxScore').textContent = config.MAX_SCORE + '점';
+    document.getElementById('infoBonusCap').textContent = config.QUALITY_BONUS_CAP + '점';
+    
     updateMatrix();
 }
 
-// 설정 저장
 async function saveConfig() {
     const config = {
-        BASE_SCORE: parseFloat(document.getElementById('baseScore').value),
-        QUALITY_BONUS_CAP: parseFloat(document.getElementById('bonusCap').value),
-        MAX_SCORE: parseFloat(document.getElementById('maxScore').value),
-        PAGE_WEIGHTS: {
-            1: parseFloat(document.getElementById('pw1').value),
-            3: parseFloat(document.getElementById('pw3').value),
-            5: parseFloat(document.getElementById('pw5').value),
-            10: parseFloat(document.getElementById('pw10').value),
-            20: parseFloat(document.getElementById('pw20').value),
-            32: parseFloat(document.getElementById('pw32').value)
-        },
-        LENGTH_WEIGHTS: {
-            2000: parseFloat(document.getElementById('lw2000').value),
-            1200: parseFloat(document.getElementById('lw1200').value),
-            600: parseFloat(document.getElementById('lw600').value),
-            0: parseFloat(document.getElementById('lw0').value)
-        },
-        QUALITY_BONUS: {
-            isTopArticle: parseFloat(document.getElementById('qbTop').value),
-            isExclusive: parseFloat(document.getElementById('qbExclusive').value),
-            isFeature: parseFloat(document.getElementById('qbFeature').value),
-            isSGrade: parseFloat(document.getElementById('qbSGrade').value),
-            isAGrade: parseFloat(document.getElementById('qbAGrade').value)
-        }
+        BASE_SCORE: parseFloat(document.getElementById('baseScore').value) || 10,
+        QUALITY_BONUS_CAP: parseFloat(document.getElementById('bonusCap').value) || 10,
+        MAX_SCORE: parseFloat(document.getElementById('maxScore').value) || 20,
+        PAGE_WEIGHTS: collectPageWeights(),
+        LENGTH_WEIGHTS: collectLengthWeights(),
+        QUALITY_BONUS: collectQualityBonus()
     };
+    
+    // 유효성 검사
+    if (config.PAGE_WEIGHTS.length === 0) { SCore.toast('면 가중치를 최소 1개 설정하세요', 'error'); return; }
+    if (config.LENGTH_WEIGHTS.length === 0) { SCore.toast('분량 가중치를 최소 1개 설정하세요', 'error'); return; }
+    if (config.QUALITY_BONUS.length === 0) { SCore.toast('품질 가점을 최소 1개 설정하세요', 'error'); return; }
+    
+    // ID 중복 검사
+    const ids = config.QUALITY_BONUS.map(q => q.id);
+    if (new Set(ids).size !== ids.length) { SCore.toast('품질 가점 ID가 중복됩니다', 'error'); return; }
     
     const reason = prompt('변경 사유를 입력하세요 (선택):') || '';
     
@@ -361,12 +487,14 @@ async function saveConfig() {
     try {
         ScoreDataStore.saveConfig(config, session.userId, session.name, reason);
         
-        // Lambda API에도 저장
         await fetch(EVAL_API_URL, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ _config: config })
         });
+        
+        document.getElementById('infoMaxScore').textContent = config.MAX_SCORE + '점';
+        document.getElementById('infoBonusCap').textContent = config.QUALITY_BONUS_CAP + '점';
         
         SCore.toast('설정이 저장되었습니다', 'success');
         updateMatrix();
@@ -379,7 +507,104 @@ async function saveConfig() {
     }
 }
 
-// 변경 이력 로드
+function resetToDefault() {
+    if (!confirm('기본값으로 복원하시겠습니까? 모든 설정이 초기화됩니다.')) return;
+    localStorage.removeItem('score_config');
+    loadConfig();
+    SCore.toast('기본값으로 복원되었습니다', 'success');
+}
+
+// ========== 매트릭스 업데이트 ==========
+
+function updateMatrix() {
+    const pageWeights = collectPageWeights();
+    const lengthWeights = collectLengthWeights();
+    const baseScore = parseFloat(document.getElementById('baseScore').value) || 10;
+    
+    // 헤더
+    const header = document.getElementById('matrixHeader');
+    header.innerHTML = '<th>면 \\ 글자수</th>' + lengthWeights.map(l => `<th>${l.label}</th>`).join('');
+    
+    // 바디
+    const tbody = document.getElementById('matrixPreview');
+    tbody.innerHTML = pageWeights.map(p => {
+        const cells = lengthWeights.map(l => {
+            const score = Math.round(p.weight * l.weight * baseScore * 10) / 10;
+            return `<td class="matrix-cell">${score}</td>`;
+        }).join('');
+        return `<tr><td class="fw-bold">${p.label}</td>${cells}</tr>`;
+    }).join('');
+}
+
+// ========== 테스트 실행 ==========
+
+function runTests() {
+    // 현재 입력값으로 임시 config 구성하여 테스트
+    const tempConfig = {
+        BASE_SCORE: parseFloat(document.getElementById('baseScore').value) || 10,
+        QUALITY_BONUS_CAP: parseFloat(document.getElementById('bonusCap').value) || 10,
+        MAX_SCORE: parseFloat(document.getElementById('maxScore').value) || 20,
+        PAGE_WEIGHTS: collectPageWeights(),
+        LENGTH_WEIGHTS: collectLengthWeights(),
+        QUALITY_BONUS: collectQualityBonus()
+    };
+    
+    // 임시로 config 저장 후 테스트 실행
+    const backup = localStorage.getItem('score_config');
+    localStorage.setItem('score_config', JSON.stringify(tempConfig));
+    
+    const qbItems = tempConfig.QUALITY_BONUS;
+    
+    // 테스트 헤더 동적 생성
+    const testHeader = document.getElementById('testHeader');
+    testHeader.innerHTML = '<th>예시</th><th>면</th><th>글자수</th>' + 
+        qbItems.map(q => `<th>${q.icon}</th>`).join('') + 
+        '<th colspan="2">계산 점수</th><th>설명</th>';
+    
+    const testCases = [
+        { page: 1, charCount: 2100, desc: '1면 2100자 + 모든 가점' },
+        { page: 1, charCount: 2000, desc: '1면 2000자 + 일부 가점' },
+        { page: 3, charCount: 1500, desc: '3면 1500자 + 일부 가점' },
+        { page: 5, charCount: 1500, desc: '5면 1500자 + 면톱만' },
+        { page: 10, charCount: 1300, desc: '10면 1300자 (가점 없음)' },
+        { page: 15, charCount: 1000, desc: '15면 1000자 (가점 없음)' },
+        { page: 30, charCount: 400, desc: '30면 400자 (가점 없음)' }
+    ];
+    
+    // 각 테스트에 품질 가점 설정
+    testCases.forEach((tc, i) => {
+        qbItems.forEach((q, qi) => {
+            if (i === 0) tc[q.id] = true; // 첫번째: 모든 가점
+            else if (i === 1) tc[q.id] = qi < 2; // 두번째: 처음 2개만
+            else if (i === 2) tc[q.id] = qi === 0 || qi === 2; // 세번째: 첫번째+세번째
+            else if (i === 3) tc[q.id] = qi === 0; // 네번째: 첫번째만
+            else tc[q.id] = false; // 나머지: 가점 없음
+        });
+    });
+    
+    const tbody = document.getElementById('testResults');
+    tbody.innerHTML = testCases.map((tc, i) => {
+        const result = calculateArticleScore(tc);
+        const qbCells = qbItems.map(q => `<td>${tc[q.id] ? 'Y' : 'N'}</td>`).join('');
+        return `
+            <tr>
+                <td>예시${i+1}</td>
+                <td>${tc.page}</td>
+                <td>${tc.charCount}</td>
+                ${qbCells}
+                <td colspan="2" class="fw-bold text-primary">${result.totalScore}점</td>
+                <td><small class="text-muted">${tc.desc}</small></td>
+            </tr>
+        `;
+    }).join('');
+    
+    // config 복원
+    if (backup) localStorage.setItem('score_config', backup);
+    else localStorage.removeItem('score_config');
+}
+
+// ========== 변경 이력 ==========
+
 function loadHistory() {
     const history = ScoreDataStore.getConfigHistory ? ScoreDataStore.getConfigHistory() : [];
     const tbody = document.getElementById('historyList');
@@ -391,13 +616,10 @@ function loadHistory() {
     
     tbody.innerHTML = history.slice(0, 20).map(h => {
         const date = new Date(h.changedAt).toLocaleString('ko-KR');
-        // changes는 배열이므로 요약 문자열로 변환
         let changesText = '설정 변경';
         if (h.changes && Array.isArray(h.changes) && h.changes.length > 0) {
             changesText = h.changes.map(c => `${c.field}: ${c.oldValue}→${c.newValue}`).join(', ');
-            if (changesText.length > 50) {
-                changesText = changesText.substring(0, 50) + '...';
-            }
+            if (changesText.length > 50) changesText = changesText.substring(0, 50) + '...';
         }
         return `
             <tr>
@@ -410,75 +632,8 @@ function loadHistory() {
     }).join('');
 }
 
-// 기본값 복원
-function resetToDefault() {
-    if (!confirm('기본값으로 복원하시겠습니까?')) return;
-    localStorage.removeItem('score_config');
-    loadConfig();
-    SCore.toast('기본값으로 복원되었습니다', 'success');
-}
+// ========== Feature Flags ==========
 
-// 테스트 실행 - 현재 설정 기준 점수 계산 예시
-function runTests() {
-    const testCases = [
-        { page: 1, charCount: 2100, isTopArticle: true, isExclusive: true, isFeature: true, isSGrade: true, isAGrade: true, desc: '1면 2100자 + 모든 가점' },
-        { page: 1, charCount: 2000, isTopArticle: true, isExclusive: true, isFeature: false, isSGrade: false, isAGrade: false, desc: '1면 2000자 + 면톱/단독' },
-        { page: 3, charCount: 1500, isTopArticle: true, isExclusive: false, isFeature: true, isSGrade: false, isAGrade: false, desc: '3면 1500자 + 면톱/기획' },
-        { page: 5, charCount: 1500, isTopArticle: true, isExclusive: false, isFeature: false, isSGrade: false, isAGrade: false, desc: '5면 1500자 + 면톱' },
-        { page: 10, charCount: 1300, isTopArticle: false, isExclusive: false, isFeature: false, isSGrade: false, isAGrade: false, desc: '10면 1300자 (가점 없음)' },
-        { page: 15, charCount: 1000, isTopArticle: false, isExclusive: false, isFeature: false, isSGrade: false, isAGrade: false, desc: '15면 1000자 (가점 없음)' },
-        { page: 30, charCount: 400, isTopArticle: false, isExclusive: false, isFeature: false, isSGrade: false, isAGrade: false, desc: '30면 400자 (가점 없음)' }
-    ];
-    
-    const tbody = document.getElementById('testResults');
-    tbody.innerHTML = testCases.map((tc, i) => {
-        const result = calculateArticleScore(tc);
-        return `
-            <tr>
-                <td>예시${i+1}</td>
-                <td>${tc.page}</td>
-                <td>${tc.charCount}</td>
-                <td>${tc.isTopArticle ? 'Y' : 'N'}</td>
-                <td>${tc.isExclusive ? 'Y' : 'N'}</td>
-                <td>${tc.isFeature ? 'Y' : 'N'}</td>
-                <td>${tc.isSGrade ? 'Y' : 'N'}</td>
-                <td>${tc.isAGrade ? 'Y' : 'N'}</td>
-                <td colspan="2" class="fw-bold text-primary">${result.totalScore}점</td>
-                <td><small class="text-muted">${tc.desc}</small></td>
-            </tr>
-        `;
-    }).join('');
-}
-
-// 매트릭스 업데이트
-function updateMatrix() {
-    const config = getScoreConfig();
-    const pages = [
-        { label: '1면', weight: config.PAGE_WEIGHTS[1] },
-        { label: '2~3면', weight: config.PAGE_WEIGHTS[3] },
-        { label: '4~5면', weight: config.PAGE_WEIGHTS[5] },
-        { label: '6~10면', weight: config.PAGE_WEIGHTS[10] },
-        { label: '11~20면', weight: config.PAGE_WEIGHTS[20] },
-        { label: '21~32면', weight: config.PAGE_WEIGHTS[32] }
-    ];
-    const lengths = [
-        config.LENGTH_WEIGHTS[2000],
-        config.LENGTH_WEIGHTS[1200],
-        config.LENGTH_WEIGHTS[600],
-        config.LENGTH_WEIGHTS[0]
-    ];
-    
-    const tbody = document.getElementById('matrixPreview');
-    tbody.innerHTML = pages.map(p => {
-        const cells = lengths.map(l => {
-            const score = Math.round(p.weight * l * config.BASE_SCORE * 10) / 10;
-            return `<td class="matrix-cell">${score}</td>`;
-        }).join('');
-        return `<tr><td class="fw-bold">${p.label}</td>${cells}</tr>`;
-    }).join('');
-}
-
-// Feature Flags 로드
 function loadFeatureFlags() {
     const flags = ScoreDataStore.getFeatureFlags();
     document.getElementById('flagMyScore').checked = flags.SHOW_MY_SCORE;
@@ -487,7 +642,6 @@ function loadFeatureFlags() {
     document.getElementById('flagDeptRank').checked = flags.SHOW_DEPT_RANKING;
 }
 
-// Feature Flags 저장
 async function saveFeatureFlags() {
     const flags = {
         SHOW_MY_SCORE: document.getElementById('flagMyScore').checked,
@@ -501,14 +655,11 @@ async function saveFeatureFlags() {
     
     try {
         ScoreDataStore.saveFeatureFlags(flags);
-        
-        // Lambda API에도 저장
         await fetch(EVAL_API_URL, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ _featureFlags: flags })
         });
-        
         SCore.toast('Feature Flags가 저장되었습니다', 'success');
     } catch (e) {
         console.log('서버 저장 실패:', e);
@@ -517,11 +668,6 @@ async function saveFeatureFlags() {
         SCore.setButtonLoading(saveBtn, false);
     }
 }
-
-// 입력 변경 시 매트릭스 업데이트
-document.querySelectorAll('.weight-input').forEach(input => {
-    input.addEventListener('change', updateMatrix);
-});
 </script>
 </body>
 </html>

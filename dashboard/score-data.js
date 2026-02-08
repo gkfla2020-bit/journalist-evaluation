@@ -122,11 +122,16 @@ const ScoreDataStore = {
         // 승인 시 기사에 가점 반영 + 점수 재계산
         if (status === 'APPROVED' && appeal) {
             const updates = {};
-            if (appeal.qualityType === 'EXCLUSIVE') updates.isExclusive = true;
-            if (appeal.qualityType === 'FEATURE') updates.isFeature = true;
-            if (appeal.qualityType === 'S_GRADE') updates.isSGrade = true;
-            if (appeal.qualityType === 'A_GRADE') updates.isAGrade = true;
-            if (appeal.qualityType === 'TOP_ARTICLE') updates.isTopArticle = true;
+            // 동적 품질 가점 항목 매핑
+            const qualityTypeMap = {
+                'EXCLUSIVE': 'isExclusive',
+                'FEATURE': 'isFeature',
+                'S_GRADE': 'isSGrade',
+                'A_GRADE': 'isAGrade',
+                'TOP_ARTICLE': 'isTopArticle'
+            };
+            const fieldId = qualityTypeMap[appeal.qualityType];
+            if (fieldId) updates[fieldId] = true;
             
             // 기존 평가 데이터 가져와서 점수 재계산
             const existingEval = this.getEval(appeal.nsid) || {};
@@ -134,15 +139,17 @@ const ScoreDataStore = {
             
             // 점수 재계산 (score.js의 calculateArticleScore 사용)
             if (typeof calculateArticleScore === 'function') {
-                const scoreResult = calculateArticleScore({
+                const scoreInput = {
                     page: updatedEval.page || appeal.page || 15,
-                    charCount: updatedEval.charCount || appeal.charCount || 0,
-                    isTopArticle: updatedEval.isTopArticle || false,
-                    isExclusive: updatedEval.isExclusive || false,
-                    isFeature: updatedEval.isFeature || false,
-                    isSGrade: updatedEval.isSGrade || false,
-                    isAGrade: updatedEval.isAGrade || false
-                });
+                    charCount: updatedEval.charCount || appeal.charCount || 0
+                };
+                // 동적 품질 가점 항목 로드
+                if (typeof getQualityBonusItems === 'function') {
+                    getQualityBonusItems().forEach(item => {
+                        scoreInput[item.id] = updatedEval[item.id] || false;
+                    });
+                }
+                const scoreResult = calculateArticleScore(scoreInput);
                 updates.calculatedScore = scoreResult.totalScore;
                 updates.baseScore = scoreResult.baseScore;
                 updates.qualityBonus = scoreResult.qualityBonus;
@@ -160,14 +167,45 @@ const ScoreDataStore = {
     // ========== 가중치 설정 ==========
     getConfig() {
         const saved = localStorage.getItem(this.CONFIG_KEY);
-        if (saved) return JSON.parse(saved);
+        if (saved) {
+            const parsed = JSON.parse(saved);
+            // v2 → v3 마이그레이션 (score.js의 함수 사용)
+            if (typeof migrateConfigV2toV3 === 'function' && !Array.isArray(parsed.PAGE_WEIGHTS)) {
+                const migrated = migrateConfigV2toV3(parsed);
+                localStorage.setItem(this.CONFIG_KEY, JSON.stringify(migrated));
+                return migrated;
+            }
+            return parsed;
+        }
+        // 기본값은 score.js의 DEFAULT_CONFIG_V3 사용
+        if (typeof DEFAULT_CONFIG_V3 !== 'undefined') {
+            return JSON.parse(JSON.stringify(DEFAULT_CONFIG_V3));
+        }
         return {
             BASE_SCORE: 10,
             QUALITY_BONUS_CAP: 10,
             MAX_SCORE: 20,
-            PAGE_WEIGHTS: { 1: 1.00, 3: 0.85, 5: 0.70, 10: 0.55, 20: 0.40, 32: 0.30 },
-            LENGTH_WEIGHTS: { 2000: 1.00, 1200: 0.70, 600: 0.55, 0: 0.55 },
-            QUALITY_BONUS: { isTopArticle: 2, isExclusive: 5, isFeature: 5, isSGrade: 3, isAGrade: 2 }
+            PAGE_WEIGHTS: [
+                { min: 1, max: 1, label: '1면', weight: 1.00 },
+                { min: 2, max: 3, label: '2~3면', weight: 0.85 },
+                { min: 4, max: 5, label: '4~5면', weight: 0.70 },
+                { min: 6, max: 10, label: '6~10면', weight: 0.55 },
+                { min: 11, max: 20, label: '11~20면', weight: 0.40 },
+                { min: 21, max: 32, label: '21~32면', weight: 0.30 }
+            ],
+            LENGTH_WEIGHTS: [
+                { min: 2000, max: Infinity, label: '2,000자 이상', weight: 1.00 },
+                { min: 1200, max: 1999, label: '1,200~1,999자', weight: 0.70 },
+                { min: 600, max: 1199, label: '600~1,199자', weight: 0.55 },
+                { min: 0, max: 599, label: '600자 미만', weight: 0.55 }
+            ],
+            QUALITY_BONUS: [
+                { id: 'isTopArticle', label: '면톱', icon: '🏅', points: 2, cssClass: 'top' },
+                { id: 'isExclusive', label: '단독', icon: '⭐', points: 5, cssClass: 'exclusive' },
+                { id: 'isFeature', label: '기획', icon: '💡', points: 5, cssClass: 'feature' },
+                { id: 'isSGrade', label: 'S등급', icon: '🏆', points: 3, cssClass: 'sgrade' },
+                { id: 'isAGrade', label: 'A등급', icon: '🅰️', points: 2, cssClass: 'agrade' }
+            ]
         };
     },
 

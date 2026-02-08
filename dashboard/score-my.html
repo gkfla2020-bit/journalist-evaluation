@@ -363,26 +363,26 @@ function renderScoreInfo() {
     // 기본 점수
     document.getElementById('infoBaseScore').textContent = config.BASE_SCORE;
     
-    // 면 가중치
+    // 면 가중치 (동적)
     const pw = config.PAGE_WEIGHTS;
+    const pwText = pw.map(p => `${p.label}(${p.weight})`).join(', ');
     document.getElementById('infoPageWeights').innerHTML = 
-        `<strong>면 가중치:</strong> 1면(${pw[1]}), 2~3면(${pw[3]}), 4~5면(${pw[5]}), 6~10면(${pw[10]}), 11~20면(${pw[20]}), 21~32면(${pw[32]})`;
+        `<strong>면 가중치:</strong> ${pwText}`;
     
-    // 분량 가중치
+    // 분량 가중치 (동적)
     const lw = config.LENGTH_WEIGHTS;
+    const lwText = lw.map(l => `${l.label}(${l.weight})`).join(', ');
     document.getElementById('infoLengthWeights').innerHTML = 
-        `<strong>분량 가중치:</strong> 2,000자↑(${lw[2000]}), 1,200~1,999자(${lw[1200]}), 600자↓(${lw[600] || lw[0]})`;
+        `<strong>분량 가중치:</strong> ${lwText}`;
     
-    // 품질 가점 (S등급/A등급 포함)
+    // 품질 가점 (동적)
     const qb = config.QUALITY_BONUS;
+    const qbBadges = qb.map(item => 
+        `<span class="badge-quality">${item.icon} ${item.label} +${item.points}</span>`
+    ).join(' ');
     document.getElementById('infoQualityBonus').innerHTML = `
         <small class="text-muted">
-            <strong>품질 가점:</strong> 
-            <span class="badge-quality badge-top">🏅 면톱 +${qb.isTopArticle}</span>
-            <span class="badge-quality badge-exclusive">⭐ 단독 +${qb.isExclusive}</span>
-            <span class="badge-quality badge-feature">💡 기획 +${qb.isFeature}</span>
-            <span class="badge-quality badge-sgrade">🏆 S등급 +${qb.isSGrade}</span>
-            <span class="badge-quality" style="background:#dbeafe;color:#1e40af;">🅰️ A등급 +${qb.isAGrade || 2}</span>
+            <strong>품질 가점:</strong> ${qbBadges}
             (상한 ${config.QUALITY_BONUS_CAP}점)
         </small>
     `;
@@ -428,26 +428,26 @@ function renderMyArticles() {
         const evalData = {
             page: page,
             charCount: charCount,
-            isTopArticle: article._resolvedTopArticle || false,
-            isExclusive: article.isExclusive || false,
-            isFeature: article.isFeature || false,
-            isSGrade: article.isSGrade || false,
-            isAGrade: article.isAGrade || false
+            isTopArticle: article._resolvedTopArticle || false
         };
+        getQualityBonusItems().forEach(item => {
+            if (item.id === 'isTopArticle') return;
+            evalData[item.id] = article[item.id] || false;
+        });
         const score = calculateArticleScore(evalData);
         totalScore += score.totalScore;
         
         const pageClass = page === 1 ? 'page-1' : (page <= 5 ? 'page-main' : 'page-other');
         const scoreClass = score.totalScore >= 10 ? 'score-high' : (score.totalScore >= 5 ? 'score-mid' : 'score-low');
         
-        // 배지 (S등급/A등급은 기자에게 표시하지 않음)
+        // 배지 (동적 품질 가점 항목)
         let badges = '';
         if (article._resolvedTopArticle) badges += `<span class="badge-quality badge-top">${article.is_auto_top ? '🏅 면톱(자동)' : '🏅 면톱'}</span>`;
         if (!article._resolvedTopArticle && article.is_auto_top) badges += '<span class="badge-quality" style="background:#e2e8f0;color:#718096;text-decoration:line-through;">톱(자동해제)</span>';
-        if (article.isExclusive) badges += '<span class="badge-quality badge-exclusive">⭐ 단독</span>';
-        if (article.isFeature) badges += '<span class="badge-quality badge-feature">💡 기획</span>';
-        if (article.isSGrade) badges += '<span class="badge-quality badge-sgrade">🏆 S등급</span>';
-        if (article.isAGrade) badges += '<span class="badge-quality" style="background:#dbeafe;color:#1e40af;">🅰️ A등급</span>';
+        getQualityBonusItems().forEach(item => {
+            if (item.id === 'isTopArticle') return;
+            if (article[item.id]) badges += `<span class="badge-quality">${item.icon} ${item.label}</span>`;
+        });
         
         // 이미 소명 요청한 기사인지 확인
         const myAppeals = ScoreDataStore.getAppeals({ reporterId: session.userId });
@@ -625,15 +625,16 @@ function calculateDeptAverage() {
         if (reporter && reporter.articles) {
             let reporterScore = 0;
             reporter.articles.forEach(a => {
+                const evalMerged = evals[a.nsid] || {};
                 const evalData = {
                     page: a.page || 15,
                     charCount: a.char_count || 0,
-                    isTopArticle: evals[a.nsid]?.isTopArticle !== undefined ? evals[a.nsid].isTopArticle : (a.is_auto_top || false),
-                    isExclusive: evals[a.nsid]?.isExclusive || false,
-                    isFeature: evals[a.nsid]?.isFeature || false,
-                    isSGrade: evals[a.nsid]?.isSGrade || false,
-                    isAGrade: evals[a.nsid]?.isAGrade || false
+                    isTopArticle: evalMerged.isTopArticle !== undefined ? evalMerged.isTopArticle : (a.is_auto_top || false)
                 };
+                getQualityBonusItems().forEach(item => {
+                    if (item.id === 'isTopArticle') return;
+                    evalData[item.id] = evalMerged[item.id] || false;
+                });
                 reporterScore += calculateArticleScore(evalData).totalScore;
             });
             totalDeptScore += reporterScore;
@@ -659,15 +660,16 @@ function calculateDeptRanking() {
         if (reporter && reporter.articles) {
             let reporterScore = 0;
             reporter.articles.forEach(a => {
+                const evalMerged = evals[a.nsid] || {};
                 const evalData = {
                     page: a.page || 15,
                     charCount: a.char_count || 0,
-                    isTopArticle: evals[a.nsid]?.isTopArticle !== undefined ? evals[a.nsid].isTopArticle : (a.is_auto_top || false),
-                    isExclusive: evals[a.nsid]?.isExclusive || false,
-                    isFeature: evals[a.nsid]?.isFeature || false,
-                    isSGrade: evals[a.nsid]?.isSGrade || false,
-                    isAGrade: evals[a.nsid]?.isAGrade || false
+                    isTopArticle: evalMerged.isTopArticle !== undefined ? evalMerged.isTopArticle : (a.is_auto_top || false)
                 };
+                getQualityBonusItems().forEach(item => {
+                    if (item.id === 'isTopArticle') return;
+                    evalData[item.id] = evalMerged[item.id] || false;
+                });
                 reporterScore += calculateArticleScore(evalData).totalScore;
             });
             scores.push({ name: user.name, score: reporterScore });

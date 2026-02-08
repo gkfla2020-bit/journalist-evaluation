@@ -33,6 +33,7 @@
         .quality-btn.feature.active { background: #8b5cf6; border-color: #8b5cf6; }
         .quality-btn.sgrade.active { background: #10b981; border-color: #10b981; }
         .quality-btn.agrade.active { background: #3b82f6; border-color: #3b82f6; }
+        .quality-btn.custom.active { background: #6366f1; border-color: #6366f1; }
         .score-cell { font-weight: 700; font-size: 1.1rem; }
         .score-high { color: #ef4444; }
         .score-mid { color: #f59e0b; }
@@ -192,7 +193,7 @@
     <div class="card-body">
         <table class="table table-bordered table-sm text-center mb-0">
             <thead class="table-dark">
-                <tr><th>면 \ 글자수</th><th>2,000자↑</th><th>1,200~1,999자</th><th>600~1,199자</th><th>600자↓</th></tr>
+                <tr id="matrixHeader"><th>면 \ 글자수</th></tr>
             </thead>
             <tbody id="scoreMatrix"></tbody>
         </table>
@@ -235,35 +236,8 @@ const EVAL_STORAGE_KEY = 'score_article_evals';
 
 // 점수 매트릭스 동적 생성
 function renderScoreMatrix() {
-    const config = getScoreConfig();
-    const pages = [
-        { label: '1면', weight: config.PAGE_WEIGHTS[1] },
-        { label: '2~3면', weight: config.PAGE_WEIGHTS[3] },
-        { label: '4~5면', weight: config.PAGE_WEIGHTS[5] },
-        { label: '6~10면', weight: config.PAGE_WEIGHTS[10] },
-        { label: '11~20면', weight: config.PAGE_WEIGHTS[20] },
-        { label: '21~32면', weight: config.PAGE_WEIGHTS[32] }
-    ];
-    const lengths = [
-        config.LENGTH_WEIGHTS[2000],
-        config.LENGTH_WEIGHTS[1200],
-        config.LENGTH_WEIGHTS[600],
-        config.LENGTH_WEIGHTS[0]
-    ];
-    
-    const tbody = document.getElementById('scoreMatrix');
-    tbody.innerHTML = pages.map(p => {
-        const cells = lengths.map(l => {
-            const score = Math.round(p.weight * l * config.BASE_SCORE * 10) / 10;
-            return `<td>${score}</td>`;
-        }).join('');
-        return `<tr><td class="fw-bold">${p.label}</td>${cells}</tr>`;
-    }).join('');
-    
-    // 품질 가점 정보
-    const qb = config.QUALITY_BONUS;
-    document.getElementById('qualityBonusInfo').innerHTML = 
-        `품질 가점: 면톱 +${qb.isTopArticle}점, 단독/특종 +${qb.isExclusive}점, 기획 +${qb.isFeature}점, S등급 +${qb.isSGrade}점, A등급 +${qb.isAGrade || 2}점 (상한 ${config.QUALITY_BONUS_CAP}점)`;
+    renderScoreMatrixHTML('scoreMatrix');
+    document.getElementById('qualityBonusInfo').innerHTML = getQualityBonusInfoText();
 }
 
 // 초기 로드
@@ -358,13 +332,14 @@ function filterArticles() {
             const resolvedTopArticle = evalMerged.isTopArticle !== undefined 
                 ? evalMerged.isTopArticle 
                 : (a.is_auto_top || false);
-            articles.push({
+            const merged = {
                 ...a,
                 reporter_name: r.name,
                 department: userInfo ? userInfo.department : '-',
                 ...evalMerged,
                 isTopArticle: resolvedTopArticle
-            });
+            };
+            articles.push(merged);
         });
     });
     
@@ -379,12 +354,11 @@ function filterArticles() {
         articles = articles.filter(a => a.reporter_name.toLowerCase().includes(searchInput));
     }
     if (statusFilter) {
+        const qbItems = getQualityBonusItems();
         if (statusFilter === 'PENDING') {
-            // 미평가: 아무 버튼도 안 눌린 것
-            articles = articles.filter(a => a.status !== 'CONFIRMED' && !a.isTopArticle && !a.isExclusive && !a.isFeature && !a.isSGrade && !a.isAGrade);
+            articles = articles.filter(a => a.status !== 'CONFIRMED' && !qbItems.some(item => a[item.id]));
         } else if (statusFilter === 'EVALUATED') {
-            // 평가됨: 버튼 하나라도 눌린 것 (확정 제외)
-            articles = articles.filter(a => a.status !== 'CONFIRMED' && (a.isTopArticle || a.isExclusive || a.isFeature || a.isSGrade || a.isAGrade));
+            articles = articles.filter(a => a.status !== 'CONFIRMED' && qbItems.some(item => a[item.id]));
         } else if (statusFilter === 'CONFIRMED') {
             articles = articles.filter(a => a.status === 'CONFIRMED');
         }
@@ -411,16 +385,11 @@ function renderArticles(articles) {
         const page = article.page || 15;
         const charCount = article.char_count || 0;
         
-        // 점수 계산
-        const evalData = {
-            page: page,
-            charCount: charCount,
-            isTopArticle: article.isTopArticle || false,
-            isExclusive: article.isExclusive || false,
-            isFeature: article.isFeature || false,
-            isSGrade: article.isSGrade || false,
-            isAGrade: article.isAGrade || false
-        };
+        // 점수 계산 (동적 품질 가점 항목)
+        const evalData = { page: page, charCount: charCount };
+        getQualityBonusItems().forEach(item => {
+            evalData[item.id] = article[item.id] || false;
+        });
         const score = calculateArticleScore(evalData);
         
         const pageClass = page === 1 ? 'page-1' : (page <= 5 ? 'page-main' : 'page-other');
@@ -441,23 +410,13 @@ function renderArticles(articles) {
                 <td class="hide-mobile">${charCount.toLocaleString()}</td>
                 <td class="hide-mobile">${score.baseScore}</td>
                 <td>
-                    ${article.is_auto_top ? `<span class="badge bg-warning text-dark me-1" style="font-size:0.7rem;">자동</span>` : ''}
-                    <button class="quality-btn top ${article.isTopArticle ? 'active' : ''}" 
-                            onclick="toggleQuality('${nsid}', 'isTopArticle')" ${isConfirmed ? 'disabled' : ''}>면톱</button>
-                    <button class="quality-btn exclusive ${article.isExclusive ? 'active' : ''}" 
-                            onclick="toggleQuality('${nsid}', 'isExclusive')" ${isConfirmed ? 'disabled' : ''}>단독</button>
-                    <button class="quality-btn feature ${article.isFeature ? 'active' : ''}" 
-                            onclick="toggleQuality('${nsid}', 'isFeature')" ${isConfirmed ? 'disabled' : ''}>기획</button>
-                    <button class="quality-btn sgrade ${article.isSGrade ? 'active' : ''}" 
-                            onclick="toggleQuality('${nsid}', 'isSGrade')" ${isConfirmed ? 'disabled' : ''}>S등급</button>
-                    <button class="quality-btn agrade ${article.isAGrade ? 'active' : ''}" 
-                            onclick="toggleQuality('${nsid}', 'isAGrade')" ${isConfirmed ? 'disabled' : ''}>A등급</button>
+                    ${renderQualityButtons(nsid, evalData, isConfirmed, 'toggleQuality', article)}
                     ${score.qualityBonus > 0 ? `<span class="badge bg-success ms-1">+${score.qualityBonus}</span>` : ''}
                 </td>
                 <td class="score-cell ${scoreClass}">${score.totalScore}</td>
                 <td>
-                    <span class="badge ${isConfirmed ? 'bg-success' : (article.isTopArticle || article.isExclusive || article.isFeature || article.isSGrade || article.isAGrade ? 'bg-info' : 'bg-secondary')}">
-                        ${isConfirmed ? '확정' : (article.isTopArticle || article.isExclusive || article.isFeature || article.isSGrade || article.isAGrade ? '평가' : '-')}
+                    <span class="badge ${isConfirmed ? 'bg-success' : (hasAnyQualityBonus(evalData) ? 'bg-info' : 'bg-secondary')}">
+                        ${isConfirmed ? '확정' : (hasAnyQualityBonus(evalData) ? '평가' : '-')}
                     </span>
                 </td>
             </tr>
@@ -470,20 +429,17 @@ function renderArticles(articles) {
 // 통계 업데이트
 function updateStats(articles) {
     const confirmed = articles.filter(a => a.status === 'CONFIRMED').length;
-    const evaluated = articles.filter(a => a.status !== 'CONFIRMED' && (a.isTopArticle || a.isExclusive || a.isFeature || a.isSGrade || a.isAGrade)).length;
+    const evaluated = articles.filter(a => {
+        if (a.status === 'CONFIRMED') return false;
+        const items = getQualityBonusItems();
+        return items.some(item => a[item.id]);
+    }).length;
     const pending = articles.length - confirmed - evaluated;
     
     let totalScore = 0;
     articles.forEach(a => {
-        const evalData = {
-            page: a.page || 15,
-            charCount: a.char_count || 0,
-            isTopArticle: a.isTopArticle || false,
-            isExclusive: a.isExclusive || false,
-            isFeature: a.isFeature || false,
-            isSGrade: a.isSGrade || false,
-            isAGrade: a.isAGrade || false
-        };
+        const evalData = { page: a.page || 15, charCount: a.char_count || 0 };
+        getQualityBonusItems().forEach(item => { evalData[item.id] = a[item.id] || false; });
         totalScore += calculateArticleScore(evalData).totalScore;
     });
     
