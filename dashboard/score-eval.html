@@ -325,7 +325,7 @@ function filterArticles() {
             const merged = {
                 ...a,
                 reporter_name: r.name,
-                department: userInfo ? userInfo.department : '-',
+                department: SCore.getArticleDept(r.name, a.pub_date, usersData),
                 ...evalMerged,
                 isTopArticle: resolvedTopArticle
             };

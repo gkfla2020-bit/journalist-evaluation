@@ -2303,34 +2303,64 @@
     
     <h5 class="mt-4 mb-3">Q2. 기자 또는 부장이 부서가 바뀌면 어떻게 되나요?</h5>
     <div class="info-card mb-3">
-        <h5><i class="bi bi-arrow-left-right me-2"></i>부서 이동 처리 방법</h5>
-        <p>부서 이동은 <strong>관리자(Admin)</strong>가 사원관리 페이지에서 처리합니다.</p>
-        <ul class="mb-0 mt-2">
-            <li><strong>사원관리 → 해당 사원 "수정" → 부서 변경 → 변경사항 저장</strong></li>
-        </ul>
+        <h5><i class="bi bi-arrow-left-right me-2"></i>부서 이동 처리 절차</h5>
+        <p><strong>관리자(Admin) → 사원관리 → 해당 사원 "수정" → 부서 변경 → 변경사항 저장</strong></p>
+        <p>부서를 변경하면 시스템이 자동으로 <strong>부서 이동 이력(dept_history)</strong>을 기록합니다. 이를 통해 기사가 작성된 시점의 부서를 정확히 추적합니다.</p>
     </div>
-    <div class="info-card green mb-3">
-        <h5><i class="bi bi-newspaper me-2"></i>기사 데이터는 어떻게 되나요?</h5>
-        <ul class="mb-0">
-            <li><strong>이동 전 기사</strong>: 원래 부서에 그대로 남아 있습니다. 기사 데이터(data.json)는 XML 원본 기준이므로, 기사가 게재된 시점의 부서 소속으로 기록됩니다.</li>
-            <li><strong>이동 후 기사</strong>: 새 부서 소속으로 자동 집계됩니다. 다음 XML 동기화부터 새 부서명으로 기사가 들어옵니다.</li>
-            <li><strong>기자 목록/상세</strong>: 부서 변경 후에는 새 부서의 기자 목록에 표시됩니다. 단, 이전 부서에서 작성한 기사도 해당 기자의 상세 페이지에서 모두 확인 가능합니다.</li>
-        </ul>
+    
+    <div class="alert-box success mt-3 mb-3">
+        <i class="bi bi-check-circle"></i>
+        <div>
+            <strong>부서 이동 이력 자동 관리</strong><br>
+            사원관리에서 부서를 변경하면 users.json에 <code>dept_history</code> 배열이 자동 생성됩니다. 예: 경제부(12/1~) → 금융부(2/11~). 기사 평가, 기자 목록, 부서 대시보드 등에서 기사 게재일 기준으로 해당 시점의 부서를 자동 판별합니다.
+        </div>
     </div>
-    <div class="info-card orange mb-3">
-        <h5><i class="bi bi-calculator me-2"></i>점수와 평가는 어떻게 되나요?</h5>
-        <ul class="mb-0">
-            <li><strong>기사 평가(품질 가점)</strong>: 기사별로 저장되므로 부서 이동과 무관하게 유지됩니다.</li>
-            <li><strong>가감점</strong>: 등록 시점의 부서로 기록됩니다. 이동 후 새로 등록하는 가감점은 새 부서로 기록됩니다.</li>
-            <li><strong>소명</strong>: 제출 시점의 부서로 기록됩니다.</li>
-            <li><strong>부서 대시보드</strong>: 이동 후에는 새 부서 대시보드에서 해당 기자의 전체 기사가 집계됩니다.</li>
-        </ul>
-    </div>
-    <div class="alert-box warning mt-3">
+    
+    <table class="custom-table">
+        <thead>
+            <tr><th>항목</th><th>부서 이동 후 동작</th></tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><strong>기자 목록</strong></td>
+                <td>새 부서 목록에 표시됨. 부서 필터 시 해당 부서에서 작성한 기사만 집계 (이전 부서 기사는 이전 부서에 남음)</td>
+            </tr>
+            <tr>
+                <td><strong>부서 대시보드</strong></td>
+                <td>기사 게재일 기준으로 부서를 판별하여 정확히 분리 집계. 이전 부서 기사는 이전 부서에, 새 부서 기사는 새 부서에 표시</td>
+            </tr>
+            <tr>
+                <td><strong>기사 평가</strong></td>
+                <td>기사별 평가(품질 가점, 확정)는 기사 ID(nsid) 기준이므로 유지됨. 부서 필터 시 기사 게재일 기준 부서로 표시</td>
+            </tr>
+            <tr>
+                <td><strong>가감점</strong></td>
+                <td>이미 등록된 가감점은 등록 시점의 부서로 기록되어 변하지 않음. 새로 등록하면 새 부서로 기록</td>
+            </tr>
+            <tr>
+                <td><strong>소명</strong></td>
+                <td>제출 시점의 부서로 기록됨. 부장 이동 시 이전 부서 미처리 소명은 새 부장이 처리</td>
+            </tr>
+        </tbody>
+    </table>
+    
+    <div class="alert-box warning mt-3 mb-3">
         <i class="bi bi-exclamation-triangle"></i>
         <div>
-            <strong>부장(Manager) 부서 이동 시 주의</strong><br>
-            부장이 부서를 이동하면 로그인 세션의 부서 정보가 바뀌므로, <strong>로그아웃 후 재로그인</strong>이 필요합니다. 재로그인하면 새 부서의 기사만 관리할 수 있게 됩니다. 이전 부서의 평가 데이터는 새 부장이 이어서 관리합니다.
+            <strong>부장(Manager) 부서 이동 시 주의사항</strong><br>
+            ① 부서 변경 후 반드시 <strong>로그아웃 → 재로그인</strong> 필요 (세션에 부서 정보가 저장되어 있음)<br>
+            ② 이전 부서의 <strong>미처리 소명</strong>이 있다면 처리 후 이동하거나, 새 부장에게 인수인계<br>
+            ③ 이전 부서의 <strong>미확정 기사 평가</strong>도 새 부장이 이어서 처리해야 함
+        </div>
+    </div>
+    
+    <div class="alert-box info mt-3">
+        <i class="bi bi-lightbulb"></i>
+        <div>
+            <strong>권장 부서 이동 절차</strong><br>
+            ① 이동 전: 해당 기자의 미처리 소명/미확정 평가를 모두 처리<br>
+            ② 관리자가 사원관리에서 부서 변경 (이력 자동 기록)<br>
+            ③ 해당 사용자 로그아웃 → 재로그인
         </div>
     </div>
 </section>

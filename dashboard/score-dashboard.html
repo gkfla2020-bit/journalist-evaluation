@@ -360,12 +360,23 @@ function renderDeptTabs() {
 }
 
 function renderDashboard() {
-    // 부서 기자 필터
-    const deptUsers = usersData.filter(u => !targetDept || u.department === targetDept);
-    const deptUserNames = new Set(deptUsers.map(u => u.name));
-    
-    // 부서 기자들의 기사만 필터
-    const deptReporters = allData.reporters.filter(r => deptUserNames.has(r.name));
+    // 부서 기자 필터 (dept_history 기반)
+    let deptReporters;
+    if (!targetDept) {
+        // 전체 부서
+        deptReporters = allData.reporters;
+    } else {
+        // 특정 부서: 기사별로 해당 날짜의 부서를 확인
+        deptReporters = allData.reporters.map(r => {
+            const user = usersData.find(u => u.name === r.name);
+            // dept_history가 있으면 기사별 부서 확인, 없으면 현재 부서로 판단
+            const filteredArticles = r.articles.filter(a => {
+                const articleDept = SCore.getDeptAtDate(user, a.pub_date);
+                return articleDept === targetDept;
+            });
+            return { ...r, articles: filteredArticles, article_count: filteredArticles.length };
+        }).filter(r => r.article_count > 0);
+    }
     
     // 월별 필터 적용된 기사 목록 생성
     const filteredReporters = deptReporters.map(r => {

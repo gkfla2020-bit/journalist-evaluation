@@ -426,6 +426,16 @@ function saveUserEdit() {
     // allUsers에서 해당 사용자 찾아서 수정
     const user = allUsers.find(u => u.id === userId);
     if (user) {
+        // 부서가 변경된 경우 dept_history에 이력 추가
+        if (user.department !== newDept) {
+            if (!user.dept_history) {
+                // 최초 이력: 기존 부서를 시스템 시작일부터로 기록
+                user.dept_history = [{ dept: user.department, from: '2025-12-01' }];
+            }
+            // 새 부서 이력 추가 (오늘부터)
+            const today = new Date().toISOString().slice(0, 10);
+            user.dept_history.push({ dept: newDept, from: today });
+        }
         user.department = newDept;
         user.position = newPosition;
         user.role = newRole;

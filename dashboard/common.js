@@ -255,6 +255,42 @@ const SCore = {
     // ===== 숫자 포맷 =====
     formatNumber: function(num) {
         return num.toLocaleString('ko-KR');
+    },
+
+    // ===== 부서 이동 이력 기반 부서 조회 =====
+    /**
+     * 특정 날짜 기준으로 해당 사용자의 부서를 반환
+     * dept_history가 있으면 날짜 기준으로 찾고, 없으면 현재 department 반환
+     * @param {object} user - users.json의 사용자 객체
+     * @param {string} date - 'YYYY-MM-DD' 형식
+     * @returns {string} 해당 시점의 부서명
+     */
+    getDeptAtDate: function(user, date) {
+        if (!user) return '-';
+        if (!user.dept_history || user.dept_history.length === 0) {
+            return user.department || '-';
+        }
+        // dept_history: [{dept: '경제부', from: '2025-12-01'}, {dept: '금융부', from: '2026-02-01'}]
+        // from 기준 내림차순 정렬 후, date >= from인 첫 번째 항목
+        const sorted = [...user.dept_history].sort((a, b) => b.from.localeCompare(a.from));
+        for (const h of sorted) {
+            if (date >= h.from) return h.dept;
+        }
+        // 모든 이력보다 이전 날짜면 가장 오래된 이력의 부서
+        return user.dept_history[0].dept || user.department || '-';
+    },
+
+    /**
+     * 기사 목록에 부서 정보를 매핑 (기사 날짜 기준)
+     * @param {string} reporterName - 기자명
+     * @param {string} articleDate - 기사 게재일 'YYYY-MM-DD'
+     * @param {Array} usersData - users.json 배열
+     * @returns {string} 해당 시점의 부서명
+     */
+    getArticleDept: function(reporterName, articleDate, usersData) {
+        const user = usersData.find(u => u.name === reporterName);
+        if (!user) return '-';
+        return this.getDeptAtDate(user, articleDate);
     }
 };
 

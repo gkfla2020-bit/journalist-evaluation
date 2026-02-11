@@ -486,20 +486,37 @@ function getFilteredData(searchKeyword = '') {
     });
     
     let result = Object.values(map).map(r => {
-        // 사용자 데이터에서 부서 찾기
+        // 사용자 데이터에서 현재 부서 찾기
         const userInfo = usersData.find(u => u.name === r.name);
         return {
             name: r.name,
             department: userInfo ? userInfo.department : '-',
             article_count: r.articles.length,
             total_chars: r.total_chars,
-            avg_chars: r.articles.length > 0 ? Math.round(r.total_chars / r.articles.length) : 0
+            avg_chars: r.articles.length > 0 ? Math.round(r.total_chars / r.articles.length) : 0,
+            _articles: r.articles,
+            _userInfo: userInfo
         };
     });
     
-    // 부서 필터
+    // 부서 필터 (dept_history 기반: 해당 부서에서 작성한 기사만 집계)
     if (selectedDept) {
-        result = result.filter(r => r.department === selectedDept);
+        result = result.map(r => {
+            if (!r._userInfo || !r._userInfo.dept_history || r._userInfo.dept_history.length === 0) {
+                // dept_history 없으면 현재 부서로 판단
+                return r.department === selectedDept ? r : null;
+            }
+            // dept_history 있으면 기사별로 해당 부서 기사만 필터
+            const deptArticles = r._articles.filter(a => SCore.getDeptAtDate(r._userInfo, a.pub_date) === selectedDept);
+            if (deptArticles.length === 0) return null;
+            return {
+                ...r,
+                article_count: deptArticles.length,
+                total_chars: deptArticles.reduce((s, a) => s + (a.char_count || 0), 0),
+                avg_chars: Math.round(deptArticles.reduce((s, a) => s + (a.char_count || 0), 0) / deptArticles.length),
+                _articles: deptArticles
+            };
+        }).filter(Boolean);
     }
     
     // 검색
@@ -533,7 +550,8 @@ function renderTable(reporters) {
     
     // 1단계: 각 기자의 절대점수 계산
     const reporterScores = reporters.map(r => {
-        const reporterArticles = getReporterArticles(r.name);
+        // 부서 필터 적용된 기사가 있으면 그걸 사용, 없으면 전체 기사
+        const reporterArticles = r._articles || getReporterArticles(r.name);
         let totalScore = 0;
         let topCount = 0, exclusiveCount = 0, planCount = 0;
         reporterArticles.forEach(article => {
@@ -732,7 +750,7 @@ function exportExcel() {
     
     // 절대점수 계산
     const scored = reporters.map(r => {
-        const reporterArticles = getReporterArticles(r.name);
+        const reporterArticles = r._articles || getReporterArticles(r.name);
         let totalScore = 0, topCount = 0, exclusiveCount = 0, planCount = 0;
         reporterArticles.forEach(article => {
             const evalData = evals[article.nsid] || {};
