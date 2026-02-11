@@ -140,11 +140,14 @@
                 <input type="text" class="form-control" id="searchInput" placeholder="기자명..." oninput="filterPenalties()">
             </div>
             <div class="col-md-4 text-end">
-                <button class="btn btn-danger me-2" onclick="openCreateModal('DEDUCTION')">
-                    <i class="bi bi-dash-circle me-1"></i>감점 등록
+                <button class="btn btn-primary me-2" onclick="openInfoReportModal()">
+                    <i class="bi bi-journal-text me-1"></i>정보보고
                 </button>
-                <button class="btn btn-success" onclick="openCreateModal('BONUS')">
+                <button class="btn btn-success me-2" onclick="openCreateModal('BONUS')">
                     <i class="bi bi-plus-circle me-1"></i>가점 등록
+                </button>
+                <button class="btn btn-danger" onclick="openCreateModal('DEDUCTION')">
+                    <i class="bi bi-dash-circle me-1"></i>감점 등록
                 </button>
             </div>
         </div>
@@ -198,11 +201,11 @@
                 <div class="mb-3">
                     <label class="form-label fw-bold">구분 *</label>
                     <div class="type-toggle">
-                        <button type="button" class="toggle-btn" id="toggleDeduction" onclick="setCategory('DEDUCTION')">
-                            <i class="bi bi-dash-circle me-1"></i>감점
-                        </button>
                         <button type="button" class="toggle-btn" id="toggleBonus" onclick="setCategory('BONUS')">
                             <i class="bi bi-plus-circle me-1"></i>가점
+                        </button>
+                        <button type="button" class="toggle-btn" id="toggleDeduction" onclick="setCategory('DEDUCTION')">
+                            <i class="bi bi-dash-circle me-1"></i>감점
                         </button>
                     </div>
                 </div>
@@ -276,6 +279,55 @@
     </div>
 </div>
 
+<!-- 정보보고 등록 모달 -->
+<div class="modal fade" id="infoReportModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title"><i class="bi bi-journal-text me-2"></i>정보보고 가점 등록</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <label class="form-label fw-bold">대상 기자 *</label>
+                    <select class="form-select" id="irReporterSelect" required>
+                        <option value="">기자 선택...</option>
+                    </select>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label fw-bold">등급 *</label>
+                    <div class="d-flex flex-wrap gap-2" id="irGradeButtons">
+                        <button type="button" class="btn btn-outline-primary" onclick="setIRGrade(10)">10점</button>
+                        <button type="button" class="btn btn-outline-primary" onclick="setIRGrade(8)">8점</button>
+                        <button type="button" class="btn btn-outline-primary" onclick="setIRGrade(6)">6점</button>
+                        <button type="button" class="btn btn-outline-primary" onclick="setIRGrade(4)">4점</button>
+                        <button type="button" class="btn btn-outline-primary" onclick="setIRGrade(2)">2점</button>
+                    </div>
+                    <div class="form-text text-muted mt-1">핵심 정보보고 시 +2점 추가 가점</div>
+                    <div class="form-check mt-2">
+                        <input class="form-check-input" type="checkbox" id="irCoreCheck">
+                        <label class="form-check-label" for="irCoreCheck">핵심 정보보고 (+2점 추가)</label>
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label fw-bold">적용월</label>
+                    <input type="month" class="form-control" id="irStartMonth">
+                </div>
+                <div class="mb-3">
+                    <label class="form-label fw-bold">사유 *</label>
+                    <textarea class="form-control" id="irReason" rows="3" placeholder="정보보고 내용을 입력하세요..." required></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">취소</button>
+                <button type="button" class="btn btn-primary" onclick="createInfoReport()">
+                    <i class="bi bi-check-lg me-1"></i>등록
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script src="common.js"></script>
 <script src="score.js"></script>
@@ -306,6 +358,8 @@ let usersData = [];
 let createModal, deleteModal;
 let pendingDeleteId = null;
 let currentCategory = 'DEDUCTION'; // DEDUCTION or BONUS
+let irSelectedGrade = 0;
+let infoReportModal;
 
 // 감점 예시 항목
 const DEDUCTION_PRESETS = [
@@ -318,7 +372,9 @@ const DEDUCTION_PRESETS = [
 const BONUS_PRESETS = [
     { name: '우수기사 선정', score: 3, duration: 1 },
     { name: '특종 보도', score: 5, duration: 1 },
-    { name: '기획기사 우수', score: 3, duration: 1 }
+    { name: '기획기사 우수', score: 3, duration: 1 },
+    { name: '정보보고', score: 2, duration: 1 },
+    { name: '정보보고(핵심)', score: 4, duration: 1 }
 ];
 
 // 카테고리 설정 (가점/감점 토글)
@@ -377,6 +433,7 @@ function applyPreset(name, score, duration) {
 document.addEventListener('DOMContentLoaded', async () => {
     createModal = new bootstrap.Modal(document.getElementById('createModal'));
     deleteModal = new bootstrap.Modal(document.getElementById('deleteModal'));
+    infoReportModal = new bootstrap.Modal(document.getElementById('infoReportModal'));
     
     document.getElementById('penaltyList').innerHTML = '<tr><td colspan="11" class="text-center py-4 text-muted">등록된 항목이 없습니다</td></tr>';
     
@@ -663,6 +720,89 @@ function confirmDelete() {
         SCore.toast('항목이 삭제되었습니다.', 'success');
         pendingDeleteId = null;
     }
+}
+
+// 정보보고 모달 열기
+function openInfoReportModal() {
+    document.getElementById('irReporterSelect').innerHTML = document.getElementById('reporterSelect').innerHTML;
+    document.getElementById('irReporterSelect').value = '';
+    document.getElementById('irReason').value = '';
+    document.getElementById('irCoreCheck').checked = false;
+    irSelectedGrade = 0;
+    document.querySelectorAll('#irGradeButtons .btn').forEach(b => {
+        b.classList.remove('btn-primary');
+        b.classList.add('btn-outline-primary');
+    });
+    const now = new Date();
+    document.getElementById('irStartMonth').value = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+    
+    const currentDept = document.getElementById('deptFilter').value;
+    const select = document.getElementById('irReporterSelect');
+    select.innerHTML = document.getElementById('reporterSelect').innerHTML;
+    
+    infoReportModal.show();
+}
+
+// 정보보고 등급 선택
+function setIRGrade(grade) {
+    irSelectedGrade = grade;
+    document.querySelectorAll('#irGradeButtons .btn').forEach(b => {
+        b.classList.remove('btn-primary');
+        b.classList.add('btn-outline-primary');
+    });
+    event.target.classList.remove('btn-outline-primary');
+    event.target.classList.add('btn-primary');
+}
+
+// 정보보고 등록
+function createInfoReport() {
+    const select = document.getElementById('irReporterSelect');
+    const reporterId = select.value;
+    const selectedOption = select.options[select.selectedIndex];
+    const reporterName = selectedOption?.text || '';
+    const department = selectedOption?.dataset?.department || '';
+    const startMonth = document.getElementById('irStartMonth').value;
+    const reason = document.getElementById('irReason').value.trim();
+    const isCore = document.getElementById('irCoreCheck').checked;
+    
+    if (!reporterId || !irSelectedGrade || !reason) {
+        SCore.toast('기자, 등급, 사유를 모두 입력해주세요.', 'warning');
+        return;
+    }
+    
+    const totalScore = isCore ? irSelectedGrade + 2 : irSelectedGrade;
+    const itemName = isCore ? `정보보고(핵심) ${irSelectedGrade}점+2점` : `정보보고 ${irSelectedGrade}점`;
+    
+    const penalties = JSON.parse(localStorage.getItem(ScoreDataStore.PENALTIES_KEY) || '[]');
+    const penalty = {
+        id: 'PEN-' + Date.now(),
+        reporterId,
+        reporterName,
+        department,
+        category: 'BONUS',
+        itemName,
+        type: 'INFO_REPORT',
+        score: totalScore,
+        durationMonths: 1,
+        startMonth,
+        endMonth: startMonth,
+        reason,
+        status: 'ACTIVE',
+        createdAt: new Date().toISOString(),
+        createdBy: session.userId || session.id,
+        createdByName: session.name
+    };
+    
+    penalties.push(penalty);
+    localStorage.setItem(ScoreDataStore.PENALTIES_KEY, JSON.stringify(penalties));
+    
+    if (ScoreDataStore.SYNC_ENABLED) {
+        ScoreDataStore.syncToServer('penalty', penalty.id, penalty);
+    }
+    
+    infoReportModal.hide();
+    filterPenalties();
+    SCore.toast(`${reporterName} 기자에게 정보보고 가점이 등록되었습니다. (+${totalScore}점)`, 'success');
 }
 
 function escapeHtml(t) {
