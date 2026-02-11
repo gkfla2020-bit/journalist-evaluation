@@ -276,7 +276,7 @@
     <div class="sidebar-logo">
         <i class="bi bi-bar-chart-fill"></i> S-CORE
     </div>
-    <div class="sidebar-subtitle">기자 지면 기여도 평가 시스템<br>사용 설명서 v2.5</div>
+    <div class="sidebar-subtitle">기자 지면 기여도 평가 시스템<br>사용 설명서 v3.0</div>
     
     <div class="nav-section">시작하기</div>
     <a href="#overview" class="nav-link"><i class="bi bi-house"></i> 시스템 개요</a>
@@ -322,7 +322,7 @@
 <!-- 페이지 헤더 -->
 <div class="page-header">
     <h1><i class="bi bi-book me-2"></i>S-CORE 사용 설명서</h1>
-    <p>서울경제신문 기자 지면 기여도 평가 시스템 완벽 가이드 | v2.5 | 최종 업데이트: 2026년 2월 8일</p>
+    <p>서울경제신문 기자 지면 기여도 평가 시스템 완벽 가이드 | v3.0 | 최종 업데이트: 2026년 2월 11일</p>
 </div>
 
 <!-- ==================== 시스템 개요 ==================== -->
@@ -2223,6 +2223,35 @@
     
     <p>S-CORE 시스템의 주요 변경 사항을 기록합니다.</p>
     
+    <h5 class="mt-4 mb-3">v3.0 (2026년 2월 11일)</h5>
+    <div class="info-card green mb-3">
+        <h5><i class="bi bi-plus-circle me-2"></i>신규 기능</h5>
+        <ul class="mb-0">
+            <li><strong>절대평가/상대평가 전환</strong>: 기자 목록에서 절대점수(입력점수)와 상대점수(표준편차 기반 정규화, 평균 85 / 표준편차 7.5)를 동시에 표시</li>
+            <li><strong>부서 가중치 (가군/나군)</strong>: 가중치 설정 페이지에서 부서를 가군(1.0)/나군(1.1)으로 분류, 클릭으로 이동 가능. 최종점수 = 상대점수 × 부서가중치</li>
+            <li><strong>정량평가 7대 항목 표시</strong>: 기자 목록에 조회수, 단독기사, 면톱기사, 기획기사, 서경기자상, 정보보고, 기명온라인 칸 추가 (데이터 연동 예정)</li>
+            <li><strong>정보보고 전용 등록</strong>: 가감점 관리에 파란색 '정보보고' 버튼 추가, 6단계 등급(10/8/6/4/2점) + 핵심 정보보고 가점(+2점) 전용 모달</li>
+            <li><strong>가감점 버튼 순서 변경</strong>: 가점 등록 → 감점 등록 순서로 변경 (모달 토글 포함)</li>
+        </ul>
+    </div>
+    <div class="info-card blue mb-3">
+        <h5><i class="bi bi-arrow-up-circle me-2"></i>개선 사항</h5>
+        <ul class="mb-0">
+            <li><strong>부장 페이지 깜빡임 수정</strong>: 부장 로그인 시 admin 전용 메뉴(대시보드, 가중치설정, 사원관리, 부서관리)가 잠깐 보이는 현상 해결</li>
+            <li><strong>엑셀 내보내기 강화</strong>: 절대점수, 상대점수, 부서가중치(군 표시), 최종점수, 7대 항목 + 평균/표준편차 행 포함</li>
+            <li><strong>기자 목록 정렬</strong>: 최종점수 기준 내림차순 정렬로 변경</li>
+        </ul>
+    </div>
+    <div class="info-card mb-3">
+        <h5><i class="bi bi-file-earmark-code me-2"></i>변경 파일</h5>
+        <ul class="mb-0">
+            <li>list.html - 절대/상대점수, 7대 항목, 가중치(군) 표시, 엑셀 강화</li>
+            <li>score-config.html - 부서 가중치(가군/나군) 설정 카드 추가</li>
+            <li>score-penalties.html - 정보보고 버튼/모달, 버튼 순서 변경</li>
+            <li>list/score-eval/score-penalties/score-dashboard/score-appeals.html - nav 깜빡임 수정</li>
+        </ul>
+    </div>
+
     <h5 class="mt-4 mb-3">v2.6 (2026년 2월 8일)</h5>
     <div class="info-card green mb-3">
         <h5><i class="bi bi-plus-circle me-2"></i>신규 기능</h5>
@@ -2584,8 +2613,8 @@
             </tr>
             <tr>
                 <td><strong>v3.0</strong></td>
-                <td>월간 리포트 자동 생성 및 엑셀 내보내기</td>
-                <td><span class="badge bg-warning text-dark">계획중</span></td>
+                <td>절대/상대평가 전환, 부서 가중치(가군/나군), 정량평가 7대 항목, 정보보고 등록</td>
+                <td><span class="badge bg-success">완료</span></td>
             </tr>
             <tr>
                 <td><strong>v4.0</strong></td>

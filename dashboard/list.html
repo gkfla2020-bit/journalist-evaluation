@@ -61,15 +61,15 @@
 
 <!-- 네비게이션 -->
 <div class="nav-menu" id="navMenu">
-    <a href="home.html" id="nav-home"><i class="bi bi-house-door me-1"></i>대시보드</a>
+    <a href="home.html" id="nav-home" style="display:none"><i class="bi bi-house-door me-1"></i>대시보드</a>
     <a href="score-dashboard.html"><i class="bi bi-speedometer2 me-1"></i>부서 대시보드</a>
     <a href="list.html" class="active"><i class="bi bi-people me-1"></i>기자 목록</a>
     <a href="score-eval.html"><i class="bi bi-clipboard-check me-1"></i>기사 평가</a>
     <a href="score-penalties.html"><i class="bi bi-plus-slash-minus me-1"></i>가감점 관리</a>
     <a href="score-appeals.html"><i class="bi bi-chat-left-text me-1"></i>소명 관리</a>
-    <a href="score-config.html" id="nav-config"><i class="bi bi-sliders me-1"></i>가중치 설정</a>
-    <a href="admin.html" id="nav-admin"><i class="bi bi-person-gear me-1"></i>사원 관리</a>
-    <a href="dept-manage.html" id="nav-dept"><i class="bi bi-building me-1"></i>부서 관리</a>
+    <a href="score-config.html" id="nav-config" style="display:none"><i class="bi bi-sliders me-1"></i>가중치 설정</a>
+    <a href="admin.html" id="nav-admin" style="display:none"><i class="bi bi-person-gear me-1"></i>사원 관리</a>
+    <a href="dept-manage.html" id="nav-dept" style="display:none"><i class="bi bi-building me-1"></i>부서 관리</a>
 </div>
 
 <!-- 부서 필터 (admin만 표시) -->
@@ -159,18 +159,26 @@
             <table class="table table-hover mb-0">
                 <thead class="table-light">
                     <tr>
-                        <th style="width:5%">#</th>
-                        <th style="width:12%">기자명</th>
-                        <th style="width:12%" id="deptCol" class="hide-mobile">부서</th>
-                        <th style="width:10%">기사 수</th>
-                        <th style="width:12%" class="hide-mobile">총 글자수</th>
-                        <th style="width:12%" class="hide-mobile">평균 글자수</th>
-                        <th style="width:12%" id="scoreHeader">총점</th>
-                        <th style="width:10%">상세</th>
+                        <th style="width:4%">#</th>
+                        <th style="width:7%">기자명</th>
+                        <th style="width:7%" id="deptCol" class="hide-mobile">부서</th>
+                        <th style="width:5%">기사수</th>
+                        <th style="width:5%" class="hide-mobile">조회수</th>
+                        <th style="width:5%" class="hide-mobile">단독</th>
+                        <th style="width:5%" class="hide-mobile">면톱</th>
+                        <th style="width:5%" class="hide-mobile">기획</th>
+                        <th style="width:5%" class="hide-mobile">기자상</th>
+                        <th style="width:5%" class="hide-mobile">정보보고</th>
+                        <th style="width:5%" class="hide-mobile">기명온라인</th>
+                        <th style="width:7%" id="scoreHeader">절대점수</th>
+                        <th style="width:7%">상대점수</th>
+                        <th style="width:9%">가중치</th>
+                        <th style="width:8%">최종점수</th>
+                        <th style="width:5%">상세</th>
                     </tr>
                 </thead>
                 <tbody id="reporterList">
-                    <tr><td colspan="8" class="text-center py-4 text-muted">데이터 로딩중...</td></tr>
+                    <tr><td colspan="16" class="text-center py-4 text-muted">데이터 로딩중...</td></tr>
                 </tbody>
             </table>
         </div>
@@ -190,6 +198,7 @@
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>
 <script src="common.js"></script>
+<script src="config.js"></script>
 <script src="score.js"></script>
 <script src="score-data.js"></script>
 <script>
@@ -219,12 +228,12 @@ if (session.role !== 'admin' && session.role !== 'manager') {
 
 document.getElementById('userInfo').textContent = session.role === 'admin' ? '관리자님' : `${session.name}님`;
 
-// Manager는 대시보드, 가중치설정, 사원관리 숨김
-if (session.role === 'manager') {
-    document.getElementById('nav-home').style.display = 'none';
-    document.getElementById('nav-config').style.display = 'none';
-    document.getElementById('nav-admin').style.display = 'none';
-    document.getElementById('nav-dept').style.display = 'none';
+// Admin만 대시보드, 가중치설정, 사원관리, 부서관리 표시
+if (session.role === 'admin') {
+    document.getElementById('nav-home').style.display = '';
+    document.getElementById('nav-config').style.display = '';
+    document.getElementById('nav-admin').style.display = '';
+    document.getElementById('nav-dept').style.display = '';
 }
 
 function logout() {
@@ -239,7 +248,7 @@ let currentPeriod = 'monthly';
 let selectedDate = new Date();
 let selectedDept = '';
 
-const EVAL_API_URL = 'https://yyffk7tpfey7s2kv7hoitskxb40aljqw.lambda-url.us-east-1.on.aws/';
+const EVAL_API_URL = APP_CONFIG.EVAL_API_URL;
 
 // URL에서 부서 파라미터 확인
 const urlParams = new URLSearchParams(window.location.search);
@@ -309,7 +318,7 @@ function filterByDept() {
 // 데이터 로드
 async function loadData() {
     SCore.showLoading('기자 목록을 불러오는 중...');
-    SCore.showInlineLoading('reporterList', 7);
+    SCore.showInlineLoading('reporterList', 16);
     
     try {
         const res = await fetch('data.json?t=' + Date.now());
@@ -331,7 +340,7 @@ async function loadData() {
             title: '기자 목록을 불러올 수 없습니다',
             message: SCore.getErrorMessage(err),
             retryCallback: 'loadData()',
-            colspan: 8
+            colspan: 16
         });
     } finally {
         SCore.hideLoading();
@@ -414,22 +423,22 @@ function updateView(searchKeyword = null) {
     document.getElementById('stat-evaluated').textContent = evaluatedCount;
     
     let periodText = `${selectedDate.getFullYear()}년`;
-    let scoreHeaderText = `총점 (${selectedDate.getFullYear()}년)`;
+    let scoreHeaderText = `절대점수 (${selectedDate.getFullYear()}년)`;
     if (currentPeriod === 'daily') {
         periodText = formatDate(selectedDate).slice(5);
-        scoreHeaderText = `총점 (${formatDate(selectedDate).slice(5)})`;
+        scoreHeaderText = `절대점수 (${formatDate(selectedDate).slice(5)})`;
     }
     else if (currentPeriod === 'weekly') {
         const ws = getWeekStart(selectedDate);
         const we = new Date(ws); we.setDate(ws.getDate() + 6);
         periodText = `${formatDate(ws).slice(5)} ~ ${formatDate(we).slice(5)}`;
-        scoreHeaderText = `총점 (${formatDate(ws).slice(5)}~)`;
+        scoreHeaderText = `절대점수 (${formatDate(ws).slice(5)}~)`;
     } else if (currentPeriod === 'monthly') {
         periodText = `${selectedDate.getMonth()+1}월`;
-        scoreHeaderText = `총점 (${selectedDate.getMonth()+1}월)`;
+        scoreHeaderText = `절대점수 (${selectedDate.getMonth()+1}월)`;
     } else if (currentPeriod === 'yearly') {
         periodText = `${selectedDate.getFullYear()}년`;
-        scoreHeaderText = `총점 (${selectedDate.getFullYear()}년)`;
+        scoreHeaderText = `절대점수 (${selectedDate.getFullYear()}년)`;
     }
     document.getElementById('stat-period').textContent = periodText;
     document.getElementById('scoreHeader').textContent = scoreHeaderText;
@@ -506,37 +515,67 @@ function getFilteredData(searchKeyword = '') {
 function renderTable(reporters) {
     const tbody = document.getElementById('reporterList');
     if (reporters.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="8" class="text-center py-4 text-muted">해당 기간에 기사가 없습니다</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="16" class="text-center py-4 text-muted">해당 기간에 기사가 없습니다</td></tr>';
         return;
     }
     
     // 평가 데이터 가져오기
     const evals = ScoreDataStore.getEvals();
     
-    tbody.innerHTML = reporters.map((r, i) => {
-        // 기자별 총점 계산
+    // 부서 가중치 데이터
+    const deptGroups = APP_CONFIG.getDeptGroups();
+    
+    function getDeptGroup(dept) {
+        if (deptGroups.groupA.includes(dept)) return { group: '가', weight: deptGroups.groupAWeight || 1.0 };
+        if (deptGroups.groupB.includes(dept)) return { group: '나', weight: deptGroups.groupBWeight || 1.1 };
+        return { group: '-', weight: 1.0 };
+    }
+    
+    // 1단계: 각 기자의 절대점수 계산
+    const reporterScores = reporters.map(r => {
         const reporterArticles = getReporterArticles(r.name);
         let totalScore = 0;
-        
+        let topCount = 0, exclusiveCount = 0, planCount = 0;
         reporterArticles.forEach(article => {
             const evalData = evals[article.nsid] || {};
-            const resolvedTopArticle = evalData.isTopArticle !== undefined 
-                ? evalData.isTopArticle 
-                : (article.is_auto_top || false);
-            const scoreData = {
-                page: article.page || article.paper_number || 15,
-                charCount: article.char_count || 0,
-                isTopArticle: resolvedTopArticle
-            };
-            getQualityBonusItems().forEach(item => {
-                if (item.id === 'isTopArticle') return;
-                scoreData[item.id] = evalData[item.id] || false;
-            });
-            const score = calculateArticleScore(scoreData);
-            totalScore += score.totalScore;
+            const resolvedTopArticle = evalData.isTopArticle !== undefined ? evalData.isTopArticle : (article.is_auto_top || false);
+            const scoreData = { page: article.page || article.paper_number || 15, charCount: article.char_count || 0, isTopArticle: resolvedTopArticle };
+            getQualityBonusItems().forEach(item => { if (item.id !== 'isTopArticle') scoreData[item.id] = evalData[item.id] || false; });
+            totalScore += calculateArticleScore(scoreData).totalScore;
+            if (resolvedTopArticle) topCount++;
+            if (evalData.isExclusive) exclusiveCount++;
+            if (evalData.isPlanned) planCount++;
         });
-        
-        const scoreClass = totalScore >= 50 ? 'text-success fw-bold' : (totalScore >= 30 ? 'text-primary' : '');
+        const dg = getDeptGroup(r.department);
+        return { ...r, absoluteScore: totalScore, group: dg.group, deptWeight: dg.weight, topCount, exclusiveCount, planCount };
+    });
+    
+    // 2단계: 상대평가 전환 (표준편차 기반, 목표 평균 85, 목표 표준편차 7.5)
+    const TARGET_MEAN = 85;
+    const TARGET_STD = 7.5;
+    const absScores = reporterScores.map(r => r.absoluteScore);
+    const mean = absScores.length > 0 ? absScores.reduce((a, b) => a + b, 0) / absScores.length : 0;
+    const variance = absScores.length > 1 ? absScores.reduce((s, v) => s + Math.pow(v - mean, 2), 0) / absScores.length : 0;
+    const std = Math.sqrt(variance);
+    
+    reporterScores.forEach(r => {
+        if (std > 0 && absScores.length > 1) {
+            r.relativeScore = Math.round(((r.absoluteScore - mean) / std * TARGET_STD + TARGET_MEAN) * 100) / 100;
+        } else {
+            r.relativeScore = TARGET_MEAN;
+        }
+        r.finalScore = Math.round(r.relativeScore * r.deptWeight * 100) / 100;
+    });
+    
+    // 최종점수 기준 정렬
+    reporterScores.sort((a, b) => b.finalScore - a.finalScore);
+    
+    // 통계 표시
+    const avgAbs = absScores.length > 0 ? (absScores.reduce((a,b) => a+b, 0) / absScores.length).toFixed(1) : '0';
+    
+    tbody.innerHTML = reporterScores.map((r, i) => {
+        const groupLabel = r.group !== '-' ? `(${r.group}군)` : '';
+        const scoreClass = r.finalScore >= 95 ? 'text-danger fw-bold' : (r.finalScore >= 85 ? 'text-primary fw-bold' : '');
         
         return `
         <tr class="reporter-row" onclick="location.href='reporter.html?name=${encodeURIComponent(r.name)}'">
@@ -544,12 +583,32 @@ function renderTable(reporters) {
             <td><strong>${escapeHtml(r.name)}</strong></td>
             <td class="hide-mobile"><span class="dept-badge">${escapeHtml(r.department)}</span></td>
             <td>${r.article_count}</td>
-            <td class="hide-mobile">${r.total_chars.toLocaleString()}</td>
-            <td class="hide-mobile">${r.avg_chars.toLocaleString()}</td>
-            <td class="${scoreClass}">${totalScore.toFixed(1)}점</td>
-            <td><button class="btn btn-sm btn-outline-primary">상세보기</button></td>
+            <td class="hide-mobile text-center text-muted">-</td>
+            <td class="hide-mobile text-center">${r.exclusiveCount || '-'}</td>
+            <td class="hide-mobile text-center">${r.topCount || '-'}</td>
+            <td class="hide-mobile text-center">${r.planCount || '-'}</td>
+            <td class="hide-mobile text-center text-muted">-</td>
+            <td class="hide-mobile text-center text-muted">-</td>
+            <td class="hide-mobile text-center text-muted">-</td>
+            <td>${r.absoluteScore.toFixed(1)}</td>
+            <td>${r.relativeScore.toFixed(2)}</td>
+            <td class="text-center">×${r.deptWeight} <small class="text-muted">${groupLabel}</small></td>
+            <td class="${scoreClass}">${r.finalScore.toFixed(2)}</td>
+            <td><button class="btn btn-sm btn-outline-primary">상세</button></td>
         </tr>
     `}).join('');
+    
+    // 하단에 평균/표준편차 표시
+    const relScores = reporterScores.map(r => r.relativeScore);
+    const relMean = relScores.length > 0 ? (relScores.reduce((a,b) => a+b, 0) / relScores.length).toFixed(2) : '0';
+    tbody.innerHTML += `
+        <tr class="table-warning fw-bold">
+            <td colspan="11" class="text-end">평균 / 표준편차</td>
+            <td>${mean.toFixed(1)} / ${std.toFixed(1)}</td>
+            <td>${relMean} / ${TARGET_STD}</td>
+            <td colspan="3"></td>
+        </tr>
+    `;
 }
 
 // 기자별 기사 목록 가져오기 (기간 필터 적용)
@@ -629,7 +688,7 @@ async function syncData() {
     SCore.setButtonLoading(btn, true);
     
     try {
-        const res = await fetch('https://3pxmyosj2eunachemenbx4b6ay0dzqvd.lambda-url.us-east-1.on.aws/');
+        const res = await fetch(APP_CONFIG.SYNC_API_URL + '/');
         if (!res.ok) throw new Error(res.status.toString());
         const result = await res.json();
         
@@ -663,39 +722,77 @@ function exportExcel() {
     }
     
     const evals = ScoreDataStore.getEvals();
+    const deptGroups = APP_CONFIG.getDeptGroups();
     
-    const reporterData = reporters.map((r, i) => {
-        // 기자별 총점 계산
+    function getDeptGroup(dept) {
+        if (deptGroups.groupA.includes(dept)) return { group: '가군', weight: deptGroups.groupAWeight || 1.0 };
+        if (deptGroups.groupB.includes(dept)) return { group: '나군', weight: deptGroups.groupBWeight || 1.1 };
+        return { group: '-', weight: 1.0 };
+    }
+    
+    // 절대점수 계산
+    const scored = reporters.map(r => {
         const reporterArticles = getReporterArticles(r.name);
-        let totalScore = 0;
-        
+        let totalScore = 0, topCount = 0, exclusiveCount = 0, planCount = 0;
         reporterArticles.forEach(article => {
             const evalData = evals[article.nsid] || {};
-            const resolvedTopArticle = evalData.isTopArticle !== undefined 
-                ? evalData.isTopArticle 
-                : (article.is_auto_top || false);
-            const scoreData = {
-                page: article.page || article.paper_number || 15,
-                charCount: article.char_count || 0,
-                isTopArticle: resolvedTopArticle
-            };
-            getQualityBonusItems().forEach(item => {
-                if (item.id === 'isTopArticle') return;
-                scoreData[item.id] = evalData[item.id] || false;
-            });
-            const score = calculateArticleScore(scoreData);
-            totalScore += score.totalScore;
+            const resolvedTopArticle = evalData.isTopArticle !== undefined ? evalData.isTopArticle : (article.is_auto_top || false);
+            const scoreData = { page: article.page || article.paper_number || 15, charCount: article.char_count || 0, isTopArticle: resolvedTopArticle };
+            getQualityBonusItems().forEach(item => { if (item.id !== 'isTopArticle') scoreData[item.id] = evalData[item.id] || false; });
+            totalScore += calculateArticleScore(scoreData).totalScore;
+            if (resolvedTopArticle) topCount++;
+            if (evalData.isExclusive) exclusiveCount++;
+            if (evalData.isPlanned) planCount++;
         });
-        
-        return {
-            '순위': i + 1,
-            '기자명': r.name,
-            '부서': r.department,
-            '기사수': r.article_count,
-            '총글자수': r.total_chars,
-            '평균글자수': r.avg_chars,
-            '총점': totalScore.toFixed(1)
-        };
+        const dg = getDeptGroup(r.department);
+        return { ...r, absoluteScore: totalScore, group: dg.group, deptWeight: dg.weight, topCount, exclusiveCount, planCount };
+    });
+    
+    // 상대평가 전환
+    const TARGET_MEAN = 85, TARGET_STD = 7.5;
+    const absScores = scored.map(r => r.absoluteScore);
+    const mean = absScores.length > 0 ? absScores.reduce((a,b) => a+b, 0) / absScores.length : 0;
+    const variance = absScores.length > 1 ? absScores.reduce((s,v) => s + Math.pow(v - mean, 2), 0) / absScores.length : 0;
+    const std = Math.sqrt(variance);
+    
+    scored.forEach(r => {
+        r.relativeScore = (std > 0 && absScores.length > 1) ? Math.round(((r.absoluteScore - mean) / std * TARGET_STD + TARGET_MEAN) * 100) / 100 : TARGET_MEAN;
+        r.finalScore = Math.round(r.relativeScore * r.deptWeight * 100) / 100;
+    });
+    scored.sort((a, b) => b.finalScore - a.finalScore);
+    
+    const reporterData = scored.map((r, i) => ({
+        '순위': i + 1,
+        '기자명': r.name,
+        '부서': r.department,
+        '기사수': r.article_count,
+        '조회수': '',
+        '단독기사': r.exclusiveCount || 0,
+        '면톱기사': r.topCount || 0,
+        '기획기사': r.planCount || 0,
+        '서경기자상': '',
+        '정보보고': '',
+        '기명온라인': '',
+        '절대점수(입력)': r.absoluteScore.toFixed(1),
+        '상대점수(전환)': r.relativeScore.toFixed(2),
+        '부서가중치': `${r.deptWeight} (${r.group}군)`,
+        '최종점수': r.finalScore.toFixed(2)
+    }));
+    
+    // 평균/표준편차 행 추가
+    reporterData.push({
+        '순위': '', '기자명': '평균', '부서': '', 
+        '기사수': '', '조회수': '', '단독기사': '', '면톱기사': '', '기획기사': '', '서경기자상': '', '정보보고': '', '기명온라인': '',
+        '절대점수(입력)': mean.toFixed(1),
+        '상대점수(전환)': TARGET_MEAN.toFixed(2),
+        '부서가중치': '', '최종점수': ''
+    });
+    reporterData.push({
+        '순위': '', '기자명': '표준편차', '부서': '',
+        '기사수': '', '조회수': '', '단독기사': '', '면톱기사': '', '기획기사': '', '서경기자상': '', '정보보고': '', '기명온라인': '',
+        '절대점수(입력)': std.toFixed(1),
+        '상대점수(전환)': TARGET_STD.toFixed(2),
+        '부서가중치': '', '최종점수': ''
     });
     
     let periodText = `${selectedDate.getFullYear()}년`;
@@ -709,10 +806,10 @@ function exportExcel() {
     
     const wb = XLSX.utils.book_new();
     const ws = XLSX.utils.json_to_sheet(reporterData);
-    ws['!cols'] = [{ wch: 6 }, { wch: 15 }, { wch: 15 }, { wch: 10 }, { wch: 12 }, { wch: 12 }, { wch: 10 }];
-    XLSX.utils.book_append_sheet(wb, ws, '기자목록');
+    ws['!cols'] = [{ wch: 5 }, { wch: 10 }, { wch: 12 }, { wch: 7 }, { wch: 8 }, { wch: 8 }, { wch: 8 }, { wch: 8 }, { wch: 8 }, { wch: 8 }, { wch: 8 }, { wch: 13 }, { wch: 13 }, { wch: 12 }, { wch: 10 }];
+    XLSX.utils.book_append_sheet(wb, ws, '기자평가');
     
-    const fileName = `기자목록_${selectedDept || '전체'}_${periodText.replace(/[~\s]/g, '_')}.xlsx`;
+    const fileName = `기자평가_${selectedDept || '전체'}_${periodText.replace(/[~\s]/g, '_')}.xlsx`;
     XLSX.writeFile(wb, fileName);
     showToast('엑셀 파일이 다운로드되었습니다', 'success');
 }

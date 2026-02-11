@@ -194,6 +194,43 @@
 </div>
 
 <!-- Feature Flags -->
+<div class="card" id="deptWeightCard">
+    <div class="card-header"><i class="bi bi-building me-2"></i>부서 가중치 (가군/나군)</div>
+    <div class="card-body">
+        <div class="alert alert-info mb-3">
+            <strong>최종 점수 = (정량평가 × 반영률 + 역량평가 × 반영률) / 2 × 부서 가중치</strong>
+            <div class="mt-1 small">가군: 1.0 | 나군: 1.1 (필요시 같은 군 내에서도 가중치 조정 가능)</div>
+        </div>
+        <div class="row">
+            <div class="col-md-4 mb-3">
+                <label class="form-label fw-bold">가군 가중치</label>
+                <input type="number" class="form-control" id="groupAWeight" value="1.0" step="0.05" min="0.5" max="2.0">
+            </div>
+            <div class="col-md-4 mb-3">
+                <label class="form-label fw-bold">나군 가중치</label>
+                <input type="number" class="form-control" id="groupBWeight" value="1.1" step="0.05" min="0.5" max="2.0">
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-6">
+                <div class="card border-primary mb-2">
+                    <div class="card-header bg-primary text-white py-2"><i class="bi bi-collection me-1"></i>가군 (가중치: <span id="groupALabel">1.0</span>)</div>
+                    <div class="card-body p-2" id="groupAList" style="min-height:100px;"></div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card border-success mb-2">
+                    <div class="card-header bg-success text-white py-2"><i class="bi bi-collection me-1"></i>나군 (가중치: <span id="groupBLabel">1.1</span>)</div>
+                    <div class="card-body p-2" id="groupBList" style="min-height:100px;"></div>
+                </div>
+            </div>
+        </div>
+        <div class="small text-muted mt-2">부서를 클릭하면 가군 ↔ 나군 이동합니다.</div>
+        <button class="btn btn-sm btn-outline-primary mt-2" onclick="saveDeptWeights()"><i class="bi bi-save me-1"></i>부서 가중치 저장</button>
+    </div>
+</div>
+
+<!-- Feature Flags -->
 <div class="card">
     <div class="card-header"><i class="bi bi-toggles me-2"></i>Feature Flags (점수 공개 정책)</div>
     <div class="card-body">
@@ -247,6 +284,7 @@
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script src="common.js"></script>
+<script src="config.js"></script>
 <script src="score.js"></script>
 <script src="score-data.js"></script>
 <script>
@@ -257,7 +295,7 @@ if (!session || session.role !== 'admin') {
 }
 document.getElementById('userInfo').textContent = session.role === 'admin' ? '관리자님' : `${session.name}님`;
 
-const EVAL_API_URL = 'https://yyffk7tpfey7s2kv7hoitskxb40aljqw.lambda-url.us-east-1.on.aws/';
+const EVAL_API_URL = APP_CONFIG.EVAL_API_URL;
 
 // URL에 ?reset=1 이 있으면 config 초기화
 if (new URLSearchParams(location.search).get('reset') === '1') {
@@ -692,6 +730,76 @@ async function saveFeatureFlags() {
         SCore.setButtonLoading(saveBtn, false);
     }
 }
+
+// ========== 부서 가중치 (가군/나군) ==========
+
+const DEFAULT_DEPT_GROUPS = APP_CONFIG.DEFAULT_DEPT_GROUPS;
+
+function loadDeptWeights() {
+    const saved = JSON.parse(localStorage.getItem('dept_group_weights') || 'null') || DEFAULT_DEPT_GROUPS;
+    document.getElementById('groupAWeight').value = saved.groupAWeight || 1.0;
+    document.getElementById('groupBWeight').value = saved.groupBWeight || 1.1;
+    document.getElementById('groupALabel').textContent = saved.groupAWeight || 1.0;
+    document.getElementById('groupBLabel').textContent = saved.groupBWeight || 1.1;
+    renderDeptGroups(saved);
+    
+    document.getElementById('groupAWeight').addEventListener('input', function() {
+        document.getElementById('groupALabel').textContent = this.value;
+    });
+    document.getElementById('groupBWeight').addEventListener('input', function() {
+        document.getElementById('groupBLabel').textContent = this.value;
+    });
+}
+
+function renderDeptGroups(groups) {
+    const aList = document.getElementById('groupAList');
+    const bList = document.getElementById('groupBList');
+    
+    aList.innerHTML = (groups.groupA || []).map(d => 
+        `<span class="badge bg-primary me-1 mb-1" style="cursor:pointer;font-size:0.85rem;padding:0.4rem 0.7rem;" onclick="moveDept('${d}','B')">${d}</span>`
+    ).join('');
+    bList.innerHTML = (groups.groupB || []).map(d => 
+        `<span class="badge bg-success me-1 mb-1" style="cursor:pointer;font-size:0.85rem;padding:0.4rem 0.7rem;" onclick="moveDept('${d}','A')">${d}</span>`
+    ).join('');
+}
+
+function moveDept(dept, toGroup) {
+    const saved = JSON.parse(localStorage.getItem('dept_group_weights') || 'null') || DEFAULT_DEPT_GROUPS;
+    saved.groupA = saved.groupA || [];
+    saved.groupB = saved.groupB || [];
+    
+    if (toGroup === 'A') {
+        saved.groupB = saved.groupB.filter(d => d !== dept);
+        if (!saved.groupA.includes(dept)) saved.groupA.push(dept);
+    } else {
+        saved.groupA = saved.groupA.filter(d => d !== dept);
+        if (!saved.groupB.includes(dept)) saved.groupB.push(dept);
+    }
+    saved.groupAWeight = parseFloat(document.getElementById('groupAWeight').value) || 1.0;
+    saved.groupBWeight = parseFloat(document.getElementById('groupBWeight').value) || 1.1;
+    localStorage.setItem('dept_group_weights', JSON.stringify(saved));
+    renderDeptGroups(saved);
+}
+
+async function saveDeptWeights() {
+    const saved = JSON.parse(localStorage.getItem('dept_group_weights') || 'null') || DEFAULT_DEPT_GROUPS;
+    saved.groupAWeight = parseFloat(document.getElementById('groupAWeight').value) || 1.0;
+    saved.groupBWeight = parseFloat(document.getElementById('groupBWeight').value) || 1.1;
+    localStorage.setItem('dept_group_weights', JSON.stringify(saved));
+    
+    try {
+        await fetch(EVAL_API_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ _deptGroups: saved })
+        });
+    } catch(e) { console.log('서버 저장 실패:', e); }
+    
+    SCore.toast('부서 가중치가 저장되었습니다', 'success');
+}
+
+// 초기 로드
+loadDeptWeights();
 </script>
 </body>
 </html>
