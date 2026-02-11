@@ -1602,7 +1602,7 @@
 <section id="admin-page" class="section">
     <h2 class="section-title"><i class="bi bi-gear"></i> 사원 관리 (admin.html)</h2>
     
-    <p>사원 관리 페이지는 <strong>관리자 전용</strong>입니다. 사원의 부서, 직급, 권한을 변경할 수 있습니다.</p>
+    <p>사원 관리 페이지는 <strong>관리자 전용</strong>입니다. 사원의 부서, 직급, 권한을 변경하고, 신규 사원 추가 및 퇴사 처리를 할 수 있습니다.</p>
     
     <h5 class="mt-4 mb-3">사원 관리 기능</h5>
     <div class="card-grid">
@@ -1611,16 +1611,16 @@
             <p>이름/사번 검색, 부서/권한별 필터링</p>
         </div>
         <div class="info-card orange">
-            <h5><i class="bi bi-building me-2"></i>부서 변경</h5>
-            <p>사원의 소속 부서 변경</p>
+            <h5><i class="bi bi-building me-2"></i>부서 변경 (이력 자동 기록)</h5>
+            <p>사원의 소속 부서 변경. 변경 시 <code>dept_history</code>에 이력이 자동 기록되어 기사 게재일 기준 부서 추적 가능</p>
         </div>
         <div class="info-card green">
-            <h5><i class="bi bi-person-badge me-2"></i>직급 변경</h5>
-            <p>사원의 직급 변경</p>
+            <h5><i class="bi bi-person-badge me-2"></i>직급/권한 변경</h5>
+            <p>사원의 직급 및 admin/manager/reporter 권한 변경</p>
         </div>
         <div class="info-card red">
-            <h5><i class="bi bi-shield me-2"></i>권한 변경</h5>
-            <p>admin/manager/reporter 권한 변경</p>
+            <h5><i class="bi bi-person-plus me-2"></i>사원 추가/퇴사</h5>
+            <p>신규 사원 추가 (초기 비밀번호 1234) 및 퇴사 처리 (기사 데이터 유지)</p>
         </div>
     </div>
     
@@ -1631,16 +1631,101 @@
             <p>이름 또는 사번으로 검색하거나, 부서/권한 필터로 찾습니다.</p>
         </div>
         <div class="step-item">
+            <h6>수정 버튼 클릭</h6>
+            <p>해당 사원 행의 <i class="bi bi-pencil"></i> 버튼을 클릭하면 수정 모달이 열립니다.</p>
+        </div>
+        <div class="step-item">
             <h6>정보 수정</h6>
-            <p>해당 사원의 부서/직급/권한 드롭다운에서 새 값을 선택합니다.</p>
+            <p>부서, 직급, 권한을 드롭다운에서 선택합니다. 부서 변경 시 이동 이력이 자동 기록됩니다.</p>
         </div>
         <div class="step-item">
             <h6>변경사항 저장</h6>
-            <p>"변경사항 저장" 버튼을 클릭합니다.</p>
+            <p>모달에서 "저장" 후, 상단의 <strong>"변경사항 저장"</strong> 버튼을 클릭하여 서버(S3)에 반영합니다.</p>
         </div>
         <div class="step-item">
             <h6>캐시 갱신 대기</h6>
             <p>CloudFront 캐시 무효화로 약 10초 후 반영됩니다.</p>
+        </div>
+    </div>
+    
+    <h5 class="mt-4 mb-3">부서 이동 이력 관리 (dept_history)</h5>
+    <div class="info-card green mb-3">
+        <h5><i class="bi bi-clock-history me-2"></i>자동 이력 기록 시스템</h5>
+        <p>사원관리에서 부서를 변경하면 <code>dept_history</code> 배열에 이력이 자동으로 기록됩니다. 이를 통해 기사가 작성된 시점의 부서를 정확히 추적할 수 있습니다.</p>
+    </div>
+    
+    <p>예를 들어, 홍길동 기자가 2025년 12월부터 경제부에 있다가 2026년 2월 11일에 금융부로 이동한 경우:</p>
+    
+    <div class="code-block">
+        <span class="comment">// users.json 내 dept_history 예시</span><br>
+        {<br>
+        &nbsp;&nbsp;<span class="string">"id"</span>: <span class="string">"211010"</span>,<br>
+        &nbsp;&nbsp;<span class="string">"name"</span>: <span class="string">"홍길동"</span>,<br>
+        &nbsp;&nbsp;<span class="string">"department"</span>: <span class="string">"금융부"</span>, <span class="comment">// 현재 부서</span><br>
+        &nbsp;&nbsp;<span class="string">"dept_history"</span>: [<br>
+        &nbsp;&nbsp;&nbsp;&nbsp;{ <span class="string">"dept"</span>: <span class="string">"경제부"</span>, <span class="string">"from"</span>: <span class="string">"2025-12-01"</span> },<br>
+        &nbsp;&nbsp;&nbsp;&nbsp;{ <span class="string">"dept"</span>: <span class="string">"금융부"</span>, <span class="string">"from"</span>: <span class="string">"2026-02-11"</span> }<br>
+        &nbsp;&nbsp;]<br>
+        }
+    </div>
+    
+    <h5 class="mt-4 mb-3">부서 이동 이력이 반영되는 페이지</h5>
+    <table class="custom-table">
+        <thead>
+            <tr><th>페이지</th><th>반영 방식</th><th>사용 함수</th></tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><strong>기자 목록</strong> (list.html)</td>
+                <td>부서 필터 시 해당 부서에서 작성한 기사만 집계. 이전 부서 기사는 이전 부서에 남음</td>
+                <td><code>SCore.getDeptAtDate()</code></td>
+            </tr>
+            <tr>
+                <td><strong>부서 대시보드</strong> (score-dashboard.html)</td>
+                <td>기사 게재일 기준으로 부서를 판별하여 정확히 분리 집계</td>
+                <td><code>SCore.getArticleDept()</code></td>
+            </tr>
+            <tr>
+                <td><strong>기사 평가</strong> (score-eval.html)</td>
+                <td>기사별 부서를 게재일 기준으로 표시</td>
+                <td><code>SCore.getArticleDept()</code></td>
+            </tr>
+        </tbody>
+    </table>
+    
+    <div class="alert-box info mt-3">
+        <i class="bi bi-lightbulb"></i>
+        <div>
+            <strong>동작 원리</strong><br>
+            <code>SCore.getDeptAtDate(user, date)</code> 함수는 <code>dept_history</code> 배열에서 해당 날짜 기준으로 소속 부서를 찾습니다. 예: 2026-01-15 기사 → 경제부, 2026-02-15 기사 → 금융부. <code>dept_history</code>가 없는 기존 사원은 현재 <code>department</code> 값을 그대로 사용합니다.
+        </div>
+    </div>
+    
+    <h5 class="mt-4 mb-3">신규 사원 추가</h5>
+    <div class="step-list">
+        <div class="step-item">
+            <h6>"사원 추가" 버튼 클릭</h6>
+            <p>사원 목록 상단의 초록색 "사원 추가" 버튼을 클릭합니다.</p>
+        </div>
+        <div class="step-item">
+            <h6>정보 입력</h6>
+            <p>사번(6자리 숫자), 이름, 부서, 직급, 권한, 이메일을 입력합니다. 초기 비밀번호는 1234로 자동 설정됩니다.</p>
+        </div>
+        <div class="step-item">
+            <h6>추가 후 저장</h6>
+            <p>"추가" 버튼 클릭 후, 반드시 <strong>"변경사항 저장"</strong>을 눌러 서버에 반영합니다.</p>
+        </div>
+    </div>
+    
+    <h5 class="mt-4 mb-3">퇴사 처리</h5>
+    <div class="alert-box warning">
+        <i class="bi bi-exclamation-triangle"></i>
+        <div>
+            <strong>퇴사 처리 시 주의사항</strong><br>
+            • 퇴사 처리된 사원은 로그인할 수 없게 됩니다<br>
+            • 기존 기사 데이터는 유지됩니다 (삭제되지 않음)<br>
+            • 기본 admin 계정은 삭제할 수 없습니다<br>
+            • 퇴사 처리 후 반드시 "변경사항 저장"을 눌러야 반영됩니다
         </div>
     </div>
 </section>
@@ -2308,6 +2393,19 @@
         <p>부서를 변경하면 시스템이 자동으로 <strong>부서 이동 이력(dept_history)</strong>을 기록합니다. 이를 통해 기사가 작성된 시점의 부서를 정확히 추적합니다.</p>
     </div>
     
+    <h6 class="mt-3 mb-2"><i class="bi bi-gear me-2"></i>부서 이동 시 시스템 내부 동작</h6>
+    <div class="code-block">
+        <span class="comment">// 예: 홍길동 기자가 경제부 → 금융부로 이동</span><br><br>
+        <span class="comment">// 1. 사원관리에서 부서 변경 시 자동 기록</span><br>
+        <span class="keyword">dept_history</span>: [<br>
+        &nbsp;&nbsp;{ <span class="string">"dept"</span>: <span class="string">"경제부"</span>, <span class="string">"from"</span>: <span class="string">"2025-12-01"</span> }, <span class="comment">// 최초 이력</span><br>
+        &nbsp;&nbsp;{ <span class="string">"dept"</span>: <span class="string">"금융부"</span>, <span class="string">"from"</span>: <span class="string">"2026-02-11"</span> }  <span class="comment">// 이동 이력</span><br>
+        ]<br><br>
+        <span class="comment">// 2. 기사 게재일 기준 부서 판별</span><br>
+        <span class="keyword">SCore.getDeptAtDate</span>(user, <span class="string">"2026-01-15"</span>) → <span class="string">"경제부"</span><br>
+        <span class="keyword">SCore.getDeptAtDate</span>(user, <span class="string">"2026-02-15"</span>) → <span class="string">"금융부"</span>
+    </div>
+    
     <div class="alert-box success mt-3 mb-3">
         <i class="bi bi-check-circle"></i>
         <div>
@@ -2316,30 +2414,41 @@
         </div>
     </div>
     
+    <h6 class="mt-3 mb-2"><i class="bi bi-table me-2"></i>각 페이지별 부서 이동 후 동작</h6>
     <table class="custom-table">
         <thead>
-            <tr><th>항목</th><th>부서 이동 후 동작</th></tr>
+            <tr><th>항목</th><th>부서 이동 후 동작</th><th>예시</th></tr>
         </thead>
         <tbody>
             <tr>
                 <td><strong>기자 목록</strong></td>
                 <td>새 부서 목록에 표시됨. 부서 필터 시 해당 부서에서 작성한 기사만 집계 (이전 부서 기사는 이전 부서에 남음)</td>
+                <td>경제부 필터 → 1월 기사 5건 표시<br>금융부 필터 → 2월 기사 3건 표시</td>
             </tr>
             <tr>
                 <td><strong>부서 대시보드</strong></td>
                 <td>기사 게재일 기준으로 부서를 판별하여 정확히 분리 집계. 이전 부서 기사는 이전 부서에, 새 부서 기사는 새 부서에 표시</td>
+                <td>경제부 탭 → 1월 기사 통계 포함<br>금융부 탭 → 2월 기사 통계 포함</td>
             </tr>
             <tr>
                 <td><strong>기사 평가</strong></td>
                 <td>기사별 평가(품질 가점, 확정)는 기사 ID(nsid) 기준이므로 유지됨. 부서 필터 시 기사 게재일 기준 부서로 표시</td>
+                <td>1월 기사의 단독/기획 가점 → 그대로 유지</td>
             </tr>
             <tr>
                 <td><strong>가감점</strong></td>
                 <td>이미 등록된 가감점은 등록 시점의 부서로 기록되어 변하지 않음. 새로 등록하면 새 부서로 기록</td>
+                <td>1월 감점 → 경제부로 기록됨<br>2월 가점 → 금융부로 기록됨</td>
             </tr>
             <tr>
                 <td><strong>소명</strong></td>
                 <td>제출 시점의 부서로 기록됨. 부장 이동 시 이전 부서 미처리 소명은 새 부장이 처리</td>
+                <td>-</td>
+            </tr>
+            <tr>
+                <td><strong>점수 계산</strong></td>
+                <td>기사별 점수는 기사 ID 기준이므로 부서 이동과 무관하게 유지. 부서별 합산 시에만 게재일 기준 분리</td>
+                <td>경제부 총점: 1월 기사 점수 합<br>금융부 총점: 2월 기사 점수 합</td>
             </tr>
         </tbody>
     </table>
@@ -2360,8 +2469,14 @@
             <strong>권장 부서 이동 절차</strong><br>
             ① 이동 전: 해당 기자의 미처리 소명/미확정 평가를 모두 처리<br>
             ② 관리자가 사원관리에서 부서 변경 (이력 자동 기록)<br>
-            ③ 해당 사용자 로그아웃 → 재로그인
+            ③ 해당 사용자 로그아웃 → 재로그인<br>
+            ④ 확인: 기자 목록/부서 대시보드에서 기사가 올바른 부서에 집계되는지 확인
         </div>
+    </div>
+    
+    <h6 class="mt-3 mb-2"><i class="bi bi-info-circle me-2"></i>기존 사원 (dept_history 없는 경우)</h6>
+    <div class="info-card mb-3">
+        <p class="mb-0"><code>dept_history</code>가 없는 기존 사원은 현재 <code>department</code> 값을 모든 기간에 대해 그대로 사용합니다. 부서 이동이 발생하면 그 시점부터 이력이 자동 생성되므로, 기존 데이터에 영향을 주지 않습니다.</p>
     </div>
 </section>
 
@@ -2384,6 +2499,14 @@
             <li><strong>evaluation_api Lambda 확장</strong>: GET ?type=all로 6개 타입 한번에 조회, POST {type, data}로 타입별 저장</li>
             <li><strong>자동 병합 로직</strong>: 페이지 로드 시 서버 데이터와 로컬 데이터를 타임스탬프 기준으로 자동 병합</li>
             <li><strong>실패 재시도 큐</strong>: 네트워크 오류 시 pending 큐에 저장, 다음 접속 시 자동 재시도</li>
+            <li><strong>부서 이동 이력 관리 (dept_history)</strong>: 사원관리에서 부서 변경 시 이력 자동 기록
+                <ul>
+                    <li>users.json에 <code>dept_history</code> 배열 자동 생성 (예: [{dept:'경제부', from:'2025-12-01'}, {dept:'금융부', from:'2026-02-11'}])</li>
+                    <li><code>SCore.getDeptAtDate(user, date)</code>: 특정 날짜 기준 소속 부서 조회</li>
+                    <li><code>SCore.getArticleDept(name, date, users)</code>: 기사 게재일 기준 부서 판별</li>
+                    <li>기자 목록, 부서 대시보드, 기사 평가에서 기사 게재일 기준 부서 분리 집계</li>
+                </ul>
+            </li>
         </ul>
     </div>
     <div class="info-card mb-3">
@@ -2391,6 +2514,11 @@
         <ul class="mb-0">
             <li>lambda/evaluation_api/lambda_function.py - 6개 타입 GET/POST 지원</li>
             <li>score-data.js - _syncType(), loadAllFromServer(), _mergeArrayById() 추가</li>
+            <li>common.js - getDeptAtDate(), getArticleDept() 헬퍼 함수 추가</li>
+            <li>admin.html - saveUserEdit()에서 부서 변경 시 dept_history 자동 기록</li>
+            <li>score-dashboard.html - 기사 게재일 기준 부서 판별로 정확한 부서 집계</li>
+            <li>score-eval.html - 기사별 부서를 게재일 기준으로 표시</li>
+            <li>list.html - 부서 필터 시 dept_history 기반 기사 분리 집계</li>
             <li>score-eval.html, score-penalties.html, score-appeals.html, score-config.html, score-dashboard.html, score-my.html, reporter.html, list.html, dept-manage.html - loadAllFromServer() 연동</li>
         </ul>
     </div>
@@ -2790,7 +2918,7 @@
             </tr>
             <tr>
                 <td><strong>v3.1</strong></td>
-                <td>전체 데이터 서버 동기화 (6개 타입), 자동 병합, 실패 재시도 큐</td>
+                <td>전체 데이터 서버 동기화 (6개 타입), 자동 병합, 실패 재시도 큐, 부서 이동 이력 관리 (dept_history)</td>
                 <td><span class="badge bg-success">완료</span></td>
             </tr>
             <tr>
