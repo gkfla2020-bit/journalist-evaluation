@@ -239,16 +239,16 @@ def lambda_handler(event, context):
     dates = [f['date'] for f in xml_files]
     reporters_data = []
     for name, articles in reporter_articles.items():
-        # 중복 제거: URL 기준 (같은 기사가 제목만 다르게 수정된 경우 대응)
+        # 중복 제거: nsid 기준 (같은 기사가 구형/신형 XML에 모두 있을 수 있음)
         seen = set()
         unique_articles = []
         for a in articles:
-            # URL에서 기사 ID 추출 (NewsView/XXXXX 형식)
-            url = a.get('url', '')
-            if '/NewsView/' in url:
-                key = url.split('/NewsView/')[-1].split('?')[0]
+            nsid = a.get('nsid', '')
+            if nsid:
+                key = nsid
             else:
-                key = (a['title'], a['pub_date'])  # URL 없으면 제목+날짜
+                # nsid 없으면 제목+날짜로 fallback
+                key = (a['title'], a['pub_date'])
             
             if key not in seen:
                 seen.add(key)

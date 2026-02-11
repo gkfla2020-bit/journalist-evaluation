@@ -80,18 +80,23 @@
 
 ```
 ├── dashboard/
+│   ├── config.js            # ⭐ 글로벌 설정 (API URL, 부서 그룹 등 중앙 관리)
+│   ├── common.js            # 공통 유틸리티 (로딩, 토스트, 에러 처리)
+│   ├── common.css           # 공통 스타일
+│   ├── score.js             # 점수 계산 모듈 (v3, 동적 가중치)
+│   ├── score-data.js        # 데이터 저장소 (localStorage + Lambda 동기화)
 │   ├── login.html           # 로그인 페이지
 │   ├── home.html            # 대시보드 (admin)
-│   ├── list.html            # 기자 목록
+│   ├── list.html            # 기자 목록 (절대/상대평가, 가중치)
 │   ├── reporter.html        # 기자 상세
 │   ├── score-dashboard.html # 부서 대시보드
 │   ├── score-eval.html      # 기사 평가
 │   ├── score-appeals.html   # 소명 관리
-│   ├── score-config.html    # 가중치 설정
+│   ├── score-penalties.html # 가감점 관리 (감점/가점/정보보고)
+│   ├── score-config.html    # 가중치 설정, 부서 가군/나군, Feature Flags
 │   ├── score-my.html        # 내 점수 (기자용)
-│   ├── score.js             # 점수 계산 모듈
-│   ├── score-data.js        # 데이터 저장소 모듈
 │   ├── admin.html           # 사원 관리 (admin)
+│   ├── dept-manage.html     # 부서 관리
 │   ├── guide.html           # 사용설명서
 │   ├── users.json           # 사용자 데이터 (248명)
 │   └── data.json            # 기사 데이터
@@ -105,6 +110,35 @@
 ├── XML/                     # 2026년 1월 XML
 ├── November_xml/            # 2025년 12월 XML
 └── README.md
+```
+
+### ⭐ config.js - 중앙 설정 관리
+
+모든 API URL과 부서 그룹 설정은 `dashboard/config.js` 한 곳에서 관리합니다.
+각 페이지에서 `APP_CONFIG.EVAL_API_URL` 등으로 참조하므로, URL 변경 시 config.js만 수정하면 됩니다.
+
+```javascript
+// dashboard/config.js
+const APP_CONFIG = {
+    EVAL_API_URL: '...',    // 평가 저장/불러오기 Lambda
+    SYNC_API_URL: '...',    // XML 동기화 Lambda
+    USERS_API_URL: '...',   // 사용자 관리 Lambda
+    DEFAULT_DEPT_GROUPS: {  // 부서 가군/나군 기본값
+        groupA: [...],
+        groupB: [...],
+        groupAWeight: 1.0,
+        groupBWeight: 1.1
+    }
+};
+```
+
+### JS 모듈 로드 순서 (중요)
+각 HTML 페이지에서 스크립트는 반드시 아래 순서로 로드해야 합니다:
+```html
+<script src="common.js"></script>    <!-- 유틸리티 -->
+<script src="config.js"></script>    <!-- ⭐ API URL, 부서 설정 -->
+<script src="score.js"></script>     <!-- 점수 계산 -->
+<script src="score-data.js"></script><!-- 데이터 저장소 -->
 ```
 
 ---
@@ -130,6 +164,17 @@
 
 ---
 
+## 🚀 배포
+
+```bash
+# S3 업로드 + CloudFront 캐시 무효화
+deploy.bat
+
+# 또는 수동 실행
+aws s3 sync dashboard/ s3://kpi.sedaily.ai/ --delete
+aws cloudfront create-invalidation --distribution-id E1DJQD9MHS4VRO --paths "/*"
+```
+
 ## 🚀 로컬 테스트
 
 ```bash
@@ -148,6 +193,16 @@ python -m http.server 8080
 ---
 
 ## 📝 업데이트 내역
+
+### v3.0 (2026-02-11)
+- ✅ `config.js` 도입 - API URL, 부서 그룹 설정 중앙 관리 (하드코딩 제거)
+- ✅ `reporter.html` localStorage 키 불일치 수정 (`kpi_evaluations` → `score_article_evals`)
+- ✅ 기자 목록 - 절대평가/상대평가(표준편차 변환) 점수 표시
+- ✅ 부서 가군/나군 가중치 설정 (score-config.html)
+- ✅ 가감점 관리 - 정보보고 전용 버튼 추가 (6등급 + 핵심 가점)
+- ✅ 가감점 관리 - 가점/감점 버튼 순서 변경
+- ✅ 부장 페이지 네비게이션 깜빡임 수정 (admin 메뉴 기본 숨김)
+- ✅ 사용설명서 v3.0 업데이트
 
 ### v2.1 (2026-02-03)
 - ✅ Feature Flags 기자 페이지 완전 적용 (reporter.html)

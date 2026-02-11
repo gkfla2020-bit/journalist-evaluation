@@ -1,1 +1,1 @@
-{"statusCode": 200, "headers": {"Content-Type": "application/json"}, "body": "{\"success\": true, \"period_start\": \"2025-12-01\", \"period_end\": \"2026-02-05\", \"total_articles\": 3348, \"total_reporters\": 172, \"last_sync\": \"2026-02-05 15:32\"}"}
+{"statusCode": 200, "headers": {"Content-Type": "application/json"}, "body": "{\"success\": true, \"period_start\": \"2025-12-01\", \"period_end\": \"2026-02-11\", \"total_articles\": 3789, \"total_reporters\": 179, \"last_sync\": \"2026-02-11 09:39\"}"}
