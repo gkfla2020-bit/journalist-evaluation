@@ -16,9 +16,9 @@ const ScoreDataStore = {
     DEPT_CONFIG_KEY: 'score_dept_config',
     LAST_SYNC_KEY: 'score_last_sync',
 
-    // Lambda API 설정 (배포 시 활성화)
-    SYNC_ENABLED: false,
-    get API_BASE_URL() { return typeof APP_CONFIG !== 'undefined' ? APP_CONFIG.SYNC_API_URL : 'https://3pxmyosj2eunachemenbx4b6ay0dzqvd.lambda-url.us-east-1.on.aws'; },
+    // Lambda API 설정
+    SYNC_ENABLED: true,
+    get API_BASE_URL() { return typeof APP_CONFIG !== 'undefined' ? APP_CONFIG.EVAL_API_URL : 'https://yyffk7tpfey7s2kv7hoitskxb40aljqw.lambda-url.us-east-1.on.aws/'; },
 
     // ========== 기사 평가 ==========
     getEvals() {
@@ -31,9 +31,11 @@ const ScoreDataStore = {
         evals[nsid] = { ...oldData, ...data, updatedAt: new Date().toISOString() };
         localStorage.setItem(this.EVALS_KEY, JSON.stringify(evals));
         
-        // Lambda 동기화 (비동기)
+        // Lambda 동기화 (비동기) - 변경된 nsid만 전송
         if (this.SYNC_ENABLED) {
-            this.syncToServer('eval', nsid, evals[nsid]);
+            const payload = {};
+            payload[nsid] = evals[nsid];
+            this._syncType('evals', payload).catch(e => console.log('[S-CORE] eval sync fail:', e));
         }
         
         return evals[nsid];
@@ -96,6 +98,12 @@ const ScoreDataStore = {
         appeal.status = 'SUBMITTED';
         appeals.push(appeal);
         localStorage.setItem(this.APPEALS_KEY, JSON.stringify(appeals));
+        
+        // 서버 동기화
+        if (this.SYNC_ENABLED) {
+            this._syncType('appeals', appeals).catch(e => console.log('[S-CORE] appeals sync fail:', e));
+        }
+        
         return appeal;
     },
 
@@ -105,6 +113,12 @@ const ScoreDataStore = {
         if (index !== -1) {
             appeals[index] = { ...appeals[index], ...updates, updatedAt: new Date().toISOString() };
             localStorage.setItem(this.APPEALS_KEY, JSON.stringify(appeals));
+            
+            // 서버 동기화
+            if (this.SYNC_ENABLED) {
+                this._syncType('appeals', appeals).catch(e => console.log('[S-CORE] appeals sync fail:', e));
+            }
+            
             return appeals[index];
         }
         return null;
@@ -215,6 +229,12 @@ const ScoreDataStore = {
         
         // 변경 이력 저장
         this.addConfigHistory(oldConfig, config, userId, userName, reason);
+        
+        // 서버 동기화
+        if (this.SYNC_ENABLED) {
+            this._syncType('config', config).catch(e => console.log('[S-CORE] config sync fail:', e));
+        }
+        
         return config;
     },
 
@@ -273,6 +293,12 @@ const ScoreDataStore = {
 
     saveFeatureFlags(flags) {
         localStorage.setItem(this.FEATURE_FLAGS_KEY, JSON.stringify(flags));
+        
+        // 서버 동기화
+        if (this.SYNC_ENABLED) {
+            this._syncType('flags', flags).catch(e => console.log('[S-CORE] flags sync fail:', e));
+        }
+        
         return flags;
     },
 
@@ -365,9 +391,9 @@ const ScoreDataStore = {
         penalties.push(penalty);
         localStorage.setItem(this.PENALTIES_KEY, JSON.stringify(penalties));
         
-        // Lambda 동기화
+        // 서버 동기화 (전체 배열 전송)
         if (this.SYNC_ENABLED) {
-            this.syncToServer('penalty', penalty.id, penalty);
+            this._syncType('penalties', penalties).catch(e => console.log('[S-CORE] penalties sync fail:', e));
         }
         
         return penalty;
@@ -379,6 +405,12 @@ const ScoreDataStore = {
         if (index !== -1) {
             penalties[index] = { ...penalties[index], ...updates, updatedAt: new Date().toISOString() };
             localStorage.setItem(this.PENALTIES_KEY, JSON.stringify(penalties));
+            
+            // 서버 동기화
+            if (this.SYNC_ENABLED) {
+                this._syncType('penalties', penalties).catch(e => console.log('[S-CORE] penalties sync fail:', e));
+            }
+            
             return penalties[index];
         }
         return null;
@@ -391,6 +423,12 @@ const ScoreDataStore = {
             penalties[index].status = 'DELETED';
             penalties[index].deletedAt = new Date().toISOString();
             localStorage.setItem(this.PENALTIES_KEY, JSON.stringify(penalties));
+            
+            // 서버 동기화
+            if (this.SYNC_ENABLED) {
+                this._syncType('penalties', penalties).catch(e => console.log('[S-CORE] penalties sync fail:', e));
+            }
+            
             return true;
         }
         return false;
@@ -454,64 +492,110 @@ const ScoreDataStore = {
         localStorage.removeItem(this.LAST_SYNC_KEY);
     },
     
-    // ========== Lambda 동기화 ==========
+    // ========== Lambda 동기화 (통합 API) ==========
     
-    // 서버로 데이터 전송 (비동기)
-    async syncToServer(type, id, data) {
-        if (!this.SYNC_ENABLED) return;
-        
+    /**
+     * 서버에 특정 타입 데이터 저장 (POST {type, data})
+     * evals: 병합 방식 (기존 데이터에 새 데이터 merge)
+     * penalties, appeals: 배열 전체 교체
+     * config, flags, dept_groups: 객체 전체 교체
+     */
+    async _syncType(type, data) {
         try {
-            const response = await fetch(`${this.API_BASE_URL}/score/${type}`, {
+            const res = await fetch(this.API_BASE_URL, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ id, data, timestamp: new Date().toISOString() })
+                body: JSON.stringify({ type, data })
             });
-            if (!response.ok) throw new Error('Sync failed');
-            console.log(`[S-CORE] Synced ${type}:${id}`);
-        } catch (err) {
-            console.error('[S-CORE] Sync error:', err);
-            // 실패 시 로컬에 pending 상태로 저장 (나중에 재시도)
-            this.addPendingSync(type, id, data);
-        }
-    },
-    
-    // 서버에서 데이터 로드 (새로고침 시)
-    async loadFromServer() {
-        if (!this.SYNC_ENABLED) return false;
-        
-        try {
-            const response = await fetch(`${this.API_BASE_URL}/score/all?t=${Date.now()}`);
-            if (!response.ok) throw new Error('Load failed');
-            
-            const serverData = await response.json();
-            
-            // 서버 데이터가 더 최신이면 로컬 업데이트
-            if (serverData.evals) {
-                const localEvals = this.getEvals();
-                const mergedEvals = this.mergeData(localEvals, serverData.evals);
-                localStorage.setItem(this.EVALS_KEY, JSON.stringify(mergedEvals));
-            }
-            
-            if (serverData.appeals) {
-                const localAppeals = JSON.parse(localStorage.getItem(this.APPEALS_KEY) || '[]');
-                const mergedAppeals = this.mergeAppeals(localAppeals, serverData.appeals);
-                localStorage.setItem(this.APPEALS_KEY, JSON.stringify(mergedAppeals));
-            }
-            
-            if (serverData.config) {
-                localStorage.setItem(this.CONFIG_KEY, JSON.stringify(serverData.config));
-            }
-            
-            localStorage.setItem(this.LAST_SYNC_KEY, new Date().toISOString());
-            console.log('[S-CORE] Data loaded from server');
+            if (!res.ok) throw new Error(`Sync ${type} failed: ${res.status}`);
+            console.log(`[S-CORE] Synced ${type}`);
             return true;
         } catch (err) {
-            console.error('[S-CORE] Load error:', err);
+            console.error('[S-CORE] Sync error:', err);
+            this._addPendingSync(type, data);
             return false;
         }
     },
     
-    // 데이터 병합 (최신 타임스탬프 우선)
+    /**
+     * 서버에서 전체 데이터 로드 → localStorage 갱신
+     * 각 페이지 DOMContentLoaded에서 호출
+     */
+    async loadAllFromServer() {
+        try {
+            const res = await fetch(this.API_BASE_URL + '?type=all&t=' + Date.now());
+            if (!res.ok) throw new Error('Load all failed: ' + res.status);
+            
+            const server = await res.json();
+            
+            // evals: 서버 데이터와 로컬 병합 (서버 우선)
+            if (server.evals && Object.keys(server.evals).length > 0) {
+                const local = this.getEvals();
+                const merged = { ...local };
+                for (const key in server.evals) {
+                    if (!merged[key] || 
+                        new Date(server.evals[key].updatedAt || 0) >= new Date(merged[key].updatedAt || 0)) {
+                        merged[key] = server.evals[key];
+                    }
+                }
+                localStorage.setItem(this.EVALS_KEY, JSON.stringify(merged));
+            }
+            
+            // penalties: 서버에 데이터 있으면 로컬과 병합
+            if (server.penalties && Array.isArray(server.penalties) && server.penalties.length > 0) {
+                const local = JSON.parse(localStorage.getItem(this.PENALTIES_KEY) || '[]');
+                const merged = this._mergeArrayById(local, server.penalties);
+                localStorage.setItem(this.PENALTIES_KEY, JSON.stringify(merged));
+            }
+            
+            // appeals: 서버에 데이터 있으면 로컬과 병합
+            if (server.appeals && Array.isArray(server.appeals) && server.appeals.length > 0) {
+                const local = JSON.parse(localStorage.getItem(this.APPEALS_KEY) || '[]');
+                const merged = this._mergeArrayById(local, server.appeals);
+                localStorage.setItem(this.APPEALS_KEY, JSON.stringify(merged));
+            }
+            
+            // config: 서버에 데이터 있으면 덮어쓰기
+            if (server.config && Object.keys(server.config).length > 0) {
+                localStorage.setItem(this.CONFIG_KEY, JSON.stringify(server.config));
+            }
+            
+            // flags: 서버에 데이터 있으면 덮어쓰기
+            if (server.flags && Object.keys(server.flags).length > 0) {
+                localStorage.setItem(this.FEATURE_FLAGS_KEY, JSON.stringify(server.flags));
+            }
+            
+            // dept_groups: 서버에 데이터 있으면 덮어쓰기
+            if (server.dept_groups && Object.keys(server.dept_groups).length > 0) {
+                localStorage.setItem('dept_group_weights', JSON.stringify(server.dept_groups));
+            }
+            
+            localStorage.setItem(this.LAST_SYNC_KEY, new Date().toISOString());
+            console.log('[S-CORE] All data loaded from server');
+            return true;
+        } catch (err) {
+            console.error('[S-CORE] Load all error:', err);
+            return false;
+        }
+    },
+    
+    /**
+     * 배열 데이터 병합 (id 기준, 최신 타임스탬프 우선)
+     */
+    _mergeArrayById(local, server) {
+        const map = new Map();
+        local.forEach(item => map.set(item.id, item));
+        server.forEach(item => {
+            const existing = map.get(item.id);
+            if (!existing || 
+                new Date(item.updatedAt || item.createdAt || 0) >= new Date(existing.updatedAt || existing.createdAt || 0)) {
+                map.set(item.id, item);
+            }
+        });
+        return Array.from(map.values());
+    },
+    
+    // 데이터 병합 (최신 타임스탬프 우선) - 기존 호환
     mergeData(local, server) {
         const merged = { ...local };
         for (const key in server) {
@@ -522,49 +606,37 @@ const ScoreDataStore = {
         return merged;
     },
     
-    // 소명 데이터 병합
+    // 소명 데이터 병합 - 기존 호환
     mergeAppeals(local, server) {
-        const merged = [...local];
-        const localIds = new Set(local.map(a => a.id));
-        
-        server.forEach(serverAppeal => {
-            if (!localIds.has(serverAppeal.id)) {
-                merged.push(serverAppeal);
-            } else {
-                const idx = merged.findIndex(a => a.id === serverAppeal.id);
-                if (idx !== -1 && new Date(serverAppeal.updatedAt || serverAppeal.createdAt) > 
-                    new Date(merged[idx].updatedAt || merged[idx].createdAt)) {
-                    merged[idx] = serverAppeal;
-                }
-            }
-        });
-        
-        return merged;
+        return this._mergeArrayById(local, server);
     },
     
     // 실패한 동기화 저장 (나중에 재시도)
-    addPendingSync(type, id, data) {
+    _addPendingSync(type, data) {
         const pending = JSON.parse(localStorage.getItem('score_pending_sync') || '[]');
-        pending.push({ type, id, data, timestamp: new Date().toISOString() });
-        localStorage.setItem('score_pending_sync', JSON.stringify(pending.slice(-100))); // 최대 100건
+        pending.push({ type, data, timestamp: new Date().toISOString() });
+        localStorage.setItem('score_pending_sync', JSON.stringify(pending.slice(-50)));
     },
     
     // 대기 중인 동기화 재시도
     async retryPendingSync() {
-        if (!this.SYNC_ENABLED) return;
-        
         const pending = JSON.parse(localStorage.getItem('score_pending_sync') || '[]');
         if (pending.length === 0) return;
         
         const remaining = [];
         for (const item of pending) {
-            try {
-                await this.syncToServer(item.type, item.id, item.data);
-            } catch {
-                remaining.push(item);
-            }
+            const ok = await this._syncType(item.type, item.data);
+            if (!ok) remaining.push(item);
         }
         localStorage.setItem('score_pending_sync', JSON.stringify(remaining));
+    },
+    
+    // 부서 가중치 서버 저장
+    async saveDeptGroupsToServer(deptGroups) {
+        localStorage.setItem('dept_group_weights', JSON.stringify(deptGroups));
+        if (this.SYNC_ENABLED) {
+            return this._syncType('dept_groups', deptGroups);
+        }
     },
     
     // 마지막 동기화 시간

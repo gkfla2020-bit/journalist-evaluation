@@ -466,20 +466,8 @@ function onLengthRangeChange() {
         SCore.showLoading('설정을 불러오는 중...');
     } catch(e) { console.log('showLoading 실패:', e); }
     
-    try {
-        const res = await fetch(EVAL_API_URL + '?t=' + Date.now());
-        if (res.ok) {
-            const serverData = await res.json();
-            if (serverData._config) {
-                localStorage.setItem(ScoreDataStore.CONFIG_KEY, JSON.stringify(serverData._config));
-            }
-            if (serverData._featureFlags) {
-                localStorage.setItem(ScoreDataStore.FEATURE_FLAGS_KEY, JSON.stringify(serverData._featureFlags));
-            }
-        }
-    } catch (e) {
-        console.log('서버 설정 로드 실패, localStorage 사용:', e);
-    }
+    // 서버에서 전체 데이터 로드 (config, flags, dept_groups 포함)
+    await ScoreDataStore.loadAllFromServer();
     
     try { SCore.hideLoading(); } catch(e) {}
     
@@ -548,12 +536,6 @@ async function saveConfig() {
     
     try {
         ScoreDataStore.saveConfig(config, session.userId, session.name, reason);
-        
-        await fetch(EVAL_API_URL, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ _config: config })
-        });
         
         document.getElementById('infoMaxScore').textContent = config.MAX_SCORE + '점';
         document.getElementById('infoBonusCap').textContent = config.QUALITY_BONUS_CAP + '점';
@@ -717,14 +699,9 @@ async function saveFeatureFlags() {
     
     try {
         ScoreDataStore.saveFeatureFlags(flags);
-        await fetch(EVAL_API_URL, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ _featureFlags: flags })
-        });
         SCore.toast('Feature Flags가 저장되었습니다', 'success');
     } catch (e) {
-        console.log('서버 저장 실패:', e);
+        console.log('저장 실패:', e);
         SCore.toast('저장에 실패했습니다. 다시 시도해주세요.', 'error');
     } finally {
         SCore.setButtonLoading(saveBtn, false);
@@ -785,15 +762,9 @@ async function saveDeptWeights() {
     const saved = JSON.parse(localStorage.getItem('dept_group_weights') || 'null') || DEFAULT_DEPT_GROUPS;
     saved.groupAWeight = parseFloat(document.getElementById('groupAWeight').value) || 1.0;
     saved.groupBWeight = parseFloat(document.getElementById('groupBWeight').value) || 1.1;
-    localStorage.setItem('dept_group_weights', JSON.stringify(saved));
     
-    try {
-        await fetch(EVAL_API_URL, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ _deptGroups: saved })
-        });
-    } catch(e) { console.log('서버 저장 실패:', e); }
+    // ScoreDataStore를 통해 저장 + 서버 동기화
+    await ScoreDataStore.saveDeptGroupsToServer(saved);
     
     SCore.toast('부서 가중치가 저장되었습니다', 'success');
 }

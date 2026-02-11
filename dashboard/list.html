@@ -256,14 +256,14 @@ const deptParam = urlParams.get('dept');
 
 // 초기 로드 - 병렬 로딩으로 속도 개선
 document.addEventListener('DOMContentLoaded', async () => {
-    // 병렬로 데이터 로드 (Promise.allSettled로 하나 실패해도 계속 진행)
-    const [usersResult, evalResult] = await Promise.allSettled([
+    // 서버에서 전체 데이터 로드 + users.json 병렬
+    const [usersResult, _syncResult] = await Promise.allSettled([
         fetch('users.json?t=' + Date.now()).then(r => r.json()),
-        fetch(EVAL_API_URL + '?t=' + Date.now()).then(r => r.ok ? r.json() : {})
+        ScoreDataStore.loadAllFromServer()
     ]);
     
     if (usersResult.status === 'fulfilled') usersData = usersResult.value;
-    if (evalResult.status === 'fulfilled') evaluationsData = evalResult.value;
+    evaluationsData = ScoreDataStore.getEvals();
     
     // admin이면 부서 필터 표시
     if (session.role === 'admin') {
@@ -290,8 +290,8 @@ document.addEventListener('DOMContentLoaded', async () => {
 
 // 부서 선택 옵션 채우기
 async function populateDeptSelect() {
-    // 서버에서 부서 설정 로드
-    const deptConfig = await ScoreDataStore.loadDeptConfigFromServer();
+    // loadAllFromServer에서 이미 로드됨
+    const deptConfig = ScoreDataStore.getDeptConfig();
     
     const depts = [...new Set(usersData.map(u => u.department).filter(d => d && d !== '전체'))];
     depts.sort();

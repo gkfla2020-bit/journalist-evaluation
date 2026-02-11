@@ -183,16 +183,14 @@ async function loadData() {
         departments = [...new Set(allUsers.map(u => u.department).filter(d => d && d !== '전체'))];
         departments.sort();
         
-        // 서버에서 부서 설정 로드
-        try {
-            const evalRes = await fetch(EVAL_API_URL + '?t=' + Date.now());
-            if (evalRes.ok) {
-                const evalData = await evalRes.json();
-                if (evalData._deptConfig) {
-                    deptConfig = evalData._deptConfig;
-                }
-            }
-        } catch (e) {}
+        // 서버에서 전체 데이터 로드 (부서 설정 포함)
+        await ScoreDataStore.loadAllFromServer();
+        
+        // localStorage에서 부서 설정 가져오기
+        const savedDeptConfig = ScoreDataStore.getDeptConfig();
+        if (savedDeptConfig && Object.keys(savedDeptConfig).length > 0) {
+            deptConfig = savedDeptConfig;
+        }
         
         departments.forEach(d => {
             if (!deptConfig[d]) deptConfig[d] = { visible: true };
@@ -314,11 +312,9 @@ async function saveChanges() {
     
     try {
         if (deptChanged) {
-            await fetch(EVAL_API_URL, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ _deptConfig: deptConfig })
-            });
+            // ScoreDataStore를 통해 부서 설정 저장 + 서버 동기화
+            ScoreDataStore.saveDeptConfig(deptConfig);
+            await ScoreDataStore._syncType('dept_groups', deptConfig);
         }
         
         if (Object.keys(changedUsers).length > 0) {

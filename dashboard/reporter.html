@@ -390,52 +390,21 @@ async function loadData() {
 
 // 서버에서 평가 데이터 불러오기
 async function loadSavedEvaluations() {
-    try {
-        const res = await fetch(EVAL_API_URL + '?t=' + Date.now());
-        if (res.ok) {
-            const serverData = await res.json();
-            localStorage.setItem(STORAGE_KEY, JSON.stringify(serverData));
-            reporterData.articles.forEach(article => {
-                if (serverData[article.nsid]) {
-                    Object.assign(article, serverData[article.nsid]);
-                }
-            });
-            return;
-        }
-    } catch (e) { /* 서버 실패 시 localStorage 사용 */ }
+    // 서버에서 전체 데이터 로드 (evals, penalties, appeals 등)
+    await ScoreDataStore.loadAllFromServer();
     
-    // 서버 실패시 localStorage 사용
-    const saved = localStorage.getItem(STORAGE_KEY);
-    if (saved) {
-        const evaluations = JSON.parse(saved);
-        reporterData.articles.forEach(article => {
-            if (evaluations[article.nsid]) {
-                Object.assign(article, evaluations[article.nsid]);
-            }
-        });
-    }
+    // localStorage에서 평가 데이터 적용
+    const evaluations = ScoreDataStore.getEvals();
+    reporterData.articles.forEach(article => {
+        if (evaluations[article.nsid]) {
+            Object.assign(article, evaluations[article.nsid]);
+        }
+    });
 }
 
-// 평가 데이터 저장 (localStorage + 서버)
+// 평가 데이터 저장 (ScoreDataStore를 통해 localStorage + 서버 동기화)
 async function saveEvaluation(nsid, data) {
-    // localStorage에 저장
-    const saved = localStorage.getItem(STORAGE_KEY);
-    const evaluations = saved ? JSON.parse(saved) : {};
-    evaluations[nsid] = { ...evaluations[nsid], ...data };
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(evaluations));
-    
-    // 서버에도 저장
-    try {
-        const payload = {};
-        payload[nsid] = evaluations[nsid];
-        await fetch(EVAL_API_URL, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(payload)
-        });
-    } catch (e) {
-        console.log('서버 저장 실패:', e);
-    }
+    ScoreDataStore.saveEval(nsid, data);
 }
 
 // 통계만 업데이트 (테이블 다시 안 그림)
@@ -873,19 +842,6 @@ async function toggleQualityReporter(nsid, field) {
     const newValue = !current[field];
     
     ScoreDataStore.saveEval(nsid, { [field]: newValue });
-    
-    // Lambda API에도 저장
-    try {
-        const payload = {};
-        payload[nsid] = { ...current, [field]: newValue, updatedAt: new Date().toISOString() };
-        await fetch(EVAL_API_URL, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(payload)
-        });
-    } catch (e) {
-        console.log('서버 저장 실패:', e);
-    }
     
     // 테이블 다시 렌더링
     renderContent();
@@ -1345,24 +1301,16 @@ function editPosition() {
 
 // 저장된 직위 불러오기
 async function loadSavedPosition() {
-    // 서버에서 먼저 불러오기
-    try {
-        const res = await fetch(EVAL_API_URL + '?t=' + Date.now());
-        if (res.ok) {
-            const serverData = await res.json();
-            const posKey = 'position_' + reporterName;
-            if (serverData[posKey] && serverData[posKey].position) {
-                document.getElementById('positionText').textContent = serverData[posKey].position;
-                return;
-            }
-        }
-    } catch (e) {
-        console.log('직위 서버 로드 실패:', e);
+    // loadAllFromServer에서 이미 evals 로드됨 → evals에서 직위 확인
+    const evals = ScoreDataStore.getEvals();
+    const posKey = 'position_' + reporterName;
+    if (evals[posKey] && evals[posKey].position) {
+        document.getElementById('positionText').textContent = evals[posKey].position;
+        return;
     }
     
-    // 서버 실패시 localStorage
-    const posKey = 'kpi_positions';
-    const saved = localStorage.getItem(posKey);
+    // localStorage fallback
+    const saved = localStorage.getItem('kpi_positions');
     if (saved) {
         const positions = JSON.parse(saved);
         if (positions[reporterName]) {
@@ -1632,7 +1580,7 @@ async function submitAppeal() {
     // 기사 정보 찾기
     const article = reporterData.articles.find(a => a.nsid === nsid);
     
-    // ScoreDataStore에 저장
+    // ScoreDataStore에 저장 (내부에서 서버 동기화 자동 수행)
     if (typeof ScoreDataStore !== 'undefined') {
         ScoreDataStore.createAppeal({
             nsid: nsid,
@@ -1645,18 +1593,6 @@ async function submitAppeal() {
             pubDate: article ? article.pub_date : '',
             page: article ? article.paper_number : 0
         });
-        
-        // Lambda API에도 저장
-        try {
-            const appeals = ScoreDataStore.getAppeals();
-            await fetch(EVAL_API_URL, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ _appeals: appeals })
-            });
-        } catch (e) {
-            console.log('서버 저장 실패:', e);
-        }
     }
     
     // 모달 닫기

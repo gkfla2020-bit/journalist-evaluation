@@ -216,30 +216,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     SCore.showLoading('대시보드 데이터를 불러오는 중...');
     
     try {
-        // Lambda에서 평가 데이터 로드
-        try {
-            const evalRes = await fetch(EVAL_API_URL + '?t=' + Date.now());
-            if (evalRes.ok) {
-                const serverData = await evalRes.json();
-                
-                // 평가 데이터 병합
-                const localEvals = ScoreDataStore.getEvals();
-                const mergedEvals = { ...localEvals };
-                for (const key in serverData) {
-                    if (key !== '_appeals' && key !== '_config' && key !== '_featureFlags') {
-                        mergedEvals[key] = serverData[key];
-                    }
-                }
-                localStorage.setItem(ScoreDataStore.EVALS_KEY, JSON.stringify(mergedEvals));
-                
-                // Config 로드 (가중치 설정)
-                if (serverData._config) {
-                    localStorage.setItem(ScoreDataStore.CONFIG_KEY, JSON.stringify(serverData._config));
-                }
-            }
-        } catch (e) {
-            console.log('서버 데이터 로드 실패, localStorage 사용:', e);
-        }
+        // 서버에서 전체 데이터 로드
+        await ScoreDataStore.loadAllFromServer();
         
         await loadData();
     } catch (err) {

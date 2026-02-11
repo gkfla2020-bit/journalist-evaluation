@@ -313,26 +313,8 @@ async function processAppeal(status) {
     try {
         const result = ScoreDataStore.reviewAppeal(appealId, session.userId, session.name, status, comment);
         
-        // Lambda API에 저장 (평가 데이터 + 소명 데이터)
-        const payload = {};
-        
-        // 승인 시 평가 데이터도 저장
-        if (status === 'APPROVED' && result && result.nsid) {
-            const evalData = ScoreDataStore.getEval(result.nsid);
-            if (evalData) {
-                payload[result.nsid] = evalData;
-            }
-        }
-        
-        // 소명 데이터 저장 (_appeals 키로)
-        const appeals = ScoreDataStore.getAppeals();
-        payload._appeals = appeals;
-        
-        await fetch(EVAL_API_URL, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(payload)
-        });
+        // reviewAppeal 내부에서 이미 appeals 서버 동기화 수행
+        // 승인 시 평가 데이터도 ScoreDataStore.saveEval에서 자동 동기화
         
         bootstrap.Modal.getInstance(document.getElementById('reviewModal')).hide();
         renderAppeals();
@@ -376,29 +358,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     SCore.showInlineLoading('appealList', 7);
     
     try {
-        // Lambda에서 데이터 로드 (appeals는 _appeals 키로 저장)
-        const res = await fetch(EVAL_API_URL + '?t=' + Date.now());
-        if (res.ok) {
-            const serverData = await res.json();
-            
-            // 평가 데이터 병합
-            const localEvals = ScoreDataStore.getEvals();
-            const merged = { ...localEvals };
-            for (const key in serverData) {
-                if (key !== '_appeals' && key !== '_config') {
-                    merged[key] = serverData[key];
-                }
-            }
-            localStorage.setItem(ScoreDataStore.EVALS_KEY, JSON.stringify(merged));
-            
-            // 소명 데이터 병합
-            if (serverData._appeals) {
-                const localAppeals = JSON.parse(localStorage.getItem(ScoreDataStore.APPEALS_KEY) || '[]');
-                const serverAppeals = serverData._appeals;
-                const mergedAppeals = ScoreDataStore.mergeAppeals(localAppeals, serverAppeals);
-                localStorage.setItem(ScoreDataStore.APPEALS_KEY, JSON.stringify(mergedAppeals));
-            }
-        }
+        // 서버에서 전체 데이터 로드
+        await ScoreDataStore.loadAllFromServer();
         
         renderAppeals();
     } catch (e) {
