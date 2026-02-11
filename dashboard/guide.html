@@ -276,7 +276,7 @@
     <div class="sidebar-logo">
         <i class="bi bi-bar-chart-fill"></i> S-CORE
     </div>
-    <div class="sidebar-subtitle">기자 지면 기여도 평가 시스템<br>사용 설명서 v3.0</div>
+    <div class="sidebar-subtitle">기자 지면 기여도 평가 시스템<br>사용 설명서 v3.1</div>
     
     <div class="nav-section">시작하기</div>
     <a href="#overview" class="nav-link"><i class="bi bi-house"></i> 시스템 개요</a>
@@ -313,6 +313,7 @@
     <a href="#aws-resources" class="nav-link"><i class="bi bi-cloud"></i> AWS 리소스</a>
     <a href="#data-sync" class="nav-link"><i class="bi bi-arrow-repeat"></i> 데이터 동기화</a>
     <a href="#troubleshooting" class="nav-link"><i class="bi bi-wrench"></i> 문제 해결</a>
+    <a href="#faq" class="nav-link"><i class="bi bi-question-circle"></i> 자주 묻는 질문</a>
     <a href="#changelog" class="nav-link"><i class="bi bi-clock-history"></i> 변경 이력</a>
 </nav>
 
@@ -322,7 +323,7 @@
 <!-- 페이지 헤더 -->
 <div class="page-header">
     <h1><i class="bi bi-book me-2"></i>S-CORE 사용 설명서</h1>
-    <p>서울경제신문 기자 지면 기여도 평가 시스템 완벽 가이드 | v3.0 | 최종 업데이트: 2026년 2월 11일</p>
+    <p>서울경제신문 기자 지면 기여도 평가 시스템 완벽 가이드 | v3.1 | 최종 업데이트: 2026년 2월 11일</p>
 </div>
 
 <!-- ==================== 시스템 개요 ==================== -->
@@ -2081,9 +2082,10 @@
 <section id="data-sync" class="section">
     <h2 class="section-title"><i class="bi bi-arrow-repeat"></i> 데이터 동기화</h2>
     
-    <p>S-CORE의 데이터는 다음과 같은 흐름으로 처리됩니다.</p>
+    <p>S-CORE의 데이터는 <strong>두 가지 동기화 체계</strong>로 운영됩니다.</p>
     
-    <h5 class="mt-4 mb-3">자동 동기화 스케줄</h5>
+    <h5 class="mt-4 mb-3">① XML 기사 데이터 동기화 (자동)</h5>
+    <p>지면 기사 원본 데이터는 XML → Lambda → data.json 파이프라인으로 자동 처리됩니다.</p>
     <table class="custom-table">
         <thead>
             <tr><th>시간 (KST)</th><th>작업</th><th>목적</th></tr>
@@ -2096,16 +2098,64 @@
             </tr>
         </tbody>
     </table>
+    <p class="mt-2">긴급한 경우 대시보드의 <strong>"데이터 동기화"</strong> 버튼을 클릭하여 즉시 동기화할 수 있습니다.</p>
     
-    <h5 class="mt-4 mb-3">수동 동기화</h5>
-    <p>긴급한 경우 대시보드의 <strong>"데이터 동기화"</strong> 버튼을 클릭하여 즉시 동기화할 수 있습니다.</p>
+    <h5 class="mt-4 mb-3">② 평가 데이터 서버 동기화 (실시간)</h5>
+    <p>평가, 가감점, 소명, 설정 등 모든 사용자 입력 데이터는 <strong>kpi-evaluation-api Lambda</strong>를 통해 서버(S3)에 실시간 동기화됩니다. 이를 통해 서로 다른 브라우저/기기에서도 동일한 데이터를 공유할 수 있습니다.</p>
     
-    <div class="code-block">
-        <span class="comment">// Lambda 동기화 URL</span><br>
-        <span class="string">https://3pxmyosj2eunachemenbx4b6ay0dzqvd.lambda-url.us-east-1.on.aws/</span>
+    <table class="custom-table">
+        <thead>
+            <tr><th>데이터 타입</th><th>S3 파일</th><th>동기화 방식</th><th>설명</th></tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><strong>기사 평가</strong></td>
+                <td>evaluations.json</td>
+                <td>병합 (merge)</td>
+                <td>품질 가점, 확정 상태 등. 기존 데이터에 새 데이터를 병합</td>
+            </tr>
+            <tr>
+                <td><strong>가감점</strong></td>
+                <td>penalties.json</td>
+                <td>전체 교체</td>
+                <td>가점/감점/정보보고 등록·삭제</td>
+            </tr>
+            <tr>
+                <td><strong>소명</strong></td>
+                <td>appeals.json</td>
+                <td>전체 교체</td>
+                <td>소명 제출·처리</td>
+            </tr>
+            <tr>
+                <td><strong>가중치 설정</strong></td>
+                <td>score_config.json</td>
+                <td>전체 교체</td>
+                <td>면/분량/품질 가중치 설정값</td>
+            </tr>
+            <tr>
+                <td><strong>Feature Flags</strong></td>
+                <td>feature_flags.json</td>
+                <td>전체 교체</td>
+                <td>기능 ON/OFF 설정</td>
+            </tr>
+            <tr>
+                <td><strong>부서 가중치</strong></td>
+                <td>dept_groups.json</td>
+                <td>전체 교체</td>
+                <td>가군/나군 부서 분류 및 가중치</td>
+            </tr>
+        </tbody>
+    </table>
+    
+    <div class="alert-box info mt-3">
+        <i class="bi bi-info-circle"></i>
+        <div>
+            <strong>동기화 동작 원리</strong><br>
+            각 페이지 로드 시 <code>ScoreDataStore.loadAllFromServer()</code>가 호출되어 서버의 최신 데이터를 가져와 localStorage와 병합합니다. 데이터 저장 시에는 자동으로 서버에 동기화됩니다. 네트워크 오류 시 실패한 동기화는 <code>score_pending_sync</code>에 저장되어 나중에 재시도됩니다.
+        </div>
     </div>
     
-    <h5 class="mt-4 mb-3">데이터 흐름</h5>
+    <h5 class="mt-4 mb-3">XML 데이터 흐름</h5>
     <div class="step-list">
         <div class="step-item">
             <h6>XML 생성</h6>
@@ -2126,6 +2176,26 @@
         <div class="step-item">
             <h6>캐시 무효화</h6>
             <p>CloudFront 캐시를 무효화하여 최신 데이터 반영</p>
+        </div>
+    </div>
+    
+    <h5 class="mt-4 mb-3">평가 데이터 흐름</h5>
+    <div class="step-list">
+        <div class="step-item">
+            <h6>페이지 로드</h6>
+            <p>loadAllFromServer()로 서버 6개 타입 데이터를 한번에 가져와 localStorage에 병합</p>
+        </div>
+        <div class="step-item">
+            <h6>사용자 입력</h6>
+            <p>품질 가점 토글, 가감점 등록, 소명 제출, 설정 변경 등</p>
+        </div>
+        <div class="step-item">
+            <h6>localStorage 저장</h6>
+            <p>즉시 localStorage에 저장하여 화면에 반영</p>
+        </div>
+        <div class="step-item">
+            <h6>서버 동기화</h6>
+            <p>비동기로 Lambda API에 POST하여 S3에 저장. 실패 시 pending 큐에 보관</p>
         </div>
     </div>
 </section>
@@ -2217,12 +2287,84 @@
     </div>
 </section>
 
+<!-- ==================== 자주 묻는 질문 ==================== -->
+<section id="faq" class="section">
+    <h2 class="section-title"><i class="bi bi-question-circle"></i> 자주 묻는 질문 (FAQ)</h2>
+    
+    <h5 class="mt-4 mb-3">Q1. 비밀번호는 어디서 변경하나요?</h5>
+    <div class="info-card orange mb-3">
+        <h5><i class="bi bi-lock me-2"></i>현재 비밀번호 변경 기능은 미구현 상태입니다</h5>
+        <p>모든 계정의 초기 비밀번호는 <strong>1234</strong>이며, 현재 사용자가 직접 비밀번호를 변경하는 기능은 제공되지 않습니다.</p>
+        <ul class="mb-0 mt-2">
+            <li><strong>비밀번호 변경이 필요한 경우</strong>: 관리자에게 요청하면 users.json에서 직접 수정 가능합니다.</li>
+            <li><strong>보안 참고</strong>: S-CORE는 사내 전용 시스템으로, 외부 접근이 제한된 환경에서 운영됩니다. 비밀번호 변경 기능은 향후 업데이트 예정입니다.</li>
+        </ul>
+    </div>
+    
+    <h5 class="mt-4 mb-3">Q2. 기자 또는 부장이 부서가 바뀌면 어떻게 되나요?</h5>
+    <div class="info-card mb-3">
+        <h5><i class="bi bi-arrow-left-right me-2"></i>부서 이동 처리 방법</h5>
+        <p>부서 이동은 <strong>관리자(Admin)</strong>가 사원관리 페이지에서 처리합니다.</p>
+        <ul class="mb-0 mt-2">
+            <li><strong>사원관리 → 해당 사원 "수정" → 부서 변경 → 변경사항 저장</strong></li>
+        </ul>
+    </div>
+    <div class="info-card green mb-3">
+        <h5><i class="bi bi-newspaper me-2"></i>기사 데이터는 어떻게 되나요?</h5>
+        <ul class="mb-0">
+            <li><strong>이동 전 기사</strong>: 원래 부서에 그대로 남아 있습니다. 기사 데이터(data.json)는 XML 원본 기준이므로, 기사가 게재된 시점의 부서 소속으로 기록됩니다.</li>
+            <li><strong>이동 후 기사</strong>: 새 부서 소속으로 자동 집계됩니다. 다음 XML 동기화부터 새 부서명으로 기사가 들어옵니다.</li>
+            <li><strong>기자 목록/상세</strong>: 부서 변경 후에는 새 부서의 기자 목록에 표시됩니다. 단, 이전 부서에서 작성한 기사도 해당 기자의 상세 페이지에서 모두 확인 가능합니다.</li>
+        </ul>
+    </div>
+    <div class="info-card orange mb-3">
+        <h5><i class="bi bi-calculator me-2"></i>점수와 평가는 어떻게 되나요?</h5>
+        <ul class="mb-0">
+            <li><strong>기사 평가(품질 가점)</strong>: 기사별로 저장되므로 부서 이동과 무관하게 유지됩니다.</li>
+            <li><strong>가감점</strong>: 등록 시점의 부서로 기록됩니다. 이동 후 새로 등록하는 가감점은 새 부서로 기록됩니다.</li>
+            <li><strong>소명</strong>: 제출 시점의 부서로 기록됩니다.</li>
+            <li><strong>부서 대시보드</strong>: 이동 후에는 새 부서 대시보드에서 해당 기자의 전체 기사가 집계됩니다.</li>
+        </ul>
+    </div>
+    <div class="alert-box warning mt-3">
+        <i class="bi bi-exclamation-triangle"></i>
+        <div>
+            <strong>부장(Manager) 부서 이동 시 주의</strong><br>
+            부장이 부서를 이동하면 로그인 세션의 부서 정보가 바뀌므로, <strong>로그아웃 후 재로그인</strong>이 필요합니다. 재로그인하면 새 부서의 기사만 관리할 수 있게 됩니다. 이전 부서의 평가 데이터는 새 부장이 이어서 관리합니다.
+        </div>
+    </div>
+</section>
+
 <!-- ==================== 변경 이력 ==================== -->
 <section id="changelog" class="section">
     <h2 class="section-title"><i class="bi bi-clock-history"></i> 변경 이력 (Changelog)</h2>
     
     <p>S-CORE 시스템의 주요 변경 사항을 기록합니다.</p>
     
+    <h5 class="mt-4 mb-3">v3.1 (2026년 2월 11일)</h5>
+    <div class="info-card green mb-3">
+        <h5><i class="bi bi-plus-circle me-2"></i>신규 기능</h5>
+        <ul class="mb-0">
+            <li><strong>전체 데이터 서버 동기화</strong>: 기존에 기사 평가만 서버 저장되던 것을 6개 타입 전체로 확장
+                <ul>
+                    <li>기사 평가(evals), 가감점(penalties), 소명(appeals), 가중치 설정(config), Feature Flags(flags), 부서 가중치(dept_groups)</li>
+                    <li>서로 다른 브라우저/기기에서 동일한 데이터 공유 가능</li>
+                </ul>
+            </li>
+            <li><strong>evaluation_api Lambda 확장</strong>: GET ?type=all로 6개 타입 한번에 조회, POST {type, data}로 타입별 저장</li>
+            <li><strong>자동 병합 로직</strong>: 페이지 로드 시 서버 데이터와 로컬 데이터를 타임스탬프 기준으로 자동 병합</li>
+            <li><strong>실패 재시도 큐</strong>: 네트워크 오류 시 pending 큐에 저장, 다음 접속 시 자동 재시도</li>
+        </ul>
+    </div>
+    <div class="info-card mb-3">
+        <h5><i class="bi bi-file-earmark-code me-2"></i>변경 파일</h5>
+        <ul class="mb-0">
+            <li>lambda/evaluation_api/lambda_function.py - 6개 타입 GET/POST 지원</li>
+            <li>score-data.js - _syncType(), loadAllFromServer(), _mergeArrayById() 추가</li>
+            <li>score-eval.html, score-penalties.html, score-appeals.html, score-config.html, score-dashboard.html, score-my.html, reporter.html, list.html, dept-manage.html - loadAllFromServer() 연동</li>
+        </ul>
+    </div>
+
     <h5 class="mt-4 mb-3">v3.0 (2026년 2월 11일)</h5>
     <div class="info-card green mb-3">
         <h5><i class="bi bi-plus-circle me-2"></i>신규 기능</h5>
@@ -2614,6 +2756,11 @@
             <tr>
                 <td><strong>v3.0</strong></td>
                 <td>절대/상대평가 전환, 부서 가중치(가군/나군), 정량평가 7대 항목, 정보보고 등록</td>
+                <td><span class="badge bg-success">완료</span></td>
+            </tr>
+            <tr>
+                <td><strong>v3.1</strong></td>
+                <td>전체 데이터 서버 동기화 (6개 타입), 자동 병합, 실패 재시도 큐</td>
                 <td><span class="badge bg-success">완료</span></td>
             </tr>
             <tr>
