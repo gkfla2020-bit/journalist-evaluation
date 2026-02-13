@@ -276,7 +276,7 @@
     <div class="sidebar-logo">
         <i class="bi bi-bar-chart-fill"></i> S-CORE
     </div>
-    <div class="sidebar-subtitle">기자 지면 기여도 평가 시스템<br>사용 설명서 v3.1</div>
+    <div class="sidebar-subtitle">기자 지면 기여도 평가 시스템<br>사용 설명서 v3.3</div>
     
     <div class="nav-section">시작하기</div>
     <a href="#overview" class="nav-link"><i class="bi bi-house"></i> 시스템 개요</a>
@@ -323,7 +323,7 @@
 <!-- 페이지 헤더 -->
 <div class="page-header">
     <h1><i class="bi bi-book me-2"></i>S-CORE 사용 설명서</h1>
-    <p>서울경제신문 기자 지면 기여도 평가 시스템 완벽 가이드 | v3.1 | 최종 업데이트: 2026년 2월 11일</p>
+    <p>서울경제신문 기자 지면 기여도 평가 시스템 완벽 가이드 | v3.3 | 최종 업데이트: 2026년 2월 12일</p>
 </div>
 
 <!-- ==================== 시스템 개요 ==================== -->
@@ -2486,6 +2486,28 @@
     
     <p>S-CORE 시스템의 주요 변경 사항을 기록합니다.</p>
     
+    <h5 class="mt-4 mb-3">v3.3 (2026년 2월 12일)</h5>
+    <div class="info-card green mb-3">
+        <h5><i class="bi bi-plus-circle me-2"></i>신규 기능 및 개선</h5>
+        <ul class="mb-0">
+            <li><strong>비밀번호 변경 기능</strong>: 로그인 페이지 하단에 비밀번호 변경 링크 추가. 사번과 현재 비밀번호 확인 후 새 비밀번호 설정 가능. 변경 후 자동 로그아웃되어 재로그인 필요</li>
+            <li><strong>관리자 대시보드 개편</strong>: 기존 기사수 통계만 표시하던 대시보드에 기자 점수 TOP 10, 부서별 평균 점수, 가감점 현황, 평가 완료율 등 점수 관련 정보 추가. 월별 필터 지원</li>
+        </ul>
+    </div>
+
+    <h5 class="mt-4 mb-3">v3.2 (2026년 2월 12일)</h5>
+    <div class="info-card green mb-3">
+        <h5><i class="bi bi-plus-circle me-2"></i>신규 기능 및 개선</h5>
+        <ul class="mb-0">
+            <li><strong>부서 대시보드 통합 레이아웃</strong>: 기존 탭 구조(점수표/가감점/통계)를 제거하고 한 페이지에 점수표 → 가감점 현황 → 통계(TOP10, 일별 기사수, 차트) 순서로 통합 배치</li>
+            <li><strong>네비게이션 순서 통일</strong>: 전체 9개 페이지의 메뉴 순서를 통일 (부서 대시보드 → 가감점 관리 → 기자 목록 → 기사 평가 → 소명 관리)</li>
+            <li><strong>네비게이션 깜빡임 해결</strong>: admin 전용 메뉴가 페이지 로드 시 깜빡이던 현상을 CSS 클래스 + head 인라인 스크립트 방식으로 완전 해결</li>
+            <li><strong>admin 전용 페이지 메뉴 정리</strong>: 대시보드, 가중치 설정, 사원 관리, 부서 관리 페이지에서 모든 메뉴를 즉시 표시 (admin만 접근 가능하므로 숨김 불필요)</li>
+            <li><strong>카드 헤더 색상 통일</strong>: 가감점 현황, 통계 카드 헤더를 점수표와 동일한 파란색(#2c5282)으로 통일</li>
+            <li><strong>정보보고 직접 점수 입력</strong>: 가감점 관리의 정보보고 모달에서 등급 선택 외에 점수를 직접 입력할 수 있는 필드 추가</li>
+        </ul>
+    </div>
+
     <h5 class="mt-4 mb-3">v3.1 (2026년 2월 11일)</h5>
     <div class="info-card green mb-3">
         <h5><i class="bi bi-plus-circle me-2"></i>신규 기능</h5>
@@ -2919,6 +2941,16 @@
             <tr>
                 <td><strong>v3.1</strong></td>
                 <td>전체 데이터 서버 동기화 (6개 타입), 자동 병합, 실패 재시도 큐, 부서 이동 이력 관리 (dept_history)</td>
+                <td><span class="badge bg-success">완료</span></td>
+            </tr>
+            <tr>
+                <td><strong>v3.2</strong></td>
+                <td>부서 대시보드 통합 레이아웃, 네비게이션 통일 및 깜빡임 해결, 정보보고 직접 입력</td>
+                <td><span class="badge bg-success">완료</span></td>
+            </tr>
+            <tr>
+                <td><strong>v3.3</strong></td>
+                <td>비밀번호 변경 기능, 관리자 대시보드 점수 정보 추가</td>
                 <td><span class="badge bg-success">완료</span></td>
             </tr>
             <tr>

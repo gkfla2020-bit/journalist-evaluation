@@ -8,19 +8,9 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
     <link href="common.css" rel="stylesheet">
     <style>
-        body { background: #f5f7fa; font-family: 'Pretendard', -apple-system, sans-serif; }
-        .container-main { max-width: 1400px; margin: 0 auto; padding: 1.5rem; }
-        .header { background: linear-gradient(135deg, #1a365d 0%, #2c5282 50%, #2b6cb0 100%); color: white; padding: 1.5rem; border-radius: 12px; margin-bottom: 1.5rem; }
-        .card { border: none; border-radius: 12px; box-shadow: 0 2px 12px rgba(0,0,0,0.08); margin-bottom: 1.5rem; }
-        .card-header { background: #2c5282; color: white; font-weight: 600; border-radius: 12px 12px 0 0 !important; padding: 1rem 1.5rem; }
-        .nav-menu { background: white; border-radius: 12px; padding: 1rem; margin-bottom: 1.5rem; box-shadow: 0 2px 12px rgba(0,0,0,0.08); }
-        .nav-menu a { color: #2c5282; text-decoration: none; padding: 0.5rem 1rem; border-radius: 8px; margin-right: 0.5rem; transition: all 0.2s; }
-        .nav-menu a:hover, .nav-menu a.active { background: #2c5282; color: white; }
-        .toast-container { position: fixed; top: 20px; right: 20px; z-index: 9999; }
         .weight-input { width: 80px; text-align: center; font-weight: 600; }
         .range-input { width: 70px; text-align: center; }
         .matrix-cell { text-align: center; font-weight: 600; }
-        .btn-outline-light:hover { background: rgba(255,255,255,0.15); }
         .btn-add-row { border: 2px dashed #cbd5e0; color: #718096; background: transparent; width: 100%; padding: 0.5rem; border-radius: 8px; transition: all 0.2s; }
         .btn-add-row:hover { border-color: #2c5282; color: #2c5282; background: #ebf4ff; }
         .btn-remove-row { color: #ef4444; background: none; border: none; padding: 0.25rem 0.5rem; cursor: pointer; font-size: 1.1rem; }
@@ -56,15 +46,15 @@
 
 <!-- 네비게이션 -->
 <div class="nav-menu" id="navMenu">
-    <a href="home.html" id="nav-home"><i class="bi bi-house-door me-1"></i>대시보드</a>
+    <a href="home.html"><i class="bi bi-house-door me-1"></i>대시보드</a>
     <a href="score-dashboard.html"><i class="bi bi-speedometer2 me-1"></i>부서 대시보드</a>
+    <a href="score-penalties.html"><i class="bi bi-plus-slash-minus me-1"></i>가감점 관리</a>
     <a href="list.html"><i class="bi bi-people me-1"></i>기자 목록</a>
     <a href="score-eval.html"><i class="bi bi-clipboard-check me-1"></i>기사 평가</a>
-    <a href="score-penalties.html"><i class="bi bi-plus-slash-minus me-1"></i>가감점 관리</a>
     <a href="score-appeals.html"><i class="bi bi-chat-left-text me-1"></i>소명 관리</a>
     <a href="score-config.html" class="active"><i class="bi bi-sliders me-1"></i>가중치 설정</a>
-    <a href="admin.html" id="nav-admin"><i class="bi bi-person-gear me-1"></i>사원 관리</a>
-    <a href="dept-manage.html" id="nav-dept"><i class="bi bi-building me-1"></i>부서 관리</a>
+    <a href="admin.html"><i class="bi bi-person-gear me-1"></i>사원 관리</a>
+    <a href="dept-manage.html"><i class="bi bi-building me-1"></i>부서 관리</a>
 </div>
 
 <!-- 점수 공식 안내 -->
@@ -712,8 +702,10 @@ async function saveFeatureFlags() {
 
 const DEFAULT_DEPT_GROUPS = APP_CONFIG.DEFAULT_DEPT_GROUPS;
 
+const DEPT_GROUPS_KEY = APP_CONFIG.STORAGE_KEYS.DEPT_GROUPS;
+
 function loadDeptWeights() {
-    const saved = JSON.parse(localStorage.getItem('dept_group_weights') || 'null') || DEFAULT_DEPT_GROUPS;
+    const saved = JSON.parse(localStorage.getItem(DEPT_GROUPS_KEY) || 'null') || DEFAULT_DEPT_GROUPS;
     document.getElementById('groupAWeight').value = saved.groupAWeight || 1.0;
     document.getElementById('groupBWeight').value = saved.groupBWeight || 1.1;
     document.getElementById('groupALabel').textContent = saved.groupAWeight || 1.0;
@@ -741,7 +733,7 @@ function renderDeptGroups(groups) {
 }
 
 function moveDept(dept, toGroup) {
-    const saved = JSON.parse(localStorage.getItem('dept_group_weights') || 'null') || DEFAULT_DEPT_GROUPS;
+    const saved = JSON.parse(localStorage.getItem(DEPT_GROUPS_KEY) || 'null') || DEFAULT_DEPT_GROUPS;
     saved.groupA = saved.groupA || [];
     saved.groupB = saved.groupB || [];
     
@@ -754,12 +746,12 @@ function moveDept(dept, toGroup) {
     }
     saved.groupAWeight = parseFloat(document.getElementById('groupAWeight').value) || 1.0;
     saved.groupBWeight = parseFloat(document.getElementById('groupBWeight').value) || 1.1;
-    localStorage.setItem('dept_group_weights', JSON.stringify(saved));
+    localStorage.setItem(DEPT_GROUPS_KEY, JSON.stringify(saved));
     renderDeptGroups(saved);
 }
 
 async function saveDeptWeights() {
-    const saved = JSON.parse(localStorage.getItem('dept_group_weights') || 'null') || DEFAULT_DEPT_GROUPS;
+    const saved = JSON.parse(localStorage.getItem(DEPT_GROUPS_KEY) || 'null') || DEFAULT_DEPT_GROUPS;
     saved.groupAWeight = parseFloat(document.getElementById('groupAWeight').value) || 1.0;
     saved.groupBWeight = parseFloat(document.getElementById('groupBWeight').value) || 1.1;
     

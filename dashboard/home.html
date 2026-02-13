@@ -8,16 +8,11 @@
     <link rel="preload" href="data.json" as="fetch" crossorigin>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="common.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js" defer></script>
     <style>
-        body { background: #f5f7fa; font-family: 'Pretendard', -apple-system, sans-serif; }
-        .container-main { max-width: 1400px; margin: 0 auto; padding: 1.5rem; }
-        .header { background: linear-gradient(135deg, #1a365d 0%, #2c5282 50%, #2b6cb0 100%); color: white; padding: 1.5rem; border-radius: 12px; margin-bottom: 1.5rem; }
-        .card { border: none; border-radius: 12px; box-shadow: 0 2px 12px rgba(0,0,0,0.08); margin-bottom: 1.5rem; }
-        .card-header { background: #2c5282; color: white; font-weight: 600; border-radius: 12px 12px 0 0 !important; padding: 1rem 1.5rem; }
-        .stat-card { background: white; border-radius: 12px; padding: 1.5rem; text-align: center; box-shadow: 0 2px 12px rgba(0,0,0,0.08); height: 100%; }
-        .stat-card .value { font-size: 2.5rem; font-weight: 700; color: #2c5282; }
-        .stat-card .label { font-size: 0.9rem; color: #364d70; margin-top: 0.5rem; }
+        .stat-card { height: 100%; }
+        .stat-card .label { color: #364d70; }
         .stat-card .icon { font-size: 2rem; color: #2b6cb0; margin-bottom: 0.5rem; }
         .rank-badge { display: inline-block; width: 28px; height: 28px; line-height: 28px; text-align: center; border-radius: 50%; font-weight: 700; font-size: 0.85rem; }
         .rank-1 { background: #ffd700; color: #333; }
@@ -25,10 +20,15 @@
         .rank-3 { background: #cd7f32; color: white; }
         .rank-other { background: #e9ecef; color: #666; }
         .chart-container { position: relative; height: 300px; }
-        .nav-menu { background: white; border-radius: 12px; padding: 1rem; margin-bottom: 1.5rem; box-shadow: 0 2px 12px rgba(0,0,0,0.08); }
-        .nav-menu a { color: #2c5282; text-decoration: none; padding: 0.5rem 1rem; border-radius: 8px; margin-right: 0.5rem; transition: all 0.2s; }
-        .nav-menu a:hover, .nav-menu a.active { background: #2c5282; color: white; }
-        .btn-outline-light:hover { background: rgba(255,255,255,0.15); }
+        .score-up { color: #38a169; font-weight: 600; }
+        .score-down { color: #e53e3e; font-weight: 600; }
+        .dept-avg-bar { height: 8px; border-radius: 4px; background: #e2e8f0; overflow: hidden; }
+        .dept-avg-bar .fill { height: 100%; border-radius: 4px; background: linear-gradient(90deg, #2c5282, #4299e1); }
+        .month-selector { display: flex; align-items: center; gap: 0.5rem; }
+        .month-selector select { border: 1px solid rgba(255,255,255,0.3); background: rgba(255,255,255,0.15); color: white; border-radius: 8px; padding: 0.3rem 0.5rem; font-size: 0.85rem; }
+        .month-selector select option { color: #333; background: white; }
+        .month-selector button { background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.3); color: white; border-radius: 8px; padding: 0.3rem 0.6rem; cursor: pointer; }
+        .month-selector button:hover { background: rgba(255,255,255,0.3); }
         @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
         .spin { display: inline-block; animation: spin 1s linear infinite; }
     </style>
@@ -44,6 +44,11 @@
             <div style="opacity:0.9;">기자 지면 기여도 평가 시스템</div>
         </div>
         <div class="text-end">
+            <div class="month-selector mb-1">
+                <button onclick="moveMonth(-1)" title="이전 달"><i class="bi bi-chevron-left"></i></button>
+                <select id="monthSelect" onchange="changeMonth()"></select>
+                <button onclick="moveMonth(1)" title="다음 달"><i class="bi bi-chevron-right"></i></button>
+            </div>
             <small id="userInfo" class="me-2"></small>
             <button class="btn btn-sm btn-outline-light" onclick="logout()"><i class="bi bi-box-arrow-right"></i> 로그아웃</button>
         </div>
@@ -52,41 +57,55 @@
 
 <!-- 네비게이션 -->
 <div class="nav-menu" id="navMenu">
-    <a href="home.html" id="nav-home" class="active"><i class="bi bi-house-door me-1"></i>대시보드</a>
+    <a href="home.html" class="active"><i class="bi bi-house-door me-1"></i>대시보드</a>
     <a href="score-dashboard.html"><i class="bi bi-speedometer2 me-1"></i>부서 대시보드</a>
+    <a href="score-penalties.html"><i class="bi bi-plus-slash-minus me-1"></i>가감점 관리</a>
     <a href="list.html"><i class="bi bi-people me-1"></i>기자 목록</a>
     <a href="score-eval.html"><i class="bi bi-clipboard-check me-1"></i>기사 평가</a>
-    <a href="score-penalties.html"><i class="bi bi-plus-slash-minus me-1"></i>가감점 관리</a>
     <a href="score-appeals.html"><i class="bi bi-chat-left-text me-1"></i>소명 관리</a>
-    <a href="score-config.html" id="nav-config"><i class="bi bi-sliders me-1"></i>가중치 설정</a>
-    <a href="admin.html" id="nav-admin"><i class="bi bi-person-gear me-1"></i>사원 관리</a>
-    <a href="dept-manage.html" id="nav-dept"><i class="bi bi-building me-1"></i>부서 관리</a>
+    <a href="score-config.html"><i class="bi bi-sliders me-1"></i>가중치 설정</a>
+    <a href="admin.html"><i class="bi bi-person-gear me-1"></i>사원 관리</a>
+    <a href="dept-manage.html"><i class="bi bi-building me-1"></i>부서 관리</a>
 </div>
 
 <!-- 요약 통계 -->
 <div class="row g-3 mb-4">
-    <div class="col-md-3">
+    <div class="col-md-2">
         <div class="stat-card">
             <div class="icon"><i class="bi bi-newspaper"></i></div>
             <div class="value" id="totalArticles">-</div>
             <div class="label">총 기사 수</div>
         </div>
     </div>
-    <div class="col-md-3">
+    <div class="col-md-2">
         <div class="stat-card">
             <div class="icon"><i class="bi bi-people-fill"></i></div>
             <div class="value" id="totalReporters">-</div>
             <div class="label">기자 수</div>
         </div>
     </div>
-    <div class="col-md-3">
+    <div class="col-md-2">
         <div class="stat-card">
             <div class="icon"><i class="bi bi-file-text"></i></div>
             <div class="value" id="avgChars">-</div>
             <div class="label">평균 글자수</div>
         </div>
     </div>
-    <div class="col-md-3">
+    <div class="col-md-2">
+        <div class="stat-card">
+            <div class="icon"><i class="bi bi-trophy"></i></div>
+            <div class="value" id="avgScore">-</div>
+            <div class="label">평균 점수</div>
+        </div>
+    </div>
+    <div class="col-md-2">
+        <div class="stat-card">
+            <div class="icon"><i class="bi bi-clipboard-check"></i></div>
+            <div class="value" id="evalRate">-</div>
+            <div class="label">평가 완료율</div>
+        </div>
+    </div>
+    <div class="col-md-2">
         <div class="stat-card">
             <div class="icon"><i class="bi bi-clock-history"></i></div>
             <div class="value" id="lastSync" style="font-size:1.1rem; line-height:1.3;">-</div>
@@ -96,31 +115,77 @@
 </div>
 
 <div class="row">
-    <!-- 기자 순위 TOP 10 -->
+    <!-- 기자 점수 TOP 10 -->
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <span><i class="bi bi-trophy me-2"></i>기자 점수 TOP 10</span>
+                <a href="list.html" class="btn btn-sm btn-outline-light"><i class="bi bi-list me-1"></i>전체 보기</a>
+            </div>
+            <div class="card-body p-0">
+                <table class="table table-hover mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th style="width:8%">순위</th>
+                            <th>기자명</th>
+                            <th>부서</th>
+                            <th style="width:10%">기사수</th>
+                            <th style="width:12%">절대점수</th>
+                            <th style="width:12%">상대점수</th>
+                            <th style="width:12%">최종점수</th>
+                        </tr>
+                    </thead>
+                    <tbody id="scoreTop10"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- 부서별 평균 점수 -->
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header"><i class="bi bi-building me-2"></i>부서별 평균 점수</div>
+            <div class="card-body p-0">
+                <table class="table table-hover mb-0">
+                    <thead class="table-light">
+                        <tr><th>부서</th><th style="width:20%">인원</th><th style="width:30%">평균 점수</th></tr>
+                    </thead>
+                    <tbody id="deptAvgScores"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <!-- 가감점 현황 -->
     <div class="col-md-6">
         <div class="card">
-            <div class="card-header"><i class="bi bi-trophy me-2"></i>기사수 TOP 10</div>
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <span><i class="bi bi-plus-slash-minus me-2"></i>최근 가감점 현황</span>
+                <a href="score-penalties.html" class="btn btn-sm btn-outline-light"><i class="bi bi-pencil me-1"></i>관리</a>
+            </div>
+            <div class="card-body p-0">
+                <table class="table table-hover mb-0">
+                    <thead class="table-light">
+                        <tr><th>기자</th><th>부서</th><th>유형</th><th>항목</th><th>점수</th></tr>
+                    </thead>
+                    <tbody id="recentPenalties"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- 기사수 TOP 10 -->
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header"><i class="bi bi-newspaper me-2"></i>기사수 TOP 10</div>
             <div class="card-body p-0">
                 <table class="table table-hover mb-0">
                     <thead class="table-light">
                         <tr><th style="width:15%">순위</th><th>기자명</th><th style="width:20%">기사수</th><th style="width:25%">글자수</th></tr>
                     </thead>
                     <tbody id="topReporters"></tbody>
-                </table>
-            </div>
-        </div>
-    </div>
-    
-    <!-- 일별 증감 -->
-    <div class="col-md-6">
-        <div class="card">
-            <div class="card-header"><i class="bi bi-arrow-down-up me-2"></i>최근 일별 기사수 증감</div>
-            <div class="card-body p-0">
-                <table class="table table-hover mb-0">
-                    <thead class="table-light">
-                        <tr><th>날짜</th><th style="width:25%">기사수</th><th style="width:30%">전일 대비</th></tr>
-                    </thead>
-                    <tbody id="dailyChange"></tbody>
                 </table>
             </div>
         </div>
@@ -141,242 +206,263 @@
     </div>
 </div>
 
-</div>
+</div><!-- /container-main -->
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="common.js"></script>
+<script src="config.js"></script>
+<script src="score.js"></script>
+<script src="score-data.js"></script>
+
 <script>
 // 로그인 체크 - admin만 대시보드 접근 가능
 const session = JSON.parse(localStorage.getItem('kpi_session') || 'null');
-
-// 세션 만료 체크 (24시간)
 if (session && session.loginTime) {
-    const loginTime = new Date(session.loginTime);
-    const now = new Date();
-    const hoursDiff = (now - loginTime) / (1000 * 60 * 60);
-    if (hoursDiff > 24) {
-        localStorage.removeItem('kpi_session');
-        alert('세션이 만료되었습니다. 다시 로그인해주세요.');
-        location.href = 'login.html';
-    }
+    const hoursDiff = (new Date() - new Date(session.loginTime)) / (1000 * 60 * 60);
+    if (hoursDiff > 24) { localStorage.removeItem('kpi_session'); alert('세션이 만료되었습니다.'); location.href = 'login.html'; }
 }
-
 if (!session || session.role !== 'admin') {
-    // admin이 아니면 적절한 페이지로 리다이렉트
-    if (session && session.role === 'manager') {
-        location.href = 'list.html?dept=' + encodeURIComponent(session.department);
-    } else if (session && session.role === 'reporter') {
-        location.href = 'reporter.html?name=' + encodeURIComponent(session.name);
-    } else {
-        location.href = 'login.html';
-    }
+    if (session && session.role === 'manager') location.href = 'list.html?dept=' + encodeURIComponent(session.department);
+    else if (session && session.role === 'reporter') location.href = 'reporter.html?name=' + encodeURIComponent(session.name);
+    else location.href = 'login.html';
 }
-document.getElementById('userInfo').textContent = session ? (session.role === 'admin' ? '관리자님' : `${session.name}님`) : '';
+document.getElementById('userInfo').textContent = '관리자님';
+function logout() { localStorage.removeItem('kpi_session'); location.href = 'login.html'; }
 
-function logout() {
-    localStorage.removeItem('kpi_session');
-    location.href = 'login.html';
-}
+let allData = null, usersData = [], dailyChart = null, selectedMonth = '';
 
-let allData = null;
-let dailyChart = null;
-
-document.addEventListener('DOMContentLoaded', loadData);
-
-async function loadData() {
+document.addEventListener('DOMContentLoaded', async () => {
     try {
-        const res = await fetch('data.json?t=' + Date.now());
-        allData = await res.json();
-        renderDashboard();
-    } catch (err) {
-        console.error(err);
+        await ScoreDataStore.loadAllFromServer();
+        const [dataRes, usersRes] = await Promise.all([fetch('data.json?t=' + Date.now()), fetch('users.json?t=' + Date.now())]);
+        allData = await dataRes.json();
+        usersData = await usersRes.json();
+        renderMonthSelect();
+        renderAll();
+    } catch (err) { console.error(err); }
+});
+
+function renderMonthSelect() {
+    const select = document.getElementById('monthSelect');
+    const months = new Set();
+    allData.reporters.forEach(r => r.articles.forEach(a => { if (a.pub_date) months.add(a.pub_date.slice(0, 7)); }));
+    const sorted = Array.from(months).sort().reverse();
+    const now = new Date();
+    const cur = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+    selectedMonth = sorted.includes(cur) ? cur : (sorted[0] || '');
+    select.innerHTML = sorted.map(m => {
+        const [y, mo] = m.split('-');
+        return `<option value="${m}" ${m === selectedMonth ? 'selected' : ''}>${y}년 ${parseInt(mo)}월</option>`;
+    }).join('');
+}
+function changeMonth() { selectedMonth = document.getElementById('monthSelect').value; renderAll(); }
+function moveMonth(dir) {
+    const sel = document.getElementById('monthSelect');
+    const opts = Array.from(sel.options);
+    const idx = opts.findIndex(o => o.value === selectedMonth);
+    const ni = idx - dir;
+    if (ni >= 0 && ni < opts.length) { selectedMonth = opts[ni].value; sel.value = selectedMonth; renderAll(); }
+}
+
+function getFilteredReporters() {
+    return allData.reporters.map(r => {
+        const fa = selectedMonth ? r.articles.filter(a => a.pub_date && a.pub_date.startsWith(selectedMonth)) : r.articles;
+        return { ...r, articles: fa, article_count: fa.length, total_chars: fa.reduce((s, a) => s + (a.char_count || 0), 0) };
+    }).filter(r => r.article_count > 0);
+}
+
+function calcScores(reporters) {
+    const evals = ScoreDataStore.getEvals();
+    const deptGroups = APP_CONFIG.getDeptGroups();
+    function getDeptGroup(dept) {
+        if (deptGroups.groupA.includes(dept)) return { group: '가', weight: deptGroups.groupAWeight || 1.0 };
+        if (deptGroups.groupB.includes(dept)) return { group: '나', weight: deptGroups.groupBWeight || 1.1 };
+        return { group: '-', weight: 1.0 };
     }
-}
 
-function renderDashboard() {
-    // 고유 기사수 계산 (nsid 기준 중복 제거)
-    const allNsids = new Set();
-    allData.reporters.forEach(r => {
+    const scored = reporters.map(r => {
+        const user = usersData.find(u => u.name === r.name);
+        const dept = user ? user.department : '-';
+        let totalScore = 0;
         r.articles.forEach(a => {
-            if (a.nsid) allNsids.add(a.nsid);
+            const em = evals[a.nsid] || {};
+            const rt = em.isTopArticle !== undefined ? em.isTopArticle : (a.is_auto_top || false);
+            const sd = { page: a.page || 15, charCount: a.char_count || 0, isTopArticle: rt };
+            getQualityBonusItems().forEach(item => { if (item.id !== 'isTopArticle') sd[item.id] = em[item.id] || false; });
+            totalScore += calculateArticleScore(sd).totalScore;
         });
+        const dg = getDeptGroup(dept);
+        return { name: r.name, department: dept, article_count: r.article_count, total_chars: r.total_chars, absoluteScore: totalScore, group: dg.group, deptWeight: dg.weight };
     });
-    const uniqueArticleCount = allNsids.size;
-    
-    // 통계
-    document.getElementById('totalArticles').textContent = uniqueArticleCount.toLocaleString();
-    document.getElementById('totalReporters').textContent = allData.total_reporters;
-    document.getElementById('lastSync').textContent = allData.last_sync;
-    
-    // 평균 글자수 계산
-    const totalChars = allData.reporters.reduce((sum, r) => sum + r.total_chars, 0);
-    const avgChars = uniqueArticleCount > 0 ? Math.round(totalChars / uniqueArticleCount) : 0;
-    document.getElementById('avgChars').textContent = avgChars.toLocaleString();
-    
-    // TOP 10 기자
-    renderTopReporters();
-    
-    // 일별 증감
-    renderDailyChange();
-    
-    // 차트
-    renderDailyChart();
+
+    // 상대점수 계산
+    const TARGET_MEAN = 85, TARGET_STD = 7.5;
+    const abs = scored.map(r => r.absoluteScore);
+    const mean = abs.length > 0 ? abs.reduce((a, b) => a + b, 0) / abs.length : 0;
+    const variance = abs.length > 1 ? abs.reduce((s, v) => s + Math.pow(v - mean, 2), 0) / abs.length : 0;
+    const std = Math.sqrt(variance);
+    scored.forEach(r => {
+        r.relativeScore = (std > 0 && abs.length > 1) ? Math.round(((r.absoluteScore - mean) / std * TARGET_STD + TARGET_MEAN) * 100) / 100 : TARGET_MEAN;
+        r.finalScore = Math.round(r.relativeScore * r.deptWeight * 100) / 100;
+    });
+    scored.sort((a, b) => b.finalScore - a.finalScore);
+    return scored;
 }
 
-function renderTopReporters() {
-    // 기사수 기준 내림차순 정렬 후 TOP 10
-    const sorted = [...allData.reporters].sort((a, b) => b.article_count - a.article_count);
+function renderAll() {
+    const reporters = getFilteredReporters();
+    const scored = calcScores(reporters);
+
+    // 통계 카드
+    const allNsids = new Set();
+    reporters.forEach(r => r.articles.forEach(a => { if (a.nsid) allNsids.add(a.nsid); }));
+    const uac = allNsids.size;
+    const totalChars = reporters.reduce((s, r) => s + r.total_chars, 0);
+    const avgC = uac > 0 ? Math.round(totalChars / uac) : 0;
+    const avgFinal = scored.length > 0 ? (scored.reduce((s, r) => s + r.finalScore, 0) / scored.length).toFixed(1) : '-';
+
+    // 평가 완료율
+    const evals = ScoreDataStore.getEvals();
+    let evalCount = 0;
+    reporters.forEach(r => r.articles.forEach(a => { if (evals[a.nsid]) evalCount++; }));
+    const evalPct = uac > 0 ? Math.round(evalCount / uac * 100) : 0;
+
+    document.getElementById('totalArticles').textContent = uac.toLocaleString();
+    document.getElementById('totalReporters').textContent = reporters.length;
+    document.getElementById('avgChars').textContent = avgC.toLocaleString();
+    document.getElementById('avgScore').textContent = avgFinal;
+    document.getElementById('evalRate').textContent = evalPct + '%';
+    document.getElementById('lastSync').textContent = allData.last_sync || '-';
+
+    renderScoreTop10(scored);
+    renderDeptAvg(scored);
+    renderRecentPenalties();
+    renderTopReporters(reporters);
+    renderDailyChart(reporters);
+}
+</script>
+
+<script>
+function renderScoreTop10(scored) {
+    const top10 = scored.slice(0, 10);
+    const tbody = document.getElementById('scoreTop10');
+    if (top10.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="7" class="text-center py-3 text-muted">데이터가 없습니다</td></tr>';
+        return;
+    }
+    tbody.innerHTML = top10.map((r, i) => {
+        const rc = i === 0 ? 'rank-1' : i === 1 ? 'rank-2' : i === 2 ? 'rank-3' : 'rank-other';
+        const sc = r.finalScore >= 95 ? 'text-danger fw-bold' : (r.finalScore >= 85 ? 'text-primary fw-bold' : '');
+        return `<tr style="cursor:pointer;" onclick="location.href='reporter.html?name=${encodeURIComponent(r.name)}'">
+            <td><span class="rank-badge ${rc}">${i+1}</span></td>
+            <td><strong>${r.name}</strong></td>
+            <td><span class="badge bg-light text-dark">${r.department}</span></td>
+            <td>${r.article_count}</td>
+            <td>${r.absoluteScore.toFixed(1)}</td>
+            <td>${r.relativeScore.toFixed(2)}</td>
+            <td class="${sc}">${r.finalScore.toFixed(2)}</td>
+        </tr>`;
+    }).join('');
+}
+
+function renderDeptAvg(scored) {
+    const deptMap = {};
+    scored.forEach(r => {
+        if (r.department === '-' || r.department === '전체') return;
+        if (!deptMap[r.department]) deptMap[r.department] = { total: 0, count: 0 };
+        deptMap[r.department].total += r.finalScore;
+        deptMap[r.department].count++;
+    });
+    const depts = Object.entries(deptMap).map(([dept, d]) => ({ dept, count: d.count, avg: d.total / d.count }));
+    depts.sort((a, b) => b.avg - a.avg);
+    const maxAvg = depts.length > 0 ? Math.max(...depts.map(d => d.avg)) : 100;
+
+    const tbody = document.getElementById('deptAvgScores');
+    if (depts.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="3" class="text-center py-3 text-muted">데이터가 없습니다</td></tr>';
+        return;
+    }
+    tbody.innerHTML = depts.map(d => {
+        const pct = Math.round(d.avg / maxAvg * 100);
+        return `<tr style="cursor:pointer;" onclick="location.href='score-dashboard.html?dept=${encodeURIComponent(d.dept)}'">
+            <td><strong>${d.dept}</strong></td>
+            <td>${d.count}명</td>
+            <td>
+                <div class="d-flex align-items-center gap-2">
+                    <div class="dept-avg-bar flex-grow-1"><div class="fill" style="width:${pct}%"></div></div>
+                    <span class="fw-bold" style="min-width:45px;">${d.avg.toFixed(1)}</span>
+                </div>
+            </td>
+        </tr>`;
+    }).join('');
+}
+
+function renderRecentPenalties() {
+    const tbody = document.getElementById('recentPenalties');
+    const penalties = ScoreDataStore.getPenalties({ status: 'ACTIVE' });
+    const filtered = penalties.filter(p => {
+        if (selectedMonth && !(selectedMonth >= p.startMonth && selectedMonth <= p.endMonth)) return false;
+        return true;
+    });
+    filtered.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+    const recent = filtered.slice(0, 10);
+
+    if (recent.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="5" class="text-center py-3 text-muted">가감점 내역이 없습니다</td></tr>';
+        return;
+    }
+    tbody.innerHTML = recent.map(p => {
+        const scoreClass = p.score > 0 ? 'score-up' : 'score-down';
+        const typeLabel = p.score > 0 ? '<span class="badge bg-success">가점</span>' : '<span class="badge bg-danger">감점</span>';
+        return `<tr>
+            <td><strong>${p.reporterName || '-'}</strong></td>
+            <td>${p.department || '-'}</td>
+            <td>${typeLabel}</td>
+            <td>${p.itemName || p.type || '-'}</td>
+            <td class="${scoreClass}">${p.score > 0 ? '+' : ''}${p.score}</td>
+        </tr>`;
+    }).join('');
+}
+
+function renderTopReporters(reporters) {
+    const sorted = [...reporters].sort((a, b) => b.article_count - a.article_count);
     const top10 = sorted.slice(0, 10);
     const tbody = document.getElementById('topReporters');
-    
     tbody.innerHTML = top10.map((r, i) => {
-        const rankClass = i === 0 ? 'rank-1' : i === 1 ? 'rank-2' : i === 2 ? 'rank-3' : 'rank-other';
-        return `
-            <tr style="cursor:pointer;" onclick="location.href='reporter.html?name=${encodeURIComponent(r.name)}'">
-                <td><span class="rank-badge ${rankClass}">${i + 1}</span></td>
-                <td><strong>${r.name}</strong></td>
-                <td>${r.article_count}</td>
-                <td>${r.total_chars.toLocaleString()}</td>
-            </tr>
-        `;
+        const rc = i === 0 ? 'rank-1' : i === 1 ? 'rank-2' : i === 2 ? 'rank-3' : 'rank-other';
+        return `<tr style="cursor:pointer;" onclick="location.href='reporter.html?name=${encodeURIComponent(r.name)}'">
+            <td><span class="rank-badge ${rc}">${i+1}</span></td>
+            <td><strong>${r.name}</strong></td>
+            <td>${r.article_count}</td>
+            <td>${r.total_chars.toLocaleString()}</td>
+        </tr>`;
     }).join('');
 }
 
-function renderDailyChange() {
-    // 일별 집계 (nsid 기준 중복 제거 - 순수 기사 건수)
+function renderDailyChart(reporters) {
     const dailyArticles = {};
-    
-    allData.reporters.forEach(r => {
-        r.articles.forEach(a => {
-            const date = a.pub_date;
-            const nsid = a.nsid || a.url;  // 고유 식별자
-            if (date && nsid) {
-                if (!dailyArticles[date]) dailyArticles[date] = new Set();
-                dailyArticles[date].add(nsid);
-            }
-        });
-    });
-    
-    // Set을 count로 변환
-    const dailyCount = {};
-    Object.keys(dailyArticles).forEach(date => {
-        dailyCount[date] = dailyArticles[date].size;
-    });
-    
-    // 최근 10일 연속 날짜 생성 (일요일 포함, 없으면 0건)
-    const today = new Date();
-    const allDates = [];
-    for (let i = 0; i < 14; i++) {  // 14일 중 10일 표시
-        const d = new Date(today);
-        d.setDate(d.getDate() - i);
-        const dateStr = d.toISOString().slice(0, 10);
-        allDates.push(dateStr);
-    }
-    
-    // 데이터가 있는 날짜만 필터링하되, 일요일은 0건으로 표시
-    const sortedDates = allDates.filter(date => {
-        const dayOfWeek = new Date(date).getDay();
-        // 일요일(0)은 항상 포함 (0건으로 표시)
-        // 다른 날은 데이터가 있거나 최근 10일 이내면 포함
-        return dayOfWeek === 0 || dailyCount[date] !== undefined;
-    }).slice(0, 12);
-    
-    const tbody = document.getElementById('dailyChange');
-    tbody.innerHTML = sortedDates.map((date, i) => {
-        const count = dailyCount[date] || 0;  // 없으면 0건
-        const dayOfWeek = new Date(date).getDay();
-        const isSunday = dayOfWeek === 0;
-        
-        // 전일 = 더 과거 날짜 (sortedDates에서 다음 인덱스)
-        const prevDate = sortedDates[i + 1];
-        const prevCount = prevDate ? (dailyCount[prevDate] || 0) : null;
-        
-        let diffHtml = '';
-        if (prevCount !== null) {
-            const diff = count - prevCount;
-            if (diff > 0) {
-                diffHtml = `<span class="text-success fw-bold"><i class="bi bi-arrow-up"></i> +${diff}</span>`;
-            } else if (diff < 0) {
-                diffHtml = `<span class="text-danger fw-bold"><i class="bi bi-arrow-down"></i> ${diff}</span>`;
-            } else {
-                diffHtml = `<span class="text-muted">0</span>`;
-            }
-        } else {
-            diffHtml = `<span class="text-muted">-</span>`;
+    reporters.forEach(r => r.articles.forEach(a => {
+        const date = a.pub_date, nsid = a.nsid || a.url;
+        if (date && nsid) {
+            if (!dailyArticles[date]) dailyArticles[date] = new Set();
+            dailyArticles[date].add(nsid);
         }
-        
-        return `
-            <tr${isSunday ? ' class="table-secondary"' : ''}>
-                <td>${date.slice(5)}${isSunday ? ' <small class="text-muted">(일)</small>' : ''}</td>
-                <td><strong>${count}</strong></td>
-                <td>${diffHtml}</td>
-            </tr>
-        `;
-    }).join('');
-}
-
-function renderDailyChart() {
-    // 일별 집계 (nsid 기준 중복 제거 - 순수 기사 건수)
-    const dailyArticles = {};
-    
-    allData.reporters.forEach(r => {
-        r.articles.forEach(a => {
-            const date = a.pub_date;
-            const nsid = a.nsid || a.url;
-            if (date && nsid) {
-                if (!dailyArticles[date]) dailyArticles[date] = new Set();
-                dailyArticles[date].add(nsid);
-            }
-        });
-    });
-    
-    // Set을 count로 변환
+    }));
     const dailyCount = {};
-    Object.keys(dailyArticles).forEach(date => {
-        dailyCount[date] = dailyArticles[date].size;
-    });
-    
-    // 최근 14일 연속 날짜 생성 (일요일 0건 포함)
-    const today = new Date();
-    const allDates = [];
-    for (let i = 13; i >= 0; i--) {
-        const d = new Date(today);
-        d.setDate(d.getDate() - i);
-        allDates.push(d.toISOString().slice(0, 10));
-    }
-    
-    const labels = allDates.map(d => d.slice(5)); // MM-DD 형식
-    const data = allDates.map(d => dailyCount[d] || 0);  // 없으면 0
-    
-    // 일요일 표시용 배경색 (일요일은 연한 색)
-    const bgColors = allDates.map(d => {
-        const dayOfWeek = new Date(d).getDay();
-        return dayOfWeek === 0 ? '#cbd5e0' : '#2c5282';
-    });
-    
+    Object.keys(dailyArticles).forEach(d => { dailyCount[d] = dailyArticles[d].size; });
+
+    const dates = Object.keys(dailyCount).sort();
+    const recent = dates.slice(-14);
+    const labels = recent.map(d => d.slice(5));
+    const data = recent.map(d => dailyCount[d] || 0);
+    const bgColors = recent.map(d => new Date(d).getDay() === 0 ? '#cbd5e0' : '#2c5282');
+
     const ctx = document.getElementById('dailyChart').getContext('2d');
     if (dailyChart) dailyChart.destroy();
-    
     dailyChart = new Chart(ctx, {
         type: 'bar',
-        data: {
-            labels: labels,
-            datasets: [{
-                label: '기사수',
-                data: data,
-                backgroundColor: bgColors,
-                borderRadius: 4
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-                legend: { display: false }
-            },
-            scales: {
-                y: { beginAtZero: true }
-            }
-        }
+        data: { labels, datasets: [{ label: '기사수', data, backgroundColor: bgColors, borderRadius: 4 }] },
+        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true } } }
     });
 }
 </script>

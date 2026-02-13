@@ -8,17 +8,6 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
     <link href="common.css" rel="stylesheet">
     <style>
-        body { background: #f5f7fa; font-family: 'Pretendard', -apple-system, sans-serif; }
-        .container-main { max-width: 1400px; margin: 0 auto; padding: 1.5rem; }
-        .header { background: linear-gradient(135deg, #1a365d 0%, #2c5282 50%, #2b6cb0 100%); color: white; padding: 1.5rem; border-radius: 12px; margin-bottom: 1.5rem; }
-        .card { border: none; border-radius: 12px; box-shadow: 0 2px 12px rgba(0,0,0,0.08); margin-bottom: 1.5rem; }
-        .card-header { background: #2c5282; color: white; font-weight: 600; border-radius: 12px 12px 0 0 !important; padding: 1rem 1.5rem; }
-        .nav-menu { background: white; border-radius: 12px; padding: 1rem; margin-bottom: 1.5rem; box-shadow: 0 2px 12px rgba(0,0,0,0.08); }
-        .nav-menu a { color: #2c5282; text-decoration: none; padding: 0.5rem 1rem; border-radius: 8px; margin-right: 0.5rem; transition: all 0.2s; }
-        .nav-menu a:hover, .nav-menu a.active { background: #2c5282; color: white; }
-        .stat-card { background: white; border-radius: 12px; padding: 1.5rem; text-align: center; box-shadow: 0 2px 12px rgba(0,0,0,0.08); }
-        .stat-card .value { font-size: 2.5rem; font-weight: 700; color: #2c5282; }
-        .stat-card .label { font-size: 0.9rem; color: #718096; margin-top: 0.5rem; }
         .quality-btn { 
             padding: 0.25rem 0.5rem; border-radius: 6px; font-size: 0.75rem; font-weight: 600;
             border: 2px solid #e2e8f0; background: white; color: #718096; cursor: pointer;
@@ -46,7 +35,10 @@
         .info-box { background: #ebf4ff; border-left: 4px solid #2c5282; padding: 1rem; border-radius: 0 8px 8px 0; margin-bottom: 1rem; }
         tr.confirmed { background: #f7fafc; opacity: 0.7; }
         .btn-outline-light:hover { background: rgba(255,255,255,0.15); }
+        .admin-only { display: none; }
     </style>
+    <script>(function(){try{var s=JSON.parse(localStorage.getItem('kpi_session')||'null');if(s&&s.role==='admin')document.documentElement.classList.add('is-admin-root');}catch(e){}})()</script>
+    <style>.is-admin-root .admin-only { display: inline-block !important; }</style>
 </head>
 <body>
 <div class="container-main">
@@ -77,15 +69,15 @@
 
 <!-- 네비게이션 -->
 <div class="nav-menu" id="navMenu">
-    <a href="home.html" id="nav-home" style="display:none"><i class="bi bi-house-door me-1"></i>대시보드</a>
+    <a href="home.html" class="admin-only"><i class="bi bi-house-door me-1"></i>대시보드</a>
     <a href="score-dashboard.html"><i class="bi bi-speedometer2 me-1"></i>부서 대시보드</a>
+    <a href="score-penalties.html"><i class="bi bi-plus-slash-minus me-1"></i>가감점 관리</a>
     <a href="list.html"><i class="bi bi-people me-1"></i>기자 목록</a>
     <a href="score-eval.html" class="active"><i class="bi bi-clipboard-check me-1"></i>기사 평가</a>
-    <a href="score-penalties.html"><i class="bi bi-plus-slash-minus me-1"></i>가감점 관리</a>
     <a href="score-appeals.html"><i class="bi bi-chat-left-text me-1"></i>소명 관리</a>
-    <a href="score-config.html" id="nav-config" style="display:none"><i class="bi bi-sliders me-1"></i>가중치 설정</a>
-    <a href="admin.html" id="nav-admin" style="display:none"><i class="bi bi-person-gear me-1"></i>사원 관리</a>
-    <a href="dept-manage.html" id="nav-dept" style="display:none"><i class="bi bi-building me-1"></i>부서 관리</a>
+    <a href="score-config.html" class="admin-only"><i class="bi bi-sliders me-1"></i>가중치 설정</a>
+    <a href="admin.html" class="admin-only"><i class="bi bi-person-gear me-1"></i>사원 관리</a>
+    <a href="dept-manage.html" class="admin-only"><i class="bi bi-building me-1"></i>부서 관리</a>
 </div>
 
 <!-- 필터 -->
@@ -216,14 +208,6 @@ if (!session || (session.role !== 'admin' && session.role !== 'manager')) {
 }
 
 document.getElementById('userInfo').textContent = session.role === 'admin' ? '관리자님' : `${session.name}님`;
-
-// Admin만 대시보드, 가중치설정, 사원관리, 부서관리 표시
-if (session.role === 'admin') {
-    document.getElementById('nav-home').style.display = '';
-    document.getElementById('nav-config').style.display = '';
-    document.getElementById('nav-admin').style.display = '';
-    document.getElementById('nav-dept').style.display = '';
-}
 
 function logout() {
     localStorage.removeItem('kpi_session');

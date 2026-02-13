@@ -18,7 +18,7 @@ const ScoreDataStore = {
 
     // Lambda API 설정
     SYNC_ENABLED: true,
-    get API_BASE_URL() { return typeof APP_CONFIG !== 'undefined' ? APP_CONFIG.EVAL_API_URL : 'https://yyffk7tpfey7s2kv7hoitskxb40aljqw.lambda-url.us-east-1.on.aws/'; },
+    get API_BASE_URL() { return APP_CONFIG.EVAL_API_URL; },
 
     // ========== 기사 평가 ==========
     getEvals() {
@@ -329,7 +329,7 @@ const ScoreDataStore = {
      */
     async loadDeptConfigFromServer() {
         try {
-            const apiUrl = typeof APP_CONFIG !== 'undefined' ? APP_CONFIG.EVAL_API_URL : 'https://yyffk7tpfey7s2kv7hoitskxb40aljqw.lambda-url.us-east-1.on.aws/';
+            const apiUrl = APP_CONFIG.EVAL_API_URL;
             const res = await fetch(apiUrl + '?t=' + Date.now());
             if (res.ok) {
                 const data = await res.json();

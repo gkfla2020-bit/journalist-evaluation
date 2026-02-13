@@ -8,14 +8,7 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
     <link href="common.css" rel="stylesheet">
     <style>
-        body { background: #f5f7fa; font-family: 'Pretendard', -apple-system, sans-serif; }
-        .container-main { max-width: 1200px; margin: 0 auto; padding: 1.5rem; }
-        .header { background: linear-gradient(135deg, #1a365d 0%, #2c5282 50%, #2b6cb0 100%); color: white; padding: 1.5rem; border-radius: 12px; margin-bottom: 1.5rem; }
-        .card { border: none; border-radius: 12px; box-shadow: 0 2px 12px rgba(0,0,0,0.08); margin-bottom: 1.5rem; }
-        .card-header { background: #2c5282; color: white; font-weight: 600; border-radius: 12px 12px 0 0 !important; padding: 1rem 1.5rem; }
-        .stat-card { background: white; border-radius: 12px; padding: 1.5rem; text-align: center; box-shadow: 0 2px 12px rgba(0,0,0,0.08); }
-        .stat-card .value { font-size: 2.5rem; font-weight: 700; color: #2c5282; }
-        .stat-card .label { font-size: 0.9rem; color: #718096; margin-top: 0.5rem; }
+        .container-main { max-width: 1200px; }
         .stat-card .change { font-size: 0.85rem; margin-top: 0.25rem; }
         .change-up { color: #10b981; }
         .change-down { color: #ef4444; }
@@ -32,13 +25,8 @@
         .score-high { color: #ef4444; }
         .score-mid { color: #f59e0b; }
         .score-low { color: #718096; }
-        .toast-container { position: fixed; top: 20px; right: 20px; z-index: 9999; }
         .info-box { background: #fef3c7; border-left: 4px solid #f59e0b; padding: 1rem; border-radius: 0 8px 8px 0; margin-bottom: 1rem; font-size: 0.9rem; }
-        .nav-menu { background: white; border-radius: 12px; padding: 1rem; margin-bottom: 1.5rem; box-shadow: 0 2px 12px rgba(0,0,0,0.08); }
-        .nav-menu a { color: #2c5282; text-decoration: none; padding: 0.5rem 1rem; border-radius: 8px; margin-right: 0.5rem; transition: all 0.2s; }
-        .nav-menu a:hover, .nav-menu a.active { background: #2c5282; color: white; }
         .appeal-status { font-size: 0.75rem; }
-        .btn-outline-light:hover { background: rgba(255,255,255,0.15); }
     </style>
 </head>
 <body>
@@ -264,21 +252,13 @@ const EVAL_API_URL = APP_CONFIG.EVAL_API_URL;
 let allData = null;
 let usersData = [];
 
-// 부서 정보 (Config에서 로드 가능하도록 확장 가능)
+// 부서 정보 (APP_CONFIG 중앙 관리)
 function getDeptConfig() {
-    const saved = localStorage.getItem('score_dept_config');
-    if (saved) return JSON.parse(saved);
-    return {
-        '정치부': { group: '가군', weight: 1.0 },
-        '경제부': { group: '가군', weight: 1.0 },
-        '산업부': { group: '가군', weight: 1.0 },
-        '금융부': { group: '가군', weight: 1.0 },
-        '사회부': { group: '가군', weight: 1.0 },
-        '문화부': { group: '나군', weight: 1.1 },
-        '생활부': { group: '나군', weight: 1.1 },
-        '스포츠부': { group: '나군', weight: 1.1 },
-        '편집부': { group: '나군', weight: 1.1 }
-    };
+    const groups = APP_CONFIG.getDeptGroups();
+    const config = {};
+    (groups.groupA || []).forEach(d => config[d] = { group: '가군', weight: groups.groupAWeight || 1.0 });
+    (groups.groupB || []).forEach(d => config[d] = { group: '나군', weight: groups.groupBWeight || 1.1 });
+    return config;
 }
 
 function logout() {
